@@ -99,6 +99,18 @@ catalogue changes are grouped by authority and name the credential or evaluation
   selected and reported valid (it is never re-evaluated) unless a recorded validity date has
   passed.
 
+- Reviews of every interpretation of the EASA shared evaluations and privileges
+  (`reviews/easa-shared-privileges.md`), the class ratings, instrument ratings and BIR
+  (`reviews/easa-class-ir-ratings.md`), the type ratings and licences
+  (`reviews/easa-types-licences.md`) and the SPL, GPL and instructor certificates
+  (`reviews/easa-spl-gpl-instructors.md`); none is a sign-off.
+- Verbatim texts under `sources/easa/`: FCL.600 and Appendix 9, Section A, points 1 to 1f
+  (an extract); FCL.900 and FCL.915; FCL.205.As, FCL.305, FCL.405.A, FCL.505, FCL.700,
+  FCL.720.H and FCL.720.As; FCL.935, FCL.915.SFI, FCL.915.MCCI, FCL.915.STI, FCL.930.MCCI,
+  SFCL.345 and Article 3b of Regulation (EU) 2018/1976.
+- `easa.licence.lapl-a#recency_tmg`: recency of the LAPL(A) TMG privilege (FCL.140.A(a)),
+  without the SEP land/sea split of FCL.140.A(b).
+
 #### FAA
 
 - `faa.licence.private-airplane` private pilot certificate (airplane): passenger recency by
@@ -158,6 +170,12 @@ catalogue changes are grouped by authority and name the credential or evaluation
 - Review of every FAA instructor, privilege, rating and medical interpretation:
   `reviews/faa-instructors-privileges-ratings-medicals.md`.
 
+- Review of every interpretation of the FAA shared evaluations and pilot certificates:
+  `reviews/faa-shared-licences.md`.
+- Sources: 14 CFR 1.1 (definitions, including night, category, class and glider), 61.1
+  (definitions, including examiner), 61.5 (certificates and ratings issued) and 61.157
+  (airline transport pilot practical test ratings) (`sources/faa/`).
+
 #### Germany
 
 - `de.licence.ul` ultralight pilot licence (Luftfahrerschein für Luftsportgeräteführer): the
@@ -185,6 +203,9 @@ catalogue changes are grouped by authority and name the credential or evaluation
   `de.shared.ul-passengers` (15 supported, 10 needing a decision, none contradicted; no
   evaluation result changed).
 
+- `reviews/de-ul-ratings.md`: first-pass review of the 40 interpretations of the six
+  ultralight kind ratings (22 supported, 17 needing a decision, 1 contradicted and fixed).
+
 #### Tools and format
 
 - Composite results: per credential the record holds, whether it may be exercised on the
@@ -210,8 +231,10 @@ catalogue changes are grouped by authority and name the credential or evaluation
 - `ul_credit` takes a minimum mass: `{ CLASS: { ul_kinds: [...], min_mtom_kg: n } }`.
 - Licence kinds `PPL_H`, `CPL_H`, `ATPL_H` (replacing `HELICOPTER`), `PPL_AS`, `CPL_AS`.
 - `cmd/evaluate`: evaluate a record from the command line and print JSON.
-- 113 verbatim source texts: 66 EU legal acts, 32 US federal regulations, 15 German
+- 147 verbatim source texts: 87 EU legal acts, 40 US federal regulations, 20 German
   statutes and ordinances.
+- `reviews/README.md`: an index of the review files and the owner's list of every
+  interpretation that needs a decision; the README gives the review status per authority.
 
 ### Changed
 
@@ -239,6 +262,76 @@ catalogue changes are grouped by authority and name the credential or evaluation
   combined revalidation of several examiner categories is written) instead of
   FCL.1025(b)(3)(ii).
 
+- `easa.licence.lapl-a#recency` now covers the SEP land and SEP sea privileges only, and the
+  new `easa.licence.lapl-a#recency_tmg` evaluates the TMG privilege. The land/sea split of
+  FCL.140.A(b) (1 hour and 6 take-offs and landings in each SEP class) no longer applies to
+  the TMG privilege: a holder of SEP land, SEP sea and TMG privileges who flew the 12 hours
+  in a TMG is now current for the TMG privilege (review `reviews/easa-types-licences.md`).
+- `easa.rating.aeroplane-type` interpretation `revalidation-not-evaluated`: the reading no
+  longer suggests a 2-year validity for type ratings; FCL.740(a)(1) sets 1 year for type
+  ratings unless the OSD determines otherwise (wording only, no result changes).
+- `easa.rating.set-land#revalidation` (and `easa.rating.set-sea#revalidation`, which uses
+  it): a proficiency check recorded as a flight in an FFS of the class, flagged as a
+  proficiency check, now revalidates the rating (Appendix 9, Section A, points 1c and 1e,
+  allow the class rating check in an FFS). A check event or a check in another FSTD recorded
+  in a simulator still does not count. Interpretation `check-in-aeroplane` rewritten; new
+  requirement row `ffs_check` (review `reviews/easa-class-ir-ratings.md`).
+- `easa.rating.sep-land`, `easa.rating.sep-sea` and `easa.rating.tmg` `#licence`: the rating
+  is held on a PPL(A), CPL(A), ATPL(A) or MPL, as for the MEP and SET ratings. A rating on a
+  CPL(A), ATPL(A) or MPL was reported unknown (licence not held) however valid that licence
+  was; it is now decided by the licence it is recorded on (fix deferred by
+  `reviews/easa-class-ir-ratings.md`, applied at integration; new composite example
+  `composite-rating-on-cpl`).
+- `easa.shared.passengers-day` and `easa.shared.passengers-night` take a parameter
+  `type_rated`. For the type ratings (`easa.rating.helicopter-type`,
+  `easa.rating.powered-lift-type`, `easa.rating.airship-type`) and the LAPL(H) types,
+  passenger recency is evaluated per type designator and counts only flights in that type
+  (FCL.060(b)(1), (b)(2)(i)); previously flights in any type of the class counted. A type
+  rating recorded without a type designator gets no passenger result, and a flight in the
+  class without one is unknown input. The class ratings, the LAPL(A) and the GPL are
+  unchanged. Interpretation `class-for-type` reworded; examples
+  `passengers-day-other-type` added (fix deferred by `reviews/easa-shared-privileges.md`,
+  applied at integration).
+- `easa.shared.sfcl-passenger-prerequisite` (the SPL and the SPL TMG privileges): an FI(S)
+  certificate meets the passenger prerequisite whatever its recorded expiry date, as
+  Part-SFCL gives the FI(S) no validity period; whether its privileges may be exercised
+  (SFCL.360, events recorded for FI_S) is evaluated by `easa.instructor.fi-s`.
+  Interpretation `fi-s-on-any-licence` reworded; example
+  `passenger-prerequisite-fi-s-recorded-expiry-passed` added (deferred item of
+  `reviews/easa-spl-gpl-instructors.md`, applied at integration).
+- `easa.privilege.spl-tmg#extension_training`: TMG privileges on a LAPL(A) no longer credit
+  the TMG extension of the SPL. SFCL.150(c)(1) credits a TMG class rating, which only a
+  PPL(A), CPL(A), ATPL(A) or MPL carries; the LAPL(A) route of SFCL.150(c)(2) also needs the
+  FCL.140.A recency, which is not checked, so the training is evaluated instead. Interpretation
+  `extension-credit` reworded; two worked examples added (review
+  `reviews/easa-shared-privileges.md`).
+- `easa.shared.variants` (used by the SEP, SET and MEP class ratings, the aeroplane,
+  helicopter, airship and powered-lift type ratings, the LAPL(A) and the LAPL(H)): refresher
+  training now restores only a variant of an SEP land or SEP sea class rating, as
+  FCL.710(d)(3) allows it only for SEP variants with a particular type of engine; variants of
+  other ratings are restored by differences training or a proficiency check. Interpretation
+  `refresher-any-variant` replaced by `refresher-sep-variants`. No worked example changes its
+  result; example `variants-refresher-does-not-restore` (MEP land) added at integration.
+- `easa.instructor.fi#revalidation` (also used by `easa.instructor.iri`): refresher training
+  and the assessment of competence count only when recorded for the FI or the IRI
+  certificate (event `rating: FI` or `IRI`). Refresher training recorded for an FI(S) or an
+  assessment of competence recorded for an examiner certificate no longer revalidates an FI
+  (FCL.940.FI(a)(1)(ii), (iii); FCL.935) (review `reviews/easa-spl-gpl-instructors.md`).
+- `easa.instructor.cri#revalidation`: refresher training and the assessment of competence
+  count only when recorded for the CRI certificate (event `rating: CRI`)
+  (FCL.940.CRI(a)(2), (3)).
+- `easa.instructor.fi-s#recency`: refresher training, the demonstration of instructional
+  ability and the assessment of competence count only when recorded for the FI(S)
+  certificate (event `rating: FI_S`), so an FE(S) or Part-FCL instructor event no longer
+  keeps an FI(S) current (SFCL.360(a), (c), (d); SFCL.345).
+- `easa.instructor.fi-s#recency`: a recorded expiry date no longer reports the FI(S)
+  expired. Part-SFCL sets no validity period; for a certificate converted from Part-FCL,
+  Article 3b(2)(c) of Regulation (EU) 2018/1976 lets the holder instruct after the endorsed
+  expiry date while complying with SFCL.360, so the recency alone decides (current or
+  lapsed).
+- `easa.instructor.mcci` interpretation `revalidation-not-evaluated`: the reading now cites
+  the stored FCL.930.MCCI(a)(3) (wording only, no result changes).
+
 #### FAA
 
 - The private pilot certificate no longer lists the instrument rating; the instrument
@@ -258,6 +351,23 @@ catalogue changes are grouped by authority and name the credential or evaluation
 - Worked examples of `faa.instructor.flight-instructor` and `faa.medical.second-class` name
   evaluations by their current ids instead of retired rule ids.
 
+- `faa.shared.flight-review` (used by every FAA pilot certificate credential): the student
+  pilot exemption of 61.56(g) now applies only while the pilot holds no other FAA pilot
+  certificate. The flight review is evaluated once, on the first FAA certificate in the
+  record; when that was a student certificate, a pilot who also held a private (or higher)
+  certificate got `not_applicable` and needed no flight review. Interpretation
+  `student-exemption` reworded; worked example
+  `faa.licence.student` / `flight-review-student-certificate-listed-first` added. No other
+  worked example changes its result (review `reviews/faa-shared-licences.md`).
+- `faa.shared.medical-duration-commercial`: interpretation `commercial-glider-balloon`
+  reworded. Commercial balloon privileges for compensation or hire need at least a
+  second-class certificate (61.23(a)(2)(iii)); only balloon flight training and glider
+  privileges need none. No result changes.
+- `faa.licence.glider`: interpretation `powered-classes-elsewhere` reworded. A self-launching
+  glider is a glider under 14 CFR 1.1; the reading no longer calls a motorglider "not a
+  glider", and states that its flights count here only when logged in the glider class. No
+  result changes.
+
 #### EASA and Germany
 
 - Instructor and examiner refresher training, assessments of competence and demonstrations
@@ -265,6 +375,16 @@ catalogue changes are grouped by authority and name the credential or evaluation
   them are gone and no example changes status. The BIR counts IFR time with `ifr_time`.
 - `de.instructor.ul-instructor#extension`: the Befähigungsprüfung of § 96(4) item 3 is an
   assessment of competence; a proficiency check taken for a pilot rating no longer counts.
+
+#### Germany
+
+- `de.rating.ul-three-axis#passengers`: a PPL(A) or SPL valid on the date evaluated no longer
+  counts as the passenger authorisation. LuftPersV § 84a(2) second sentence deems the
+  authorisation granted on the day the ultralight licence is issued to a pilot who then holds
+  a valid PPL or SPL, which the record cannot show; a deemed authorisation counts when it is
+  recorded as a passenger authorisation on the ultralight licence, and otherwise the result is
+  unknown and asks for it (previously current for any pilot with a PPL(A) or SPL valid today,
+  including one obtained after the ultralight licence) (review `reviews/de-ul-ratings.md`).
 
 #### Tools and format
 

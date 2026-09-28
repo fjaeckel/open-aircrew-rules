@@ -26,7 +26,7 @@ articles:
   - article: "easa:FCL.105.H"
     not_evaluated: 'A scope of privileges (aircraft mass, number of passengers), not a recency or validity condition: it decides what a flight may be, not whether the pilot is current on a date.'
   - article: "easa:FCL.140.A"
-    evaluations: [easa.licence.lapl-a#recency, easa.licence.lapl-a#variants]
+    evaluations: [easa.licence.lapl-a#recency, easa.licence.lapl-a#variants, easa.licence.lapl-a#recency_tmg]
   - article: "easa:FCL.140.H"
     evaluations: [easa.licence.lapl-h#recency]
   - article: "easa:FCL.205.G"
@@ -239,7 +239,7 @@ articles:
     evaluations: [de.privilege.ul-towing#recency]
   - article: "de:LuftPersV.84a"
     evaluations: [de.privilege.ul-passenger-authorisation#validity]
-    not_evaluated: The requirements for acquiring the authorisation (§ 84a(2) cross-country flights, § 84a(3), the practical test of § 84a(4)) are not conditions of a recorded authorisation; the deemed grant of § 84a(2) second sentence is part of de.rating.ul-three-axis#passengers.
+    not_evaluated: 'The requirements for acquiring the authorisation (§ 84a(2) cross-country flights, § 84a(3), the practical test of § 84a(4)) are not conditions of a recorded authorisation. The deemed grant of § 84a(2) second sentence is not evaluated: it depends on a PPL or SPL valid on the day the ultralight licence was issued, which the record cannot show; a deemed authorisation counts when it is recorded as a UL_PASSENGER_AUTH privilege on the ultralight licence (de.rating.ul-three-axis#passengers).'
   - article: "de:LuftPersV.96"
     evaluations: [de.instructor.ul-instructor#extension]
   - article: "de:LuftPersV.120"

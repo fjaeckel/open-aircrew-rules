@@ -47,6 +47,7 @@ evaluations:
     outcomes: { preset: revalidation, expiring_notice: { days: 90, ref: policy:expiring-notice } }
   - id: passengers_day
     uses: easa.shared.passengers-day
+    with: { type_rated: false }
 ```
 
 Shortened from [credentials/easa/ratings/sep-land.yaml](credentials/easa/ratings/sep-land.yaml),
@@ -130,11 +131,33 @@ On 2026-09-28:
 
 Every article in scope is evaluated or says why it is not (for example, not a currency rule,
 or the record cannot show what it needs); no credential file is pending. The 84 credentials
-hold 278 evaluations (187 compiled rules and 81 requirement entries; evaluations reused
-through `uses:` share a rule), 767 worked examples (61 of them composite), 1568 references
-(policies and association documents included), 10 policies, 6 association documents (none
-verified) and 407 interpretations, none signed off yet. See [CHANGELOG.md](CHANGELOG.md) for
-the list.
+hold 280 evaluations (189 compiled rules and 81 requirement entries; evaluations reused
+through `uses:` share a rule), 792 worked examples (66 of them composite), 1591 references
+(policies and association documents included), 147 verbatim source texts (87 EU legal acts,
+40 US federal regulations, 20 German statutes and ordinances), 10 policies, 6 association
+documents (none verified) and 407 interpretations, none signed off yet. See
+[CHANGELOG.md](CHANGELOG.md) for the list.
+
+## Review status
+
+Every interpretation has had a first-pass review against the verbatim text under `sources/`.
+A review is not a sign-off: **no interpretation is approved yet** (`approved_by` and
+`approved_on` are empty everywhere). Each review gives, per interpretation, a verdict:
+**supported** (the cited paragraph says what the reading says), **needs-decision** (the
+text or the record leaves real room; the owner picks an option) or **fixed** (the reading
+or the result contradicted the text and was corrected, by the review or at integration).
+
+| Authority | Interpretations reviewed | Supported | Needs decision | Fixed | Reviews |
+| --- | --- | --- | --- | --- | --- |
+| EASA | 251 | 196 | 38 | 18 | [medicals, examiners, language](reviews/easa-medicals-examiners-language.md), [shared and privileges](reviews/easa-shared-privileges.md), [class ratings, IR, BIR](reviews/easa-class-ir-ratings.md), [type ratings and licences](reviews/easa-types-licences.md), [SPL, GPL, instructors](reviews/easa-spl-gpl-instructors.md) |
+| FAA | 91 | 76 | 11 | 4 | [instructors, privileges, ratings, medicals](reviews/faa-instructors-privileges-ratings-medicals.md), [shared and pilot certificates](reviews/faa-shared-licences.md) |
+| Germany | 65 | 37 | 27 | 1 | [licence, privileges, instructor](reviews/de-ul-licence-privileges-instructor.md), [ultralight kind ratings](reviews/de-ul-ratings.md) |
+| **Total** | **407** | **309** | **76** | **23** | [reviews/README.md](reviews/README.md) |
+
+The EASA verdicts add up to 252: `easa.rating.powered-lift-type` / `part-fcl-type-ratings`
+was fixed in one review and found supported in another, and is counted in both.
+[reviews/README.md](reviews/README.md) lists the 76 needs-decision items in one table, the
+owner's decision list.
 
 ## Keeping up with regulation
 

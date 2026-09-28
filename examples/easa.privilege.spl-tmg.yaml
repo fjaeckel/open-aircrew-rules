@@ -133,3 +133,29 @@ examples:
         - {date: 2026-05-01, class: TMG, minutes: {total: 120, pic: 120}, launches: 5, takeoffs: {day: 5}, landings: {day: 5}}
     outcome: expired
     expect: { message: pax.prerequisite_not_met, params: { needed: 480 } }
+  - name: extension-credited-by-ppl-tmg-rating
+    evaluation: extension_training
+    shows: [extension-credit]
+    says: A valid TMG class rating on a PPL(A) gives full credit towards the TMG extension of the SPL; no TMG training is needed.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-spl, authority: EASA, type: SPL}
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      ratings:
+        - {id: r-ppl-tmg, licenceId: l-ppl, class: TMG, expires: 2027-06-30}
+    outcome: current
+    expect: { message: training.credited }
+  - name: extension-not-credited-by-lapl-a-tmg
+    evaluation: extension_training
+    shows: [extension-credit]
+    says: TMG privileges on a LAPL(A) are not a class rating; they credit the extension only with the LAPL(A) recency of FCL.140.A, which is not checked, so the training is still evaluated and is incomplete here.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-spl, authority: EASA, type: SPL}
+        - {id: l-lapl, authority: EASA, type: LAPL(A)}
+      ratings:
+        - {id: r-lapl-tmg, licenceId: l-lapl, class: TMG}
+    outcome: lapsed
+    expect: { message: training.in_progress }

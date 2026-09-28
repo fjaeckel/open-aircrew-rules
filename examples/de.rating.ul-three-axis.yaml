@@ -226,7 +226,7 @@ examples:
   - name: pax-deemed-by-ppl
     evaluation: passengers
     shows: [deemed-authorisation]
-    says: A three-axis pilot who holds a valid PPL(A) has the passenger authorisation by § 84a(2) second sentence; no progress rows are shown.
+    says: A three-axis pilot holds a valid PPL(A), but the record does not show that it was valid when the ultralight licence was issued (§ 84a(2) second sentence deems the authorisation granted on that day), and no authorisation is recorded on the ultralight licence; with the recency met the status is unknown and asks for the authorisation, and the progress rows are shown.
     asOf: 2026-09-15
     record:
       licences:
@@ -237,12 +237,13 @@ examples:
         - { id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-05-31 }
       flights:
         - { date: 2026-09-10, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 45, pic: 45 }, takeoffs: { day: 3 }, landings: { day: 3 } }
-    outcome: current
+    outcome: unknown
     expect:
       subject: { kind: passengers, id: l-ul }
-      message: pax.current_day_no_night_privilege
+      message: pax.ul_authorisation_missing
       requirements:
-        ul_xc_flights: { absent: true }
+        day: { current: 3, met: true }
+        ul_xc_flights: { current: 0, met: false }
 
   - name: pax-kind-unknown
     evaluation: passengers

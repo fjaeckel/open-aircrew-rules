@@ -370,6 +370,24 @@ examples:
         - { date: 2026-04-10, class: MEP_LAND, variant: STANDARD, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
     outcome: lapsed
     expect: { subject: { kind: type, id: v-1 }, message: type.not_flown, requirements: { variant_flown: { current: 0, met: false, remedyKey: remedy.differences_training } } }
+  - name: variants-refresher-does-not-restore
+    evaluation: variants
+    shows: [refresher-sep-variants]
+    says: Refresher training in a variant of an MEP rating does not restore it; FCL.710(d)(3) allows refresher training only for SEP variants, so the variant last flown more than 2 years ago stays lapsed until differences training or a proficiency check in it.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-1, licenceId: l-1, class: MEP_LAND, expires: 2027-06-30 }
+      variants:
+        - { id: v-1, ratingId: r-1, name: GLASS_COCKPIT, issued: 2023-05-01 }
+      events:
+        - { date: 2026-05-01, kind: refresher_training, class: MEP_LAND, variant: GLASS_COCKPIT }
+      flights:
+        - { date: 2024-08-01, class: MEP_LAND, variant: GLASS_COCKPIT, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: lapsed
+    expect: { subject: { kind: type, id: v-1 }, message: type.not_flown }
   - name: revalidation-not-applicable-other-items
     evaluation: revalidation
     shows: [part-fcl-licences]

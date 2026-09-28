@@ -10,7 +10,7 @@ examples:
       privileges:
         - { id: p-1, licenceId: l-1, kind: FI, issued: 2024-01-15 }
       events:
-        - { date: 2026-02-01, kind: instructor_refresher }
+        - { date: 2026-02-01, kind: instructor_refresher, rating: FI }
       flights:
         - { date: 2025-03-01, class: SEP_LAND, minutes: { total: 1500, dualGiven: 1500 }, takeoffs: { day: 1 }, landings: { day: 1 } }
         - { date: 2026-03-01, class: SEP_LAND, minutes: { total: 1500, dualGiven: 1500 }, takeoffs: { day: 1 }, landings: { day: 1 } }
@@ -26,9 +26,9 @@ examples:
       privileges:
         - { id: p-1, licenceId: l-1, kind: FI, issued: 2024-01-15 }
       events:
-        - { date: 2026-01-14, kind: assessment_of_competence }
-        - { date: 2026-01-15, kind: assessment_of_competence }
-        - { date: 2025-05-01, kind: instructor_refresher }
+        - { date: 2026-01-14, kind: assessment_of_competence, rating: FI }
+        - { date: 2026-01-15, kind: assessment_of_competence, rating: FI }
+        - { date: 2025-05-01, kind: instructor_refresher, rating: FI }
       flights: []
     outcome: current
     expect: {subject: {kind: privilege, id: p-1}, requirements: {assessment: {current: 1, met: true, lastDate: 2026-01-15}}}
@@ -42,7 +42,7 @@ examples:
       privileges:
         - { id: p-1, licenceId: l-1, kind: FI, issued: 2024-01-15 }
       events:
-        - { date: 2026-02-01, kind: instructor_refresher }
+        - { date: 2026-02-01, kind: instructor_refresher, rating: FI }
       flights:
         - { date: 2025-03-01, class: SEP_LAND, minutes: { total: 120, dualGiven: 120 }, takeoffs: { day: 1 }, landings: { day: 1 } }
     outcome: current
@@ -95,8 +95,8 @@ examples:
       privileges:
         - { id: p-1, licenceId: l-1, kind: FI, issued: 2024-01-15 }
       events:
-        - { date: 2026-02-01, kind: instructor_refresher }
-        - { date: 2026-03-01, kind: assessment_of_competence }
+        - { date: 2026-02-01, kind: instructor_refresher, rating: FI }
+        - { date: 2026-03-01, kind: assessment_of_competence, rating: FI }
       flights: []
     outcome: expired
     expect: {subject: {kind: privilege, id: p-1}, message: privilege.expired, params: {date: 2027-01-15}}
@@ -143,8 +143,8 @@ examples:
         - { id: c-med, type: EASA_CLASS1_MEDICAL, issued: 2024-01-10, expires: 2025-01-31 }
         - { id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2023-04-15 }
       events:
-        - { date: 2026-02-01, kind: instructor_refresher }
-        - { date: 2026-03-01, kind: assessment_of_competence }
+        - { date: 2026-02-01, kind: instructor_refresher, rating: FI }
+        - { date: 2026-03-01, kind: assessment_of_competence, rating: FI }
     outcome: expired
     expect: { subject: { kind: privilege, id: p-1 }, decidedBy: { evaluation: licence, credential: easa.licence.cpl-a } }
   - name: composite-licence-valid
@@ -161,7 +161,23 @@ examples:
         - { id: c-med, type: EASA_CLASS1_MEDICAL, issued: 2026-06-01 }
         - { id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2023-04-15 }
       events:
-        - { date: 2026-02-01, kind: instructor_refresher }
-        - { date: 2026-03-01, kind: assessment_of_competence }
+        - { date: 2026-02-01, kind: instructor_refresher, rating: FI }
+        - { date: 2026-03-01, kind: assessment_of_competence, rating: FI }
     outcome: current
     expect: { subject: { kind: privilege, id: p-1 } }
+  - name: revalidation-events-for-other-certificates
+    evaluation: revalidation
+    shows: [refresher-and-assessment-events]
+    says: Refresher training recorded for an FI(S) and an assessment of competence recorded for an examiner certificate (FCL.1020) do not revalidate the FI certificate; the revalidation is not met, and the certificate stays valid until its expiry date.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: FI, issued: 2024-01-15 }
+      events:
+        - { date: 2026-02-01, kind: instructor_refresher, rating: FI_S }
+        - { date: 2026-03-01, kind: assessment_of_competence, rating: EXAMINER }
+      flights: []
+    outcome: current
+    expect: {subject: {kind: privilege, id: p-1}, message: privilege.revalidation_not_met, requirements: {refresher: {current: 0, met: false}, assessment: {current: 0, met: false}}}

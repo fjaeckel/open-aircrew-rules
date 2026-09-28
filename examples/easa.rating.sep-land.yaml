@@ -209,6 +209,23 @@ examples:
         - {date: 2026-08-01, class: SEP_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 1}, landings: {day: 1}, flags: {proficiencyCheck: true, examinerOnBoard: true}}
     outcome: expired
     expect: { subject: { kind: rating, id: r-sep }, decidedBy: { evaluation: licence, credential: easa.licence.ppl-a } }
+  - name: composite-rating-on-cpl
+    composite: true
+    says: An SEP land rating held on a CPL(A) is decided by that CPL(A), whose class 1 medical and language proficiency are valid; the rating revalidated by a check in the 3 months before expiry may be exercised.
+    asOf: 2026-09-15
+    record:
+      holder: {dateOfBirth: 1976-01-01}
+      licences:
+        - {id: l-cpl, authority: EASA, type: CPL(A)}
+      ratings:
+        - {id: r-sep, licenceId: l-cpl, class: SEP_LAND, expires: 2026-10-31}
+      credentials:
+        - {id: c-med, type: EASA_CLASS1_MEDICAL, issued: 2026-06-01}
+        - {id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2023-04-15}
+      flights:
+        - {date: 2026-08-01, class: SEP_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 1}, landings: {day: 1}, flags: {proficiencyCheck: true, examinerOnBoard: true}}
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-sep } }
   - name: variants-differences-training
     evaluation: variants
     says: "Further differences training on the variant restores the privilege. (FCL.710 case.)"

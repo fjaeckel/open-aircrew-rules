@@ -206,6 +206,20 @@ examples:
         - {id: p-fis, licenceId: l-spl, kind: FI_S, expires: 2027-12-31}
     outcome: current
     expect: { message: pax.prerequisite_met }
+  - name: passenger-prerequisite-fi-s-recorded-expiry-passed
+    evaluation: passenger_prerequisite
+    shows: [fi-s-on-any-licence]
+    says: An FI(S) certificate converted from Part-FCL, recorded with an endorsed expiry date that has passed, is still held; the prerequisite is met without the hours or launches.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-spl, authority: EASA, type: SPL, issued: 2026-01-10}
+      ratings:
+        - {id: r-gld, licenceId: l-spl, class: GLIDER}
+      privileges:
+        - {id: p-fis, licenceId: l-spl, kind: FI_S, expires: 2025-12-31}
+    outcome: current
+    expect: { message: pax.prerequisite_met }
   - name: passenger-prerequisite-issue-date-unknown
     evaluation: passenger_prerequisite
     shows: [since-recorded-issue]

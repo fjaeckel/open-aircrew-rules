@@ -279,6 +279,20 @@ examples:
         - { date: 2026-08-20, class: POWERED_LIFT, minutes: { total: 60, pic: 60 }, takeoffs: { day: 3 }, landings: { day: 3 }, pilotFlying: true, typeDesignator: AW609 }
     outcome: current
     expect: { subject: { kind: passengers, id: l-1, class: POWERED_LIFT }, message: pax.day_current }
+  - name: passengers-day-other-type
+    evaluation: passengers_day
+    shows: [class-for-type]
+    says: Three take-offs and landings as pilot flying in a V-22, another powered-lift aircraft type, do not count for carrying passengers in an AW609; FCL.060(b)(1) asks for the same type.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      ratings:
+        - { id: r-1, licenceId: l-1, class: POWERED_LIFT, typeDesignator: AW609, expires: 2027-06-30 }
+      flights:
+        - { date: 2026-08-20, class: POWERED_LIFT, minutes: { total: 60, pic: 60 }, takeoffs: { day: 3 }, landings: { day: 3 }, pilotFlying: true, typeDesignator: V22 }
+    outcome: expired
+    expect: { subject: { kind: passengers, id: l-1, class: POWERED_LIFT, detail: AW609 }, message: pax.not_current, params: { needed: 3 } }
   - name: passengers-day-one-short
     evaluation: passengers_day
     says: Two take-offs and landings are one short.

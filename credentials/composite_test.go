@@ -54,9 +54,9 @@ flights:
 	if m := tow.Members[1]; tow.Status != "lapsed" || tow.DecidedBy.Evaluation != "recency" || m.Kind != "requires_all" || m.Status != "lapsed" || m.Credential != "easa.licence.spl" {
 		t.Errorf("towing: %+v", tow)
 	}
-	// The rating on the CPL(A) cannot use the PPL(A) on another licence.
+	// The rating on the CPL(A) is decided by the CPL(A), not by the PPL(A) on another licence.
 	sep := got["easa.rating.sep-land|r-sep"]
-	if d := sep.DecidedBy; sep.Status != "unknown" || d.Evaluation != "licence" || d.Reason != "not_held" {
+	if d := sep.DecidedBy; sep.Status != "expired" || d.Evaluation != "licence" || d.Credential != "easa.licence.cpl-a" {
 		t.Errorf("sep on cpl: %+v", sep)
 	}
 	if sep2 := got["easa.rating.sep-land|r-sep2"]; sep2.Status != "expiring" || sep2.Members[1].Status != "current" {

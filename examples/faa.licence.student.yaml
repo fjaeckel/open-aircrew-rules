@@ -65,6 +65,20 @@ examples:
         - {date: 2025-09-01, kind: flight_review}
     outcome: current
     expect: { message: flight_review.current }
+  - name: flight-review-student-certificate-listed-first
+    evaluation: flight_review
+    shows: [student-exemption]
+    says: The student certificate comes first in the record, but the pilot also holds a private pilot certificate; the student exemption does not cover the private privileges, and the review of September 2023 ran out at the end of September 2025.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-student, authority: FAA, type: STUDENT}
+        - {id: l-ppl, authority: FAA, type: PRIVATE}
+      events:
+        - {date: 2023-09-01, kind: flight_review}
+        - {date: 2026-07-01, kind: solo_endorsement}
+    outcome: expired
+    expect: { message: flight_review.expired }
   - name: composite-solo-and-medical
     composite: true
     says: With a solo endorsement in the last 90 days and a valid third-class medical certificate the student may fly solo.

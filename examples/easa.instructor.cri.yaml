@@ -10,7 +10,7 @@ examples:
       privileges:
         - { id: p-1, licenceId: l-1, kind: CRI, issued: 2024-01-15 }
       events:
-        - { date: 2026-02-01, kind: instructor_refresher }
+        - { date: 2026-02-01, kind: instructor_refresher, rating: CRI }
       flights:
         - { date: 2025-03-01, class: SEP_LAND, minutes: { total: 300, dualGiven: 300 }, takeoffs: { day: 1 }, landings: { day: 1 } }
         - { date: 2026-03-01, class: SEP_LAND, minutes: { total: 300, dualGiven: 300 }, takeoffs: { day: 1 }, landings: { day: 1 } }
@@ -26,8 +26,8 @@ examples:
       privileges:
         - { id: p-1, licenceId: l-1, kind: CRI, issued: 2024-01-15 }
       events:
-        - { date: 2024-06-01, kind: assessment_of_competence }
-        - { date: 2025-05-01, kind: instructor_refresher }
+        - { date: 2024-06-01, kind: assessment_of_competence, rating: CRI }
+        - { date: 2025-05-01, kind: instructor_refresher, rating: CRI }
       flights: []
     outcome: current
     expect: {subject: {kind: privilege, id: p-1}, requirements: {assessment: {current: 1, met: true}, instruction: {current: 0, met: false}}}
@@ -41,7 +41,7 @@ examples:
       privileges:
         - { id: p-1, licenceId: l-1, kind: CRI, issued: 2024-01-15 }
       events:
-        - { date: 2026-02-01, kind: instructor_refresher }
+        - { date: 2026-02-01, kind: instructor_refresher, rating: CRI }
       flights:
         - { date: 2025-03-01, class: SEP_LAND, minutes: { total: 120, dualGiven: 120 }, takeoffs: { day: 1 }, landings: { day: 1 } }
     outcome: current
@@ -95,8 +95,8 @@ examples:
       privileges:
         - { id: p-1, licenceId: l-1, kind: CRI, issued: 2024-01-15 }
       events:
-        - { date: 2026-02-01, kind: instructor_refresher }
-        - { date: 2026-03-01, kind: assessment_of_competence }
+        - { date: 2026-02-01, kind: instructor_refresher, rating: CRI }
+        - { date: 2026-03-01, kind: assessment_of_competence, rating: CRI }
       flights: []
     outcome: expired
     expect: {subject: {kind: privilege, id: p-1}, message: privilege.expired, params: {date: 2027-01-15}}
@@ -126,3 +126,19 @@ examples:
         - { id: p-tri, licenceId: l-1, kind: TRI, issued: 2024-01-15 }
     outcome: current
     expect: { message: privilege.revalidation_not_met }
+  - name: revalidation-events-for-other-certificates
+    evaluation: revalidation
+    shows: [refresher-and-assessment-events]
+    says: Refresher training and an assessment of competence recorded for an FI certificate do not revalidate the CRI certificate; the revalidation is not met, and the certificate stays valid until its expiry date.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: CRI, issued: 2024-01-15 }
+      events:
+        - { date: 2026-02-01, kind: instructor_refresher, rating: FI }
+        - { date: 2026-03-01, kind: assessment_of_competence, rating: FI }
+      flights: []
+    outcome: current
+    expect: {subject: {kind: privilege, id: p-1}, message: privilege.revalidation_not_met, requirements: {refresher: {current: 0, met: false}, assessment: {current: 0, met: false}}}

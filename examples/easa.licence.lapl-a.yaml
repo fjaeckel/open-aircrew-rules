@@ -195,7 +195,7 @@ examples:
     outcome: lapsed
     expect: { subject: { kind: rating, id: r-land }, message: rating.recency_not_met, requirements: {flight_time: {current: 360, met: false}, takeoffs_landings: {current: 8, met: false}, refresher_training: {current: 60, met: true}} }
   - name: recency-towed-tmg
-    evaluation: recency
+    evaluation: recency_tmg
     says: TMG flights launched by winch count toward the recency like any other TMG flight.
     asOf: 2026-09-15
     record:
@@ -208,6 +208,51 @@ examples:
         - { date: 2026-05-10, class: TMG, launchMethod: winch, minutes: { total: 360, pic: 360 }, takeoffs: { day: 6 }, landings: { day: 6 } }
     outcome: current
     expect: { subject: { kind: rating, id: r-tmg, class: TMG }, message: rating.recency_current, requirements: {flight_time: {current: 720, met: true}, takeoffs_landings: {current: 12, met: true}, refresher_training: {current: 60, met: true}, proficiency_check: {current: 0, met: false}} }
+  - name: recency-tmg-no-land-sea-split
+    evaluation: recency_tmg
+    shows: [land-sea-split]
+    says: 'A holder of SEP(land), SEP(sea) and TMG privileges flew all 12 hours in a TMG: the TMG privilege is current, because point (b) splits the experience between SEP land and SEP sea only.'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-land, licenceId: l-lapl, class: SEP_LAND }
+        - { id: r-sea, licenceId: l-lapl, class: SEP_SEA }
+        - { id: r-tmg, licenceId: l-lapl, class: TMG }
+      flights:
+        - { date: 2026-03-10, class: TMG, minutes: { total: 720, pic: 660, dual: 60 }, takeoffs: { day: 12 }, landings: { day: 12 } }
+    outcome: current
+    expect: { subject: { kind: rating, id: r-tmg, class: TMG }, message: rating.recency_current, requirements: {flight_time: {current: 720, met: true}, sep_land_time: {absent: true}, sep_sea_time: {absent: true}} }
+  - name: recency-tmg-sep-privileges-need-split
+    evaluation: recency
+    shows: [land-sea-split]
+    says: For the same record the SEP(land) privilege has lapsed, because neither SEP class has its share of 1 hour and 6 take-offs and landings.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-land, licenceId: l-lapl, class: SEP_LAND }
+        - { id: r-sea, licenceId: l-lapl, class: SEP_SEA }
+        - { id: r-tmg, licenceId: l-lapl, class: TMG }
+      flights:
+        - { date: 2026-03-10, class: TMG, minutes: { total: 720, pic: 660, dual: 60 }, takeoffs: { day: 12 }, landings: { day: 12 } }
+    outcome: lapsed
+    expect: { subject: { kind: rating, id: r-land }, message: rating.recency_not_met, requirements: {flight_time: {current: 720, met: true}, sep_land_time: {current: 0, met: false}, sep_sea_time: {current: 0, met: false}} }
+  - name: recency-tmg-lapsed
+    evaluation: recency_tmg
+    says: 5 hours and 5 take-offs and landings in a TMG are not enough; the TMG privilege lapses.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-tmg, licenceId: l-lapl, class: TMG }
+      flights:
+        - { date: 2026-03-10, class: TMG, minutes: { total: 300, pic: 300 }, takeoffs: { day: 5 }, landings: { day: 5 } }
+    outcome: lapsed
+    expect: { subject: { kind: rating, id: r-tmg, class: TMG }, message: rating.recency_not_met, requirements: {flight_time: {current: 300, met: false}, takeoffs_landings: {current: 5, met: false}, refresher_training: {current: 0, met: false}} }
   - name: recency-ultralight-credit
     evaluation: recency
     says: Three-axis ultralight hours count toward the 12 hours but not toward take-offs, landings or refresher training; weight-shift hours never count; an ultralight flight with no kind is unknown.

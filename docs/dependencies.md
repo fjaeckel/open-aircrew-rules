@@ -6,7 +6,7 @@ Generated from `credentials/` by `go generate ./...`. Both graphs are acyclic, a
 evaluation never uses a credential's evaluation; the gate fails otherwise (DESIGN.md
 section 3). Look here before changing a shared evaluation: everything that uses it changes.
 
-84 credentials, 14 shared evaluations, 216 requires edges, 126 uses edges.
+84 credentials, 14 shared evaluations, 225 requires edges, 126 uses edges.
 
 ## Legend
 
@@ -251,7 +251,13 @@ flowchart LR
   easa_rating_powered_lift_type -.-> easa_licence_atpl_h
   easa_rating_powered_lift_type -.-> easa_licence_cpl_a
   easa_rating_powered_lift_type -.-> easa_licence_cpl_h
+  easa_rating_sep_land -.-> easa_licence_atpl_a
+  easa_rating_sep_land -.-> easa_licence_cpl_a
+  easa_rating_sep_land -.-> easa_licence_mpl
   easa_rating_sep_land -.-> easa_licence_ppl_a
+  easa_rating_sep_sea -.-> easa_licence_atpl_a
+  easa_rating_sep_sea -.-> easa_licence_cpl_a
+  easa_rating_sep_sea -.-> easa_licence_mpl
   easa_rating_sep_sea -.-> easa_licence_ppl_a
   easa_rating_set_land -.-> easa_licence_atpl_a
   easa_rating_set_land -.-> easa_licence_cpl_a
@@ -261,6 +267,9 @@ flowchart LR
   easa_rating_set_sea -.-> easa_licence_cpl_a
   easa_rating_set_sea -.-> easa_licence_mpl
   easa_rating_set_sea -.-> easa_licence_ppl_a
+  easa_rating_tmg -.-> easa_licence_atpl_a
+  easa_rating_tmg -.-> easa_licence_cpl_a
+  easa_rating_tmg -.-> easa_licence_mpl
   easa_rating_tmg -.-> easa_licence_ppl_a
 ```
 
@@ -592,11 +601,11 @@ flowchart LR
 | `easa.rating.mep-land` |  | `easa.licence.atpl-a`, `easa.licence.cpl-a`, `easa.licence.mpl`, `easa.licence.ppl-a` | `passengers_day`: `easa.shared.passengers-day`<br>`passengers_night`: `easa.shared.passengers-night`<br>`variants`: `easa.shared.variants` |
 | `easa.rating.mep-sea` |  | `easa.licence.atpl-a`, `easa.licence.cpl-a`, `easa.licence.mpl`, `easa.licence.ppl-a` | `passengers_day`: `easa.shared.passengers-day`<br>`passengers_night`: `easa.shared.passengers-night`<br>`revalidation`: `easa.rating.mep-land#revalidation`<br>`variants`: `easa.shared.variants` |
 | `easa.rating.powered-lift-type` |  | `easa.licence.atpl-a`, `easa.licence.atpl-h`, `easa.licence.cpl-a`, `easa.licence.cpl-h` | `passengers_day`: `easa.shared.passengers-day`<br>`passengers_night`: `easa.shared.passengers-night`<br>`variants`: `easa.shared.variants` |
-| `easa.rating.sep-land` |  | `easa.licence.ppl-a` | `passengers_day`: `easa.shared.passengers-day`<br>`passengers_night`: `easa.shared.passengers-night`<br>`variants`: `easa.shared.variants` |
-| `easa.rating.sep-sea` |  | `easa.licence.ppl-a` | `passengers_day`: `easa.shared.passengers-day`<br>`passengers_night`: `easa.shared.passengers-night`<br>`revalidation`: `easa.rating.sep-land#revalidation`<br>`variants`: `easa.shared.variants` |
+| `easa.rating.sep-land` |  | `easa.licence.atpl-a`, `easa.licence.cpl-a`, `easa.licence.mpl`, `easa.licence.ppl-a` | `passengers_day`: `easa.shared.passengers-day`<br>`passengers_night`: `easa.shared.passengers-night`<br>`variants`: `easa.shared.variants` |
+| `easa.rating.sep-sea` |  | `easa.licence.atpl-a`, `easa.licence.cpl-a`, `easa.licence.mpl`, `easa.licence.ppl-a` | `passengers_day`: `easa.shared.passengers-day`<br>`passengers_night`: `easa.shared.passengers-night`<br>`revalidation`: `easa.rating.sep-land#revalidation`<br>`variants`: `easa.shared.variants` |
 | `easa.rating.set-land` |  | `easa.licence.atpl-a`, `easa.licence.cpl-a`, `easa.licence.mpl`, `easa.licence.ppl-a` | `passengers_day`: `easa.shared.passengers-day`<br>`passengers_night`: `easa.shared.passengers-night`<br>`variants`: `easa.shared.variants` |
 | `easa.rating.set-sea` |  | `easa.licence.atpl-a`, `easa.licence.cpl-a`, `easa.licence.mpl`, `easa.licence.ppl-a` | `passengers_day`: `easa.shared.passengers-day`<br>`passengers_night`: `easa.shared.passengers-night`<br>`revalidation`: `easa.rating.set-land#revalidation`<br>`variants`: `easa.shared.variants` |
-| `easa.rating.tmg` |  | `easa.licence.ppl-a` | `passengers_day`: `easa.shared.passengers-day`<br>`passengers_night`: `easa.shared.passengers-night`<br>`revalidation`: `easa.rating.sep-land#revalidation` |
+| `easa.rating.tmg` |  | `easa.licence.atpl-a`, `easa.licence.cpl-a`, `easa.licence.mpl`, `easa.licence.ppl-a` | `passengers_day`: `easa.shared.passengers-day`<br>`passengers_night`: `easa.shared.passengers-night`<br>`revalidation`: `easa.rating.sep-land#revalidation` |
 | `faa.instructor.flight-instructor` |  |  |  |
 | `faa.instructor.ground-instructor` |  |  |  |
 | `faa.licence.atp-airplane` |  | `faa.medical.first-class` | `flight_review`: `faa.shared.flight-review`<br>`passengers_day`: `faa.shared.passengers-day`<br>`passengers_day_type`: `faa.shared.passengers-day`<br>`passengers_night`: `faa.shared.passengers-night`<br>`passengers_night_type`: `faa.shared.passengers-night`<br>`passengers_tailwheel`: `faa.shared.passengers-tailwheel` |
@@ -640,10 +649,10 @@ Credentials by the requirements naming them and the evaluations borrowing theirs
 
 | Credential | Required by | Borrowed by | Total |
 | --- | --- | --- | --- |
+| `easa.licence.atpl-a` | 20 | 0 | 20 |
+| `easa.licence.cpl-a` | 20 | 0 | 20 |
+| `easa.licence.mpl` | 19 | 0 | 19 |
 | `easa.licence.ppl-a` | 19 | 0 | 19 |
-| `easa.licence.atpl-a` | 17 | 0 | 17 |
-| `easa.licence.cpl-a` | 17 | 0 | 17 |
-| `easa.licence.mpl` | 16 | 0 | 16 |
 | `easa.medical.class-1` | 14 | 0 | 14 |
 | `easa.endorsement.language-proficiency` | 12 | 0 | 12 |
 | `faa.medical.first-class` | 10 | 0 | 10 |

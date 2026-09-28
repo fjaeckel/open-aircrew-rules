@@ -145,6 +145,7 @@ const (
 	EvaluationEasaLicenceLaplAPassengersDay                     = "easa.licence.lapl-a#passengers_day"
 	EvaluationEasaLicenceLaplAPassengersNight                   = "easa.licence.lapl-a#passengers_night"
 	EvaluationEasaLicenceLaplARecency                           = "easa.licence.lapl-a#recency"
+	EvaluationEasaLicenceLaplARecencyTmg                        = "easa.licence.lapl-a#recency_tmg"
 	EvaluationEasaLicenceLaplAVariants                          = "easa.licence.lapl-a#variants"
 	EvaluationEasaLicenceLaplHMedical                           = "easa.licence.lapl-h#medical"
 	EvaluationEasaLicenceLaplHPassengersDay                     = "easa.licence.lapl-h#passengers_day"
