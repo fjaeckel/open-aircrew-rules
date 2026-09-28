@@ -1,0 +1,165 @@
+credential: faa.licence.atp-rotorcraft
+examples:
+  - name: passengers-day-current
+    evaluation: passengers_day
+    says: Three takeoffs and landings as sole manipulator in the HELICOPTER class on 1 July allow an airline transport pilot holder to carry passengers there on 16 August.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: ATP}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: HELICOPTER}
+      flights:
+        - {date: 2026-07-01, class: HELICOPTER, minutes: {total: 90, pic: 90}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    outcome: current
+    expect: { message: pax.day_current }
+  - name: passengers-day-simulator-not-counted
+    evaluation: passengers_day
+    says: Landings in a full flight simulator count only under an approved part 142 course, which the record cannot show; a helicopter pilot with only simulator landings is not current.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: ATP }
+      ratings:
+        - { id: r-heli, licenceId: l-faa, class: HELICOPTER }
+      flights:
+        - { date: 2026-08-10, class: HELICOPTER, isSimulator: true, fstdType: FFS, minutes: { total: 120 }, takeoffs: { day: 6 }, landings: { day: 6 }, soleManipulator: true }
+    outcome: lapsed
+    expect:
+      subject: { kind: passengers, id: l-faa, class: HELICOPTER }
+      message: pax.not_current
+      params: { needed: 3 }
+  - name: passengers-day-type-current
+    evaluation: passengers_day_type
+    says: Three takeoffs and landings as sole manipulator in a S76 on 1 July allow an airline transport pilot holder to carry passengers there on 16 August.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: ATP}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: HELICOPTER, typeDesignator: S76}
+      flights:
+        - {date: 2026-07-01, class: HELICOPTER, typeDesignator: S76, minutes: {total: 90, pic: 90}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    outcome: current
+    expect: { message: pax.day_current }
+  - name: passengers-day-type-simulator-not-counted
+    evaluation: passengers_day_type
+    says: Per type (each rating carries a type designator, so it is a type rating). Landings in a full flight simulator count only under an approved part 142 course, which the record cannot show; a helicopter pilot with only simulator landings is not current.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: ATP }
+      ratings:
+        - { id: r-heli, licenceId: l-faa, class: HELICOPTER, typeDesignator: S76 }
+      flights:
+        - { date: 2026-08-10, class: HELICOPTER, typeDesignator: S76, isSimulator: true, fstdType: FFS, minutes: { total: 120 }, takeoffs: { day: 6 }, landings: { day: 6 }, soleManipulator: true }
+    outcome: lapsed
+    expect:
+      subject: { kind: passengers, id: l-faa, class: HELICOPTER }
+      message: pax.not_current
+      params: { needed: 3 }
+  - name: passengers-night-current
+    evaluation: passengers_night
+    says: Three night takeoffs and three full-stop night landings as sole manipulator in the HELICOPTER class on 10 July allow an airline transport pilot holder to carry passengers at night there.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: ATP}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: HELICOPTER}
+      flights:
+        - {date: 2026-07-10, class: HELICOPTER, minutes: {total: 90, pic: 90, night: 60}, takeoffs: {night: 3}, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
+    outcome: current
+    expect: { message: pax.night_current }
+  - name: passengers-night-day-only
+    evaluation: passengers_night
+    says: Only day takeoffs and landings in the HELICOPTER class in the last 90 days; night passenger recency has lapsed.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: ATP}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: HELICOPTER}
+      flights:
+        - {date: 2026-07-10, class: HELICOPTER, minutes: {total: 90, pic: 90}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    outcome: lapsed
+    expect: { message: pax.night_not_current, params: { needed: 3 } }
+  - name: passengers-night-type-current
+    evaluation: passengers_night_type
+    says: Three night takeoffs and three full-stop night landings as sole manipulator in a S76 on 10 July allow an airline transport pilot holder to carry passengers at night there.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: ATP}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: HELICOPTER, typeDesignator: S76}
+      flights:
+        - {date: 2026-07-10, class: HELICOPTER, typeDesignator: S76, minutes: {total: 90, pic: 90, night: 60}, takeoffs: {night: 3}, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
+    outcome: current
+    expect: { message: pax.night_current }
+  - name: passengers-night-type-day-only
+    evaluation: passengers_night_type
+    says: Only day takeoffs and landings in a S76 in the last 90 days; night passenger recency has lapsed.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: ATP}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: HELICOPTER, typeDesignator: S76}
+      flights:
+        - {date: 2026-07-10, class: HELICOPTER, typeDesignator: S76, minutes: {total: 90, pic: 90}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    outcome: lapsed
+    expect: { message: pax.night_not_current, params: { needed: 3 } }
+  - name: flight-review-current
+    evaluation: flight_review
+    says: An airline transport pilot certificate holder with a flight review on 1 September 2025 may act as pilot in command through 30 September 2027.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: ATP}
+      events:
+        - {date: 2025-09-01, kind: flight_review}
+    outcome: current
+    expect: { message: flight_review.current }
+  - name: flight-review-none
+    evaluation: flight_review
+    says: An airline transport pilot certificate holder with no flight review, proficiency check or practical test on record may not act as pilot in command.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: ATP}
+    outcome: expired
+    expect: { message: flight_review.none_on_record }
+  - name: composite-helicopter-first-class
+    composite: true
+    says: The helicopter rating on an airline transport pilot certificate may be exercised with a first-class medical certificate examined in March 2026 by a pilot under 40.
+    asOf: 2026-08-16
+    record:
+      holder: {dateOfBirth: 1990-01-01}
+      licences:
+        - {id: l-faa, authority: FAA, type: ATP}
+      ratings:
+        - {id: r-heli, licenceId: l-faa, class: HELICOPTER}
+      credentials:
+        - {id: c-med, type: FAA_CLASS1_MEDICAL, issued: 2026-03-01}
+      events:
+        - {date: 2025-09-01, kind: flight_review}
+    outcome: current
+    expect: { subject: { kind: rating, id: r-heli } }
+  - name: composite-helicopter-second-class-only
+    composite: true
+    shows: [atp-privileges-medical]
+    says: A second-class medical certificate does not support airline transport pilot privileges; the helicopter rating on the ATP certificate reads as unknown, since exercising only commercial privileges is not distinguished.
+    asOf: 2026-08-16
+    record:
+      holder: {dateOfBirth: 1990-01-01}
+      licences:
+        - {id: l-faa, authority: FAA, type: ATP}
+      ratings:
+        - {id: r-heli, licenceId: l-faa, class: HELICOPTER}
+      credentials:
+        - {id: c-med, type: FAA_CLASS2_MEDICAL, issued: 2026-03-01}
+      events:
+        - {date: 2025-09-01, kind: flight_review}
+    outcome: unknown
+    expect: { subject: { kind: rating, id: r-heli }, decidedBy: { evaluation: medical } }

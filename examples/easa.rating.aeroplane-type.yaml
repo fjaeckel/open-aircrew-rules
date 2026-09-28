@@ -1,0 +1,106 @@
+credential: easa.rating.aeroplane-type
+examples:
+  - name: validity-expired-day-after
+    evaluation: validity
+    says: The day after its expiry date the rating is expired.
+    asOf: 2026-11-01
+    record:
+      licences:
+        - { id: l-atpl, authority: EASA, type: ATPL(A) }
+      ratings:
+        - { id: r-type, licenceId: l-atpl, class: OTHER, typeDesignator: A320, expires: 2026-10-31 }
+    outcome: expired
+    expect: { subject: { kind: rating, id: r-type, class: OTHER }, message: rating.expired }
+  - name: validity-expiring
+    evaluation: validity
+    says: With 46 days left the rating shows as expiring.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-atpl, authority: EASA, type: ATPL(A) }
+      ratings:
+        - { id: r-type, licenceId: l-atpl, class: OTHER, typeDesignator: A320, expires: 2026-10-31 }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-type, class: OTHER }, message: rating.expiring, params: {days: 46} }
+  - name: validity-no-expiry-date
+    evaluation: validity
+    says: Without an expiry date nothing can be said.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-atpl, authority: EASA, type: ATPL(A) }
+      ratings:
+        - { id: r-type, licenceId: l-atpl, class: OTHER, typeDesignator: A320 }
+    outcome: unknown
+    expect: { subject: { kind: rating, id: r-type, class: OTHER }, message: rating.no_expiry_date }
+  - name: validity-valid-on-expiry-day
+    evaluation: validity
+    says: On its expiry date the rating is still valid.
+    asOf: 2026-10-31
+    record:
+      licences:
+        - { id: l-atpl, authority: EASA, type: ATPL(A) }
+      ratings:
+        - { id: r-type, licenceId: l-atpl, class: OTHER, typeDesignator: A320, expires: 2026-10-31 }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-type, class: OTHER }, message: rating.expiring, params: {days: 0} }
+  - name: validity-valid
+    evaluation: validity
+    says: A type rating with more than 90 days left is valid.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-atpl, authority: EASA, type: ATPL(A) }
+      ratings:
+        - { id: r-type, licenceId: l-atpl, class: OTHER, typeDesignator: A320, expires: 2027-03-31 }
+    outcome: current
+    expect: { subject: { kind: rating, id: r-type, class: OTHER }, message: rating.valid_until, expiresOn: 2027-03-31 }
+  - name: validity-not-applicable-other-items
+    evaluation: validity
+    shows: [other-class-is-aeroplane-type]
+    says: Class ratings with their own revalidation rule, ultralights and ratings on DULV licences are not evaluated here; only the class OTHER rating on the EASA licence is (legacy not-applicable case with that rating added).
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+        - { id: l-dulv, authority: DULV, type: UL }
+      ratings:
+        - { id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2026-10-31 }
+        - { id: r-ul, licenceId: l-ppl, class: ULTRALIGHT, expires: 2026-10-31 }
+        - { id: r-heli, licenceId: l-ppl, class: HELICOPTER, expires: 2026-10-31 }
+        - { id: r-dulv, licenceId: l-dulv, class: OTHER, expires: 2026-10-31 }
+        - { id: r-type, licenceId: l-ppl, class: OTHER, typeDesignator: C525, expires: 2027-03-31 }
+    outcome: current
+    expect: { message: rating.valid_until }
+  - name: variants-flown
+    evaluation: variants
+    shows: [variant-is-recorded-variant]
+    says: A flight in the variant within 2 years keeps its privileges.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      ratings:
+        - { id: r-1, licenceId: l-1, class: OTHER, typeDesignator: C525, expires: 2027-06-30 }
+      variants:
+        - { id: v-1, ratingId: r-1, name: GLASS_COCKPIT, issued: 2023-05-01 }
+      flights:
+        - { date: 2026-03-10, class: OTHER, variant: GLASS_COCKPIT, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, typeDesignator: C525 }
+    outcome: current
+    expect: { subject: { kind: type, id: v-1 }, message: type.current, validUntil: 2028-03-10 }
+  - name: variants-not-flown
+    evaluation: variants
+    says: The variant was last flown more than 2 years ago; flights without it do not count, so it may not be flown before differences training or a proficiency check in it.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      ratings:
+        - { id: r-1, licenceId: l-1, class: OTHER, typeDesignator: C525, expires: 2027-06-30 }
+      variants:
+        - { id: v-1, ratingId: r-1, name: GLASS_COCKPIT, issued: 2023-05-01 }
+      flights:
+        - { date: 2024-08-01, class: OTHER, variant: GLASS_COCKPIT, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, typeDesignator: C525 }
+        - { date: 2026-04-10, class: OTHER, variant: STANDARD, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, typeDesignator: C525 }
+    outcome: lapsed
+    expect: { subject: { kind: type, id: v-1 }, message: type.not_flown, requirements: { variant_flown: { current: 0, met: false, remedyKey: remedy.differences_training } } }

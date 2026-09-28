@@ -1,0 +1,250 @@
+credential: faa.licence.commercial-airplane
+examples:
+  - name: passengers-day-current
+    evaluation: passengers_day
+    says: Three takeoffs and landings as sole manipulator in the SEP_LAND class on 1 July allow a commercial holder to carry passengers there on 16 August.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: COMMERCIAL}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: SEP_LAND}
+      flights:
+        - {date: 2026-07-01, class: SEP_LAND, minutes: {total: 90, pic: 90}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    outcome: current
+    expect: { message: pax.day_current }
+  - name: passengers-day-takeoffs-short
+    evaluation: passengers_day
+    says: Four landings but only two takeoffs (the flight ended with a landing after an unlogged takeoff elsewhere) are not three takeoffs and three landings.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: COMMERCIAL }
+      ratings:
+        - { id: r-sep, licenceId: l-faa, class: SEP_LAND }
+      flights:
+        - { date: 2026-08-01, class: SEP_LAND, minutes: { total: 120, pic: 120 }, takeoffs: { day: 2 }, landings: { day: 3, night: 1 }, soleManipulator: true }
+    outcome: lapsed
+    expect:
+      subject: { kind: passengers, id: l-faa, class: SEP_LAND }
+      message: pax.not_current
+      params: { needed: 1 }
+      requirements:
+        takeoffs_landings: { current: 2, required: 3, met: false }
+  - name: passengers-day-type-current
+    evaluation: passengers_day_type
+    says: Three takeoffs and landings as sole manipulator in a B350 on 1 July allow a commercial holder to carry passengers there on 16 August.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: COMMERCIAL}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: MEP_LAND, typeDesignator: B350}
+      flights:
+        - {date: 2026-07-01, class: MEP_LAND, typeDesignator: B350, minutes: {total: 90, pic: 90}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    outcome: current
+    expect: { message: pax.day_current }
+  - name: passengers-day-type-takeoffs-short
+    evaluation: passengers_day_type
+    says: Per type (each rating carries a type designator, so it is a type rating). Four landings but only two takeoffs (the flight ended with a landing after an unlogged takeoff elsewhere) are not three takeoffs and three landings.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: COMMERCIAL }
+      ratings:
+        - { id: r-sep, licenceId: l-faa, class: SEP_LAND, typeDesignator: PC6 }
+      flights:
+        - { date: 2026-08-01, class: SEP_LAND, typeDesignator: PC6, minutes: { total: 120, pic: 120 }, takeoffs: { day: 2 }, landings: { day: 3, night: 1 }, soleManipulator: true }
+    outcome: lapsed
+    expect:
+      subject: { kind: passengers, id: l-faa, class: SEP_LAND }
+      message: pax.not_current
+      params: { needed: 1 }
+      requirements:
+        takeoffs_landings: { current: 2, required: 3, met: false }
+  - name: passengers-day-type-other-type
+    evaluation: passengers_day_type
+    says: "A pilot type-rated on the King Air 350 (B350) flew three takeoffs and landings in a Baron (BE55), the same MEP land class: they count for the class rating, not for the B350 type. A flight in the class that records no type designator cannot be attributed and is unknown."
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: COMMERCIAL }
+      ratings:
+        - { id: r-mep, licenceId: l-faa, class: MEP_LAND }
+        - { id: r-b350, licenceId: l-faa, class: MEP_LAND, typeDesignator: B350 }
+      flights:
+        - { date: 2026-07-01, class: MEP_LAND, typeDesignator: BE55, minutes: { total: 90, pic: 90 }, takeoffs: { day: 3 }, landings: { day: 3 }, soleManipulator: true }
+        - { date: 2026-07-20, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, soleManipulator: true }
+    outcome: unknown
+    expect:
+      subject: { kind: passengers, id: l-faa, class: MEP_LAND, detail: B350 }
+      message: pax.experience_not_logged
+      requirements:
+        takeoffs_landings: { current: 0, met: false, tracked: false }
+  - name: passengers-tailwheel-current
+    evaluation: passengers_tailwheel
+    says: Three full-stop landings as sole manipulator in a tailwheel airplane on 2 August allow a commercial holder to carry passengers in one.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: COMMERCIAL}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: SEP_LAND}
+      flights:
+        - {date: 2026-08-02, class: SEP_LAND, tailwheel: true, minutes: {total: 60, pic: 60}, takeoffs: {day: 3}, landings: {day: 3}, fullStopLandings: 3, soleManipulator: true}
+    outcome: current
+    expect: { message: pax.tailwheel_current }
+  - name: passengers-tailwheel-window-edges
+    evaluation: passengers_tailwheel
+    says: A tailwheel pilot with one full-stop landing on 18 May (counts) and two on 17 May (91 days ago) needs two more before carrying passengers in a tailwheel airplane.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: COMMERCIAL }
+      ratings:
+        - { id: r-sep, licenceId: l-faa, class: SEP_LAND }
+      flights:
+        - { date: 2026-05-17, class: SEP_LAND, tailwheel: true, minutes: { total: 60, pic: 60 }, takeoffs: { day: 2 }, landings: { day: 2 }, fullStopLandings: 2, soleManipulator: true }
+        - { date: 2026-05-18, class: SEP_LAND, tailwheel: true, minutes: { total: 60, pic: 60 }, takeoffs: { day: 3 }, landings: { day: 3 }, fullStopLandings: 1, soleManipulator: true }
+    outcome: lapsed
+    expect:
+      subject: { kind: passengers, id: l-faa, class: SEP_LAND }
+      message: pax.tailwheel_not_current
+      params: { needed: 2 }
+      requirements:
+        tailwheel_full_stop: { current: 1, met: false, remedyKey: remedy.fly_more, remedyParams: { missing: 2, unit: landings } }
+        tailwheel_flown: { current: 2, met: true }
+  - name: passengers-night-current
+    evaluation: passengers_night
+    says: Three night takeoffs and three full-stop night landings as sole manipulator in the SEP_LAND class on 10 July allow a commercial holder to carry passengers at night there.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: COMMERCIAL}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: SEP_LAND}
+      flights:
+        - {date: 2026-07-10, class: SEP_LAND, minutes: {total: 90, pic: 90, night: 60}, takeoffs: {night: 3}, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
+    outcome: current
+    expect: { message: pax.night_current }
+  - name: passengers-night-landings-short
+    evaluation: passengers_night
+    says: Six night landings of which only one to a full stop leave the pilot two full-stop night landings short.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: COMMERCIAL }
+      ratings:
+        - { id: r-sep, licenceId: l-faa, class: SEP_LAND }
+      flights:
+        - { date: 2026-08-01, class: SEP_LAND, minutes: { total: 90, pic: 90, night: 90 }, takeoffs: { night: 6 }, landings: { night: 6 }, fullStopNightLandings: 1, soleManipulator: true }
+    outcome: lapsed
+    expect:
+      subject: { kind: passengers, id: l-faa, class: SEP_LAND }
+      message: pax.night_not_current
+      params: { needed: 2 }
+      requirements:
+        full_stop_night_landings: { current: 1, met: false, remedyKey: remedy.fly_more, remedyParams: { missing: 2, unit: landings } }
+  - name: passengers-night-type-current
+    evaluation: passengers_night_type
+    says: Three night takeoffs and three full-stop night landings as sole manipulator in a B350 on 10 July allow a commercial holder to carry passengers at night there.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: COMMERCIAL}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: MEP_LAND, typeDesignator: B350}
+      flights:
+        - {date: 2026-07-10, class: MEP_LAND, typeDesignator: B350, minutes: {total: 90, pic: 90, night: 60}, takeoffs: {night: 3}, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
+    outcome: current
+    expect: { message: pax.night_current }
+  - name: passengers-night-type-landings-short
+    evaluation: passengers_night_type
+    says: Per type (each rating carries a type designator, so it is a type rating). Six night landings of which only one to a full stop leave the pilot two full-stop night landings short.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: COMMERCIAL }
+      ratings:
+        - { id: r-sep, licenceId: l-faa, class: SEP_LAND, typeDesignator: PC6 }
+      flights:
+        - { date: 2026-08-01, class: SEP_LAND, typeDesignator: PC6, minutes: { total: 90, pic: 90, night: 90 }, takeoffs: { night: 6 }, landings: { night: 6 }, fullStopNightLandings: 1, soleManipulator: true }
+    outcome: lapsed
+    expect:
+      subject: { kind: passengers, id: l-faa, class: SEP_LAND }
+      message: pax.night_not_current
+      params: { needed: 2 }
+      requirements:
+        full_stop_night_landings: { current: 1, met: false, remedyKey: remedy.fly_more, remedyParams: { missing: 2, unit: landings } }
+  - name: passengers-night-type-other-type
+    evaluation: passengers_night_type
+    says: Night takeoffs and full-stop landings in a Baron (BE55) do not count for the B350 type rating; a night flight in the class without a type designator is unknown.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: COMMERCIAL }
+      ratings:
+        - { id: r-b350, licenceId: l-faa, class: MEP_LAND, typeDesignator: B350 }
+      flights:
+        - { date: 2026-07-01, class: MEP_LAND, typeDesignator: BE55, minutes: { total: 90, pic: 90, night: 90 }, takeoffs: { night: 3 }, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
+        - { date: 2026-07-20, class: MEP_LAND, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 3 }, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
+    outcome: unknown
+    expect:
+      subject: { kind: passengers, id: l-faa, class: MEP_LAND, detail: B350 }
+      message: pax.experience_not_logged
+      requirements:
+        night_takeoffs: { tracked: false }
+        full_stop_night_landings: { tracked: false }
+  - name: flight-review-current
+    evaluation: flight_review
+    says: A commercial pilot certificate holder with a flight review on 1 September 2025 may act as pilot in command through 30 September 2027.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: COMMERCIAL}
+      events:
+        - {date: 2025-09-01, kind: flight_review}
+    outcome: current
+    expect: { message: flight_review.current }
+  - name: flight-review-none
+    evaluation: flight_review
+    says: A commercial pilot certificate holder with no flight review, proficiency check or practical test on record may not act as pilot in command.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: COMMERCIAL}
+    outcome: expired
+    expect: { message: flight_review.none_on_record }
+  - name: composite-second-class-and-review
+    composite: true
+    says: With a flight review in the last 24 calendar months and a second-class medical certificate examined in March 2026 (valid for commercial privileges through March 2027), the commercial pilot certificate may be exercised.
+    asOf: 2026-08-16
+    record:
+      holder: {dateOfBirth: 1990-01-01}
+      licences:
+        - {id: l-faa, authority: FAA, type: COMMERCIAL}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: SEP_LAND}
+      credentials:
+        - {id: c-med, type: FAA_CLASS2_MEDICAL, issued: 2026-03-01}
+      events:
+        - {date: 2025-09-01, kind: flight_review}
+    outcome: current
+    expect: { subject: { kind: licence, id: l-faa } }
+  - name: composite-third-class-only
+    composite: true
+    shows: [commercial-privileges-medical]
+    says: A third-class medical certificate does not support commercial privileges; with no first- or second-class certificate recorded the composite is unknown.
+    asOf: 2026-08-16
+    record:
+      holder: {dateOfBirth: 1990-01-01}
+      licences:
+        - {id: l-faa, authority: FAA, type: COMMERCIAL}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: SEP_LAND}
+      credentials:
+        - {id: c-med, type: FAA_CLASS3_MEDICAL, issued: 2026-03-01}
+      events:
+        - {date: 2025-09-01, kind: flight_review}
+    outcome: unknown
+    expect: { subject: { kind: licence, id: l-faa }, decidedBy: { evaluation: medical } }

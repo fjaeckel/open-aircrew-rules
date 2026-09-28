@@ -1,0 +1,116 @@
+credential: de.rating.ul-sailplane
+examples:
+  - name: current-edge-in
+    evaluation: recency
+    shows: [association-rule-unverified]
+    says: Five landings with ultralight sailplanes in 12 months, the first on the first day of the window; winch-launched flights count.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DAeC, type: UL }
+      ratings:
+        - { id: r-sail, licenceId: l-ul, class: ULTRALIGHT, ulKind: SAILPLANE }
+      flights:
+        - { date: 2025-09-15, class: ULTRALIGHT, ulKind: SAILPLANE, launchMethod: winch, minutes: { total: 20, pic: 20 }, landings: { day: 1 } }
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: SAILPLANE, launchMethod: aerotow, minutes: { total: 240, pic: 240 }, landings: { day: 4 } }
+    outcome: current
+    expect:
+      subject: { kind: rating, id: r-sail, ulKind: SAILPLANE }
+      message: rating.recency_current
+      validUntil: 2026-09-15
+      requirements:
+        landings: { current: 5, required: 5, met: true }
+
+  - name: kind-unknown
+    evaluation: recency
+    shows: [kindless-flights-unknown]
+    says: Ultralight flights with no kind recorded cannot be counted as ultralight sailplane flights; the recency is unknown.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DAeC, type: UL }
+      ratings:
+        - { id: r-sail, licenceId: l-ul, class: ULTRALIGHT, ulKind: SAILPLANE }
+      flights:
+        - { date: 2026-04-01, class: ULTRALIGHT, minutes: { total: 60, pic: 60 }, landings: { day: 5 } }
+    outcome: unknown
+    expect:
+      subject: { kind: rating, id: r-sail }
+      message: rating.ul_flights_kind_unknown
+
+  - name: not-applicable
+    evaluation: recency
+    says: 'A Part-FCL glider rating on an LBA SPL is not an ultralight sailplane rating; only the ultralight sailplane rating is evaluated (a second result would fail the example).'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lba, authority: LBA, type: SPL }
+        - { id: l-ul, authority: DAeC, type: UL }
+      ratings:
+        - { id: r-glider, licenceId: l-lba, class: GLIDER }
+        - { id: r-sail, licenceId: l-ul, class: ULTRALIGHT, ulKind: SAILPLANE }
+    outcome: lapsed
+    expect: { message: rating.recency_not_met }
+
+  - name: window-day-before
+    evaluation: recency
+    says: The landing of 14 September 2025 is outside the 12 months, and Part-FCL glider landings do not count.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-sail, licenceId: l-ul, class: ULTRALIGHT, ulKind: SAILPLANE }
+      flights:
+        - { date: 2025-09-14, class: ULTRALIGHT, ulKind: SAILPLANE, launchMethod: winch, minutes: { total: 20, pic: 20 }, landings: { day: 1 } }
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: SAILPLANE, launchMethod: aerotow, minutes: { total: 240, pic: 240 }, landings: { day: 4 } }
+        - { date: 2026-05-02, class: GLIDER, launchMethod: winch, minutes: { total: 30, pic: 30 }, landings: { day: 3 } }
+    outcome: lapsed
+    expect:
+      subject: { kind: rating, id: r-sail }
+      message: rating.recency_not_met
+      requirements:
+        landings: { current: 4, met: false, remedyParams: { missing: 1, unit: landings } }
+
+  - name: pax-per-kind-sailplane
+    evaluation: passengers
+    shows: [same-kind-any-role]
+    says: A licence with trike and ultralight sailplane ratings is evaluated per kind; the winch-launched ultralight sailplane flights give only two take-offs and landings, and trike flights do not count for it.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DAeC, type: UL, issued: 2018-04-01 }
+      ratings:
+        - { id: r-ws, licenceId: l-ul, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+        - { id: r-sail, licenceId: l-ul, class: ULTRALIGHT, ulKind: SAILPLANE }
+      privileges:
+        - { id: p-pax, licenceId: l-ul, kind: UL_PASSENGER_AUTH, detail: WEIGHT_SHIFT, expires: 2026-09-15 }
+      flights:
+        - { date: 2026-06-17, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-08-01, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 60, pic: 60 }, takeoffs: { day: 2 }, landings: { day: 2 } }
+        - { date: 2026-08-10, class: ULTRALIGHT, ulKind: SAILPLANE, launchMethod: winch, minutes: { total: 20, pic: 20 }, takeoffs: { day: 2 }, landings: { day: 2 } }
+    outcome: expired
+    expect:
+      subject: { kind: passengers, id: l-ul, ulKind: SAILPLANE }
+      message: pax.not_current
+      params: { needed: 1 }
+      requirements:
+        day: { current: 2, met: false }
+
+  - name: pax-current
+    evaluation: passengers
+    says: Three winch-launched take-offs and landings with an ultralight sailplane in the last 90 days and a recorded passenger authorisation; passengers may be carried by day.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DAeC, type: UL }
+      ratings:
+        - { id: r-sail, licenceId: l-ul, class: ULTRALIGHT, ulKind: SAILPLANE }
+      privileges:
+        - { id: p-pax, licenceId: l-ul, kind: UL_PASSENGER_AUTH }
+      flights:
+        - { date: 2026-08-10, class: ULTRALIGHT, ulKind: SAILPLANE, launchMethod: winch, minutes: { total: 30, pic: 30 }, takeoffs: { day: 3 }, landings: { day: 3 } }
+    outcome: current
+    expect:
+      subject: { kind: passengers, id: l-ul, ulKind: SAILPLANE }
+      message: pax.current_day_no_night_privilege

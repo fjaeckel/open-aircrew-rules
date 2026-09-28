@@ -1,0 +1,140 @@
+credential: easa.rating.bir
+examples:
+  - name: revalidation-check-window-edges
+    evaluation: revalidation
+    says: A BIR check on 1 August, 3 months before the 1 November expiry, counts; one on 31 July does not; an IR check is not a BIR check.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: BIR, issued: 2025-11-01 }
+      events:
+        - { date: 2026-07-31, kind: proficiency_check, class: SEP_LAND, rating: BIR }
+        - { date: 2026-08-01, kind: proficiency_check, class: SEP_LAND, rating: BIR }
+        - { date: 2026-08-02, kind: proficiency_check, class: SEP_LAND, rating: IR }
+      flights: []
+    outcome: current
+    expect: { subject: { kind: privilege, id: p-1 }, requirements: {proficiency_check: {current: 1, lastDate: 2026-08-01}} }
+  - name: revalidation-check
+    evaluation: revalidation
+    says: A BIR proficiency check in the 3 months before expiry revalidates the BIR.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: BIR, issued: 2025-11-01 }
+      flights:
+        - { date: 2026-08-10, class: SEP_LAND, minutes: { total: 90, pic: 90, ifr: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, approaches: 2, checkRating: BIR, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: current
+    expect: { subject: { kind: privilege, id: p-1 }, message: privilege.revalidation_current, params: {date: 2026-11-01}, expiresOn: 2026-11-01, requirements: {proficiency_check: {current: 1, met: true}, ifr_pic_time: {current: 60, met: false}, approaches: {current: 2, met: false}, training_flight: {current: 0, met: false, remedyKey: remedy.training_flight}} }
+  - name: revalidation-experience
+    evaluation: revalidation
+    says: 6 hours as PIC under IFR with 3 approaches and a 1-hour training flight within the validity period revalidate the BIR.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: BIR, issued: 2025-11-01 }
+      flights:
+        - { date: 2026-02-01, class: SEP_LAND, minutes: { total: 240, pic: 240, ifr: 240 }, takeoffs: { day: 1 }, landings: { day: 1 }, approaches: 2 }
+        - { date: 2026-03-01, class: SEP_LAND, minutes: { total: 120, pic: 120, ifr: 120 }, takeoffs: { day: 1 }, landings: { day: 1 }, approaches: 1 }
+        - { date: 2026-04-01, class: SEP_LAND, minutes: { total: 70, dual: 70, ifr: 70 }, takeoffs: { day: 1 }, landings: { day: 1 }, approaches: 1 }
+    outcome: current
+    expect: { subject: { kind: privilege, id: p-1 }, requirements: {ifr_pic_time: {current: 360, met: true}, approaches: {current: 3, met: true}, training_flight: {current: 70, met: true}, proficiency_check: {current: 0, met: false}} }
+  - name: revalidation-expired-day-after
+    evaluation: revalidation
+    says: The day after its expiry date the BIR is expired.
+    asOf: 2026-11-02
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: BIR, issued: 2025-11-01 }
+      flights:
+        - { date: 2026-08-10, class: SEP_LAND, minutes: { total: 90, pic: 90, ifr: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, approaches: 2, checkRating: BIR, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: expired
+    expect: { subject: { kind: privilege, id: p-1 }, message: privilege.expired, params: {date: 2026-11-01} }
+  - name: revalidation-expiring
+    evaluation: revalidation
+    says: Within 90 days of expiry and not revalidated.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: BIR, issued: 2025-11-01 }
+      flights:
+        - { date: 2026-02-01, class: SEP_LAND, minutes: { total: 120, pic: 120, ifr: 120 }, takeoffs: { day: 1 }, landings: { day: 1 }, approaches: 1 }
+    outcome: expiring
+    expect: { subject: { kind: privilege, id: p-1 }, message: privilege.expiring, params: {days: 47, date: 2026-11-01} }
+  - name: revalidation-no-dates
+    evaluation: revalidation
+    says: Without an issue date or an expiry date the validity cannot be placed.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: BIR }
+      flights:
+        - { date: 2026-08-10, class: SEP_LAND, minutes: { total: 90, pic: 90, ifr: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, approaches: 2, checkRating: BIR, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: unknown
+    expect: { subject: { kind: privilege, id: p-1 }, message: privilege.no_expiry_date }
+  - name: revalidation-not-met
+    evaluation: revalidation
+    says: Neither route is complete; with more than 90 days left the BIR is still valid.
+    asOf: 2026-07-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: BIR, issued: 2025-11-01 }
+      flights:
+        - { date: 2026-02-01, class: SEP_LAND, minutes: { total: 120, pic: 120, ifr: 120 }, takeoffs: { day: 1 }, landings: { day: 1 }, approaches: 1 }
+    outcome: current
+    expect: { subject: { kind: privilege, id: p-1 }, message: privilege.revalidation_not_met }
+  - name: revalidation-valid-on-expiry-day
+    evaluation: revalidation
+    says: On its expiry date the BIR is still valid.
+    asOf: 2026-11-01
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: BIR, issued: 2025-11-01 }
+      flights:
+        - { date: 2026-08-10, class: SEP_LAND, minutes: { total: 90, pic: 90, ifr: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, approaches: 2, checkRating: BIR, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: current
+    expect: { subject: { kind: privilege, id: p-1 } }
+  - name: revalidation-validity-window-edges
+    evaluation: revalidation
+    says: IFR time on 1 November 2025, the first day of the validity period, counts; IFR time the day before does not.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: BIR, issued: 2025-11-01 }
+      flights:
+        - { date: 2025-10-31, class: SEP_LAND, minutes: { total: 120, pic: 120, ifr: 120 }, takeoffs: { day: 1 }, landings: { day: 1 }, approaches: 1 }
+        - { date: 2025-11-01, class: SEP_LAND, minutes: { total: 120, pic: 120, ifr: 120 }, takeoffs: { day: 1 }, landings: { day: 1 }, approaches: 1 }
+    outcome: expiring
+    expect: { subject: { kind: privilege, id: p-1 }, requirements: {ifr_pic_time: {current: 120}} }
+  - name: revalidation-not-applicable-other-items
+    evaluation: revalidation
+    shows: [bir-as-privilege]
+    says: Other privileges and a BIR recorded on an FAA licence are not evaluated here; only the BIR on the EASA licence is (legacy not-applicable case with that BIR added).
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+        - { id: l-faa, authority: FAA, type: PRIVATE }
+      privileges:
+        - { id: p-night, licenceId: l-1, kind: NIGHT, issued: 2025-11-01 }
+        - { id: p-faa, licenceId: l-faa, kind: BIR, issued: 2025-11-01 }
+        - { id: p-1, licenceId: l-1, kind: BIR, issued: 2026-06-01 }
+    outcome: current
+    expect: { message: privilege.revalidation_not_met, params: { date: 2027-06-01 } }

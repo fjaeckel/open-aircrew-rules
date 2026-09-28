@@ -1,0 +1,95 @@
+credential: faa.licence.student
+examples:
+  - name: solo-endorsement-current
+    evaluation: solo_endorsement
+    shows: [endorsement-as-event]
+    says: A solo endorsement dated 18 May is within the 90 days preceding 16 August; the student may fly solo that day.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-student, authority: FAA, type: STUDENT }
+        - { id: l-ppl, authority: FAA, type: PRIVATE }
+      events:
+        - { date: 2026-05-18, kind: solo_endorsement, class: SEP_LAND }
+    outcome: current
+    expect:
+      subject: { kind: licence, id: l-student }
+      message: licence.recency_current
+      validUntil: 2026-08-16
+  - name: solo-endorsement-lapsed
+    evaluation: solo_endorsement
+    says: An endorsement dated 17 May is 91 days old on 16 August; the instructor must update it before the next solo flight.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-student, authority: FAA, type: STUDENT }
+      events:
+        - { date: 2026-05-17, kind: solo_endorsement, class: SEP_LAND }
+    outcome: lapsed
+    expect:
+      subject: { kind: licence, id: l-student }
+      message: licence.recency_not_met
+  - name: solo-endorsement-only-student
+    evaluation: solo_endorsement
+    says: Only FAA student pilot certificates need the 90-day solo endorsement; a private pilot certificate and an EASA SPL in the same record are not evaluated.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-student, authority: FAA, type: STUDENT}
+        - {id: l-ppl, authority: FAA, type: PRIVATE}
+        - {id: l-easa, authority: EASA, type: SPL}
+      events:
+        - {date: 2026-07-01, kind: solo_endorsement}
+    outcome: current
+    expect: { subject: { kind: licence, id: l-student }, message: licence.recency_current }
+  - name: flight-review-student-exempt
+    evaluation: flight_review
+    says: A student pilot in training with a current solo endorsement needs no flight review.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-student, authority: FAA, type: STUDENT}
+      events:
+        - {date: 2026-07-01, kind: solo_endorsement}
+    outcome: not_applicable
+    expect: { message: flight_review.not_applicable }
+  - name: flight-review-private-certificate-too
+    evaluation: flight_review
+    says: A pilot who holds a private pilot certificate as well as a student certificate (training for another category) needs a flight review for the private privileges; the review of September 2025 is current.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-ppl, authority: FAA, type: PRIVATE}
+        - {id: l-student, authority: FAA, type: STUDENT}
+      events:
+        - {date: 2025-09-01, kind: flight_review}
+    outcome: current
+    expect: { message: flight_review.current }
+  - name: composite-solo-and-medical
+    composite: true
+    says: With a solo endorsement in the last 90 days and a valid third-class medical certificate the student may fly solo.
+    asOf: 2026-08-16
+    record:
+      holder: {dateOfBirth: 1990-01-01}
+      licences:
+        - {id: l-student, authority: FAA, type: STUDENT}
+      credentials:
+        - {id: c-med, type: FAA_CLASS3_MEDICAL, issued: 2026-02-01}
+      events:
+        - {date: 2026-07-01, kind: solo_endorsement}
+    outcome: current
+    expect: { subject: { kind: licence, id: l-student } }
+  - name: composite-endorsement-lapsed
+    composite: true
+    says: The solo endorsement of April is more than 90 days old; the student may not fly solo until an instructor updates it.
+    asOf: 2026-08-16
+    record:
+      holder: {dateOfBirth: 1990-01-01}
+      licences:
+        - {id: l-student, authority: FAA, type: STUDENT}
+      credentials:
+        - {id: c-med, type: FAA_CLASS3_MEDICAL, issued: 2026-02-01}
+      events:
+        - {date: 2026-04-01, kind: solo_endorsement}
+    outcome: lapsed
+    expect: { subject: { kind: licence, id: l-student }, decidedBy: { evaluation: solo_endorsement } }

@@ -56,6 +56,7 @@ func Check(cat *Catalogue, examples []*ExampleFile) *Findings {
 	f.checkExamples(cat, examples)
 	f.checkInterpretations(cat)
 	f.checkPolicies(cat)
+	f.checkAssociations(cat)
 	f.Overlaps = Overlaps(cat)
 	sort.Strings(f.Refs)
 	sort.Strings(f.Keys)
@@ -83,6 +84,16 @@ func (f *Findings) checkFiles(cat *Catalogue) {
 		}
 		if c.Validity != nil {
 			cat.addRef(c.Validity.Ref, c.ID+" validity", 0)
+		}
+		if c.Selects.Ratings != nil {
+			f.checkULKinds(cat, where+" selects.ratings", c.Selects.Ratings.ULKinds)
+		}
+		for _, e := range c.Evaluations {
+			for _, s := range []*Scope{e.OnlyFor, e.Scope} {
+				if s != nil {
+					f.checkULKinds(cat, fmt.Sprintf("%s#%s", c.ID, e.ID), s.ULKinds)
+				}
+			}
 		}
 		seen := map[string]bool{}
 		for _, e := range c.Evaluations {
@@ -114,6 +125,16 @@ func (f *Findings) checkFiles(cat *Catalogue) {
 		}
 	}
 	sort.Strings(f.Files)
+}
+
+// checkULKinds reports ultralight kinds that are neither in the vocabulary nor "none" (a
+// rating recorded without a kind).
+func (f *Findings) checkULKinds(cat *Catalogue, where string, kinds []string) {
+	for _, k := range kinds {
+		if k != "none" && !slices.Contains(cat.Engine.Vocabulary.ULKinds, k) {
+			f.Files = append(f.Files, fmt.Sprintf("%s: ul_kinds %q is not an ultralight kind of the vocabulary (or none)", where, k))
+		}
+	}
 }
 
 // interpretationsFor returns the interpretations affecting an evaluation: in its own file,
@@ -315,6 +336,42 @@ func (f *Findings) checkPolicies(cat *Catalogue) {
 	for id, p := range cat.Policies {
 		if !used[id] {
 			f.Refs = append(f.Refs, fmt.Sprintf("%s: policy %s is cited nowhere; cite it or remove it", rel(cat.Root, p.File), id))
+		}
+	}
+}
+
+// checkAssociations resolves each association document's delegating statute and reports
+// documents no reference cites.
+func (f *Findings) checkAssociations(cat *Catalogue) {
+	used := map[string]bool{}
+	cite := func(r string) {
+		if id, ok := strings.CutPrefix(r, AssociationPrefix+":"); ok {
+			used[id] = true
+		}
+	}
+	for _, r := range cat.Refs {
+		cite(r.Ref)
+	}
+	for _, x := range cat.Interpretations() {
+		for _, r := range x.I.Ref {
+			cite(r)
+		}
+	}
+	for id, a := range cat.Associations {
+		where := fmt.Sprintf("%s: association %s", rel(cat.Root, a.File), id)
+		if !used[id] {
+			f.Refs = append(f.Refs, where+" is cited nowhere; cite it or remove it")
+		}
+		if !slices.ContainsFunc(cat.Engine.Vocabulary.RecordAuthorities, func(x string) bool { return strings.EqualFold(x, a.Publisher) }) {
+			f.Refs = append(f.Refs, fmt.Sprintf("%s: publisher %q is not a record authority", where, a.Publisher))
+		}
+		if pub, _, _ := strings.Cut(id, ":"); !strings.EqualFold(pub, a.Publisher) {
+			f.Refs = append(f.Refs, fmt.Sprintf("%s: the id starts with the publisher (%s:<document>)", where, strings.ToLower(a.Publisher)))
+		}
+		if pr, err := ParseRef(a.DelegatedBy); err != nil || pr.Prefix == "policy" || pr.Prefix == AssociationPrefix {
+			f.Refs = append(f.Refs, where+": delegated_by names the statute paragraph that delegates it")
+		} else if err := cat.Resolver.Resolve(a.DelegatedBy); err != nil {
+			f.Refs = append(f.Refs, where+": "+err.Error())
 		}
 	}
 }

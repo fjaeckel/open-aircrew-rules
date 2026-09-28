@@ -23,7 +23,7 @@ func TestCatalogueGreen(t *testing.T) {
 	for _, s := range cov.Problems {
 		t.Error(s)
 	}
-	if cov.Evaluated+cov.NotEvaluated+cov.PendingOnly != 113 || len(cov.Pending) == 0 {
+	if cov.Evaluated+cov.NotEvaluated+cov.PendingOnly != 113 || len(cov.Pending) != 0 {
 		t.Errorf("coverage counts: %+v", cov)
 	}
 }
@@ -46,7 +46,7 @@ func TestResolve(t *testing.T) {
 		t.Fatal(err)
 	}
 	rs := NewResolver("..", v, pols(t))
-	for _, ok := range []string{"easa:FCL.740.A(b)(1)(ii)(C)", "easa:FCL.740.A(b)(2)", "easa:SFCL.130(a)(2)(iv)(B)(a)", "easa:SFCL.130(a)(2)(v)(B)", "faa:61.57(c)(1)(iii)", "faa:61.56(i)", "policy:expiring-notice", "de:LuftPersV.45a"} {
+	for _, ok := range []string{"easa:FCL.740.A(b)(1)(ii)(C)", "easa:FCL.740.A(b)(2)", "easa:SFCL.130(a)(2)(iv)(B)(a)", "easa:SFCL.130(a)(2)(v)(B)", "faa:61.57(c)(1)(iii)", "faa:61.56(i)", "policy:expiring-notice", "de:LuftPersV.45a", "de:LuftPersV.45(2a)", "de:LuftPersV.45(3)", "de:LuftPersV.42(5a)", "easa:FCL.710(da)", "easa:FCL.710(e)"} {
 		if err := rs.Resolve(ok); err != nil {
 			t.Errorf("%s: %v", ok, err)
 		}
@@ -82,6 +82,14 @@ func TestLabelOutline(t *testing.T) {
 	}
 	if strings.Join(got, " ") != "a a1 a1i a1ii a1iiA b c d e f g h i i7" {
 		t.Errorf("outline %v", got)
+	}
+	inserted := parseLabels("# X\n\n## Text\n\n(1) one\n\n(2) two\n\n(2a) inserted\n\n(3) three\n\n(4) *Head.* (a) a\n\n(ii) not inserted\n\n(b) b\n\n(ba) inserted\n\n(1) under ba\n\n(c) c\n")
+	got = nil
+	for _, x := range inserted {
+		got = append(got, strings.Join(x.path, "."))
+	}
+	if strings.Join(got, " ") != "1 2 2a 3 4 4.a 4.a.ii 4.b 4.ba 4.ba.1 4.c" {
+		t.Errorf("inserted labels %v", got)
 	}
 	if ordinal("x1", "num") != 0 || ordinal("ab", "lower") != 0 || ordinal("a", "upper") != 0 || ordinal("a", "other") != 0 {
 		t.Error("ordinal of an impossible label")

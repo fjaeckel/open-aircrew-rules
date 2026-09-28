@@ -1,0 +1,618 @@
+credential: easa.licence.lapl-a
+examples:
+  - name: recency-experience-current
+    evaluation: recency
+    says: 12 h as PIC or dual including 12 take-offs and landings and 1 h of dual in aeroplanes or TMGs in the last 2 years keep the LAPL(A) current; SEP and TMG flights pool.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-land, licenceId: l-lapl, class: SEP_LAND }
+      flights:
+        - { date: 2025-03-10, class: SEP_LAND, minutes: { total: 300, pic: 300 }, takeoffs: { day: 5 }, landings: { day: 5 } }
+        - { date: 2025-11-20, class: TMG, minutes: { total: 60, dual: 60 }, takeoffs: { day: 2 }, landings: { day: 2 } }
+        - { date: 2026-06-12, class: SEP_LAND, minutes: { total: 360, pic: 60, dual: 300 }, takeoffs: { day: 5 }, landings: { day: 5 } }
+    outcome: current
+    expect: { subject: { kind: rating, id: r-land, class: SEP_LAND }, message: rating.recency_current, validUntil: 2027-03-10, requirements: {flight_time: {current: 720, required: 720, met: true}, takeoffs_landings: {current: 12, required: 12, met: true}, refresher_training: {current: 360, met: true}, proficiency_check: {current: 0, met: false, remedyKey: remedy.proficiency_check}, sep_land_time: {absent: true}} }
+  - name: recency-land-sea-split-land-short-r-land
+    evaluation: recency
+    says: A seaplane pilot who also holds SEP(land) flew everything on sea; the land share is missing, but a proficiency check keeps the LAPL(A) current anyway.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: LBA, type: LAPL(A) }
+      ratings:
+        - { id: r-land, licenceId: l-lapl, class: SEP_LAND }
+        - { id: r-sea, licenceId: l-lapl, class: SEP_SEA }
+      flights:
+        - { date: 2026-03-10, class: SEP_SEA, minutes: { total: 720, pic: 660, dual: 60 }, takeoffs: { day: 12 }, landings: { day: 12 } }
+        - { date: 2026-08-10, class: SEP_SEA, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { proficiencyCheck: true } }
+    outcome: current
+    expect: { subject: { kind: rating, id: r-land }, message: rating.recency_current, requirements: {sep_land_time: {current: 0, met: false}, sep_land_takeoffs_landings: {current: 0, met: false}, sep_sea_time: {current: 780, met: true}, proficiency_check: {current: 1, met: true}} }
+  - name: recency-land-sea-split-land-short-r-sea
+    evaluation: recency
+    says: A seaplane pilot who also holds SEP(land) flew everything on sea; the land share is missing, but a proficiency check keeps the LAPL(A) current anyway.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: LBA, type: LAPL(A) }
+      ratings:
+        - { id: r-land, licenceId: l-lapl, class: SEP_LAND }
+        - { id: r-sea, licenceId: l-lapl, class: SEP_SEA }
+      flights:
+        - { date: 2026-03-10, class: SEP_SEA, minutes: { total: 720, pic: 660, dual: 60 }, takeoffs: { day: 12 }, landings: { day: 12 } }
+        - { date: 2026-08-10, class: SEP_SEA, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { proficiencyCheck: true } }
+    outcome: current
+    expect: { subject: { kind: rating, id: r-sea } }
+  - name: recency-land-sea-split-met-r-land
+    evaluation: recency
+    says: With 1 hour and 6 take-offs and landings in each class, the experience is valid for both privileges.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-land, licenceId: l-lapl, class: SEP_LAND }
+        - { id: r-sea, licenceId: l-lapl, class: SEP_SEA }
+      flights:
+        - { date: 2026-03-10, class: SEP_LAND, minutes: { total: 600, pic: 600 }, takeoffs: { day: 6 }, landings: { day: 6 } }
+        - { date: 2026-04-10, class: SEP_SEA, minutes: { total: 60, pic: 60 }, takeoffs: { day: 6 }, landings: { day: 6 } }
+        - { date: 2026-05-10, class: SEP_LAND, minutes: { total: 60, dual: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect: { subject: { kind: rating, id: r-land }, message: rating.recency_current, requirements: {sep_sea_time: {current: 60, met: true}, sep_sea_takeoffs_landings: {current: 6, met: true}} }
+  - name: recency-land-sea-split-met-r-sea
+    evaluation: recency
+    says: With 1 hour and 6 take-offs and landings in each class, the experience is valid for both privileges.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-land, licenceId: l-lapl, class: SEP_LAND }
+        - { id: r-sea, licenceId: l-lapl, class: SEP_SEA }
+      flights:
+        - { date: 2026-03-10, class: SEP_LAND, minutes: { total: 600, pic: 600 }, takeoffs: { day: 6 }, landings: { day: 6 } }
+        - { date: 2026-04-10, class: SEP_SEA, minutes: { total: 60, pic: 60 }, takeoffs: { day: 6 }, landings: { day: 6 } }
+        - { date: 2026-05-10, class: SEP_LAND, minutes: { total: 60, dual: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect: { subject: { kind: rating, id: r-sea }, message: rating.recency_current }
+  - name: recency-land-sea-split-unmet-r-land
+    evaluation: recency
+    says: Holding SEP(land) and SEP(sea), the pilot flew only 30 minutes and 3 take-offs and landings on sea; the split of FCL.140.A(b) is not met for either privilege.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-land, licenceId: l-lapl, class: SEP_LAND }
+        - { id: r-sea, licenceId: l-lapl, class: SEP_SEA }
+      flights:
+        - { date: 2026-03-10, class: SEP_LAND, minutes: { total: 630, pic: 630 }, takeoffs: { day: 9 }, landings: { day: 9 } }
+        - { date: 2026-04-10, class: SEP_SEA, minutes: { total: 30, pic: 30 }, takeoffs: { day: 3 }, landings: { day: 3 } }
+        - { date: 2026-05-10, class: SEP_LAND, minutes: { total: 60, dual: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: lapsed
+    expect: { subject: { kind: rating, id: r-land }, message: rating.recency_not_met, requirements: {flight_time: {current: 720, met: true}, takeoffs_landings: {current: 13, met: true}, sep_land_time: {current: 690, met: true}, sep_land_takeoffs_landings: {current: 10, met: true}, sep_sea_time: {current: 30, met: false, remedyParams: {missing: 30, unit: minutes}}, sep_sea_takeoffs_landings: {current: 3, met: false, remedyParams: {missing: 3, unit: landings}}} }
+  - name: recency-land-sea-split-unmet-r-sea
+    evaluation: recency
+    says: Holding SEP(land) and SEP(sea), the pilot flew only 30 minutes and 3 take-offs and landings on sea; the split of FCL.140.A(b) is not met for either privilege.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-land, licenceId: l-lapl, class: SEP_LAND }
+        - { id: r-sea, licenceId: l-lapl, class: SEP_SEA }
+      flights:
+        - { date: 2026-03-10, class: SEP_LAND, minutes: { total: 630, pic: 630 }, takeoffs: { day: 9 }, landings: { day: 9 } }
+        - { date: 2026-04-10, class: SEP_SEA, minutes: { total: 30, pic: 30 }, takeoffs: { day: 3 }, landings: { day: 3 } }
+        - { date: 2026-05-10, class: SEP_LAND, minutes: { total: 60, dual: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: lapsed
+    expect: { subject: { kind: rating, id: r-sea, class: SEP_SEA }, message: rating.recency_not_met }
+  - name: recency-land-sea-takeoffs-short-r-land
+    evaluation: recency
+    says: 'With SEP(land) and SEP(sea), the sea class has six landings but only four take-offs: each class needs six take-offs and six landings.'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-land, licenceId: l-lapl, class: SEP_LAND }
+        - { id: r-sea, licenceId: l-lapl, class: SEP_SEA }
+      flights:
+        - { date: 2026-03-10, class: SEP_LAND, minutes: { total: 360, pic: 300, dual: 60 }, takeoffs: { day: 6 }, landings: { day: 6 } }
+        - { date: 2026-05-10, class: SEP_SEA, minutes: { total: 360, pic: 300, dual: 60 }, takeoffs: { day: 4 }, landings: { day: 6 } }
+    outcome: lapsed
+    expect: { subject: { kind: rating, id: r-land, class: SEP_LAND }, message: rating.recency_not_met, requirements: {flight_time: {current: 720, met: true}, takeoffs_landings: {current: 10, met: false}, refresher_training: {current: 120, met: true}, sep_land_time: {current: 360, met: true}, sep_land_takeoffs_landings: {current: 6, met: true}, sep_sea_time: {current: 360, met: true}, sep_sea_takeoffs_landings: {current: 4, met: false}, proficiency_check: {current: 0, met: false}} }
+  - name: recency-land-sea-takeoffs-short-r-sea
+    evaluation: recency
+    says: 'With SEP(land) and SEP(sea), the sea class has six landings but only four take-offs: each class needs six take-offs and six landings.'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-land, licenceId: l-lapl, class: SEP_LAND }
+        - { id: r-sea, licenceId: l-lapl, class: SEP_SEA }
+      flights:
+        - { date: 2026-03-10, class: SEP_LAND, minutes: { total: 360, pic: 300, dual: 60 }, takeoffs: { day: 6 }, landings: { day: 6 } }
+        - { date: 2026-05-10, class: SEP_SEA, minutes: { total: 360, pic: 300, dual: 60 }, takeoffs: { day: 4 }, landings: { day: 6 } }
+    outcome: lapsed
+    expect: { subject: { kind: rating, id: r-sea, class: SEP_SEA }, message: rating.recency_not_met, requirements: {flight_time: {current: 720, met: true}, takeoffs_landings: {current: 10, met: false}, refresher_training: {current: 120, met: true}, sep_land_time: {current: 360, met: true}, sep_land_takeoffs_landings: {current: 6, met: true}, sep_sea_time: {current: 360, met: true}, sep_sea_takeoffs_landings: {current: 4, met: false}, proficiency_check: {current: 0, met: false}} }
+  - name: recency-lapsed
+    evaluation: recency
+    says: 5 hours and 5 take-offs and landings are not enough; the privilege lapses, every unmet row carries its remedy.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-land, licenceId: l-lapl, class: SEP_LAND }
+      flights:
+        - { date: 2026-03-10, class: SEP_LAND, minutes: { total: 300, pic: 300 }, takeoffs: { day: 5 }, landings: { day: 5 } }
+    outcome: lapsed
+    expect: { subject: { kind: rating, id: r-land }, message: rating.recency_not_met, requirements: {flight_time: {current: 300, met: false, remedyKey: remedy.fly_more, remedyParams: {missing: 420, unit: minutes}}, takeoffs_landings: {current: 5, met: false, remedyParams: {missing: 7, unit: landings}}, refresher_training: {current: 0, met: false, remedyParams: {missing: 60, unit: minutes}}} }
+  - name: recency-proficiency-check
+    evaluation: recency
+    says: A proficiency check with an examiner in an aeroplane in the last 2 years keeps the LAPL(A) current without the experience.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-land, licenceId: l-lapl, class: SEP_LAND }
+      flights:
+        - { date: 2025-10-01, class: SEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: current
+    expect: { subject: { kind: rating, id: r-land }, message: rating.recency_current, validUntil: 2027-10-01, requirements: {proficiency_check: {current: 1, met: true, lastDate: 2025-10-01}, flight_time: {current: 60, met: false}} }
+  - name: recency-refresher-several-flights
+    evaluation: recency
+    says: Three dual flights of 20 minutes add up to the 1 hour of refresher training.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-land, licenceId: l-lapl, class: SEP_LAND }
+      flights:
+        - { date: 2026-03-10, class: SEP_LAND, minutes: { total: 660, pic: 660 }, takeoffs: { day: 9 }, landings: { day: 9 } }
+        - { date: 2026-05-01, class: SEP_LAND, minutes: { total: 20, dual: 20 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-05-02, class: SEP_LAND, minutes: { total: 20, dual: 20 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-05-03, class: SEP_LAND, minutes: { total: 20, dual: 20 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect: { subject: { kind: rating, id: r-land }, message: rating.recency_current, requirements: {refresher_training: {current: 60, met: true}, flight_time: {current: 720, met: true}} }
+  - name: recency-roles-and-takeoffs
+    evaluation: recency
+    says: Co-pilot and PICUS time do not count toward the 12 hours, and 12 landings with only 8 take-offs are 8 take-offs and landings.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-land, licenceId: l-lapl, class: SEP_LAND }
+      flights:
+        - { date: 2026-03-10, class: SEP_LAND, minutes: { total: 720, pic: 300, sic: 300, dual: 60, picus: 60 }, takeoffs: { day: 8 }, landings: { day: 12 } }
+    outcome: lapsed
+    expect: { subject: { kind: rating, id: r-land }, message: rating.recency_not_met, requirements: {flight_time: {current: 360, met: false}, takeoffs_landings: {current: 8, met: false}, refresher_training: {current: 60, met: true}} }
+  - name: recency-towed-tmg
+    evaluation: recency
+    says: TMG flights launched by winch count toward the recency like any other TMG flight.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-tmg, licenceId: l-lapl, class: TMG }
+      flights:
+        - { date: 2026-03-10, class: TMG, minutes: { total: 360, pic: 300, dual: 60 }, takeoffs: { day: 6 }, landings: { day: 6 } }
+        - { date: 2026-05-10, class: TMG, launchMethod: winch, minutes: { total: 360, pic: 360 }, takeoffs: { day: 6 }, landings: { day: 6 } }
+    outcome: current
+    expect: { subject: { kind: rating, id: r-tmg, class: TMG }, message: rating.recency_current, requirements: {flight_time: {current: 720, met: true}, takeoffs_landings: {current: 12, met: true}, refresher_training: {current: 60, met: true}, proficiency_check: {current: 0, met: false}} }
+  - name: recency-ultralight-credit
+    evaluation: recency
+    says: Three-axis ultralight hours count toward the 12 hours but not toward take-offs, landings or refresher training; weight-shift hours never count; an ultralight flight with no kind is unknown.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-land, licenceId: l-lapl, class: SEP_LAND }
+      flights:
+        - { date: 2026-04-01, class: SEP_LAND, minutes: { total: 120, pic: 60, dual: 60 }, takeoffs: { day: 12 }, landings: { day: 12 } }
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 600, pic: 540, dual: 60 }, takeoffs: { day: 10 }, landings: { day: 10 } }
+        - { date: 2026-06-01, class: ULTRALIGHT, minutes: { total: 90, pic: 90 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-06-02, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect: { subject: { kind: rating, id: r-land }, message: rating.recency_current, requirements: {flight_time: {current: 720, met: true, tracked: true}, takeoffs_landings: {current: 12}, refresher_training: {current: 60, met: true}} }
+  - name: recency-ultralight-takeoffs
+    evaluation: recency
+    says: 'Twelve hours including three-axis ultralight hours, but eight of the twelve take-offs and landings were flown on the ultralight: they count toward the hours only.'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-land, licenceId: l-lapl, class: SEP_LAND }
+      flights:
+        - { date: 2026-03-10, class: SEP_LAND, minutes: { total: 240, pic: 180, dual: 60 }, takeoffs: { day: 4 }, landings: { day: 4 } }
+        - { date: 2026-05-10, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 480, pic: 480 }, takeoffs: { day: 8 }, landings: { day: 8 } }
+    outcome: lapsed
+    expect: { subject: { kind: rating, id: r-land, class: SEP_LAND }, message: rating.recency_not_met, requirements: {flight_time: {current: 720, met: true}, takeoffs_landings: {current: 4, met: false}, refresher_training: {current: 60, met: true}, proficiency_check: {current: 0, met: false}} }
+  - name: recency-window-edges
+    evaluation: recency
+    says: A flight on 15 September 2024, 2 years before, counts; one on 14 September 2024 does not.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-land, licenceId: l-lapl, class: SEP_LAND }
+      flights:
+        - { date: 2024-09-14, class: SEP_LAND, minutes: { total: 600, pic: 600 }, takeoffs: { day: 10 }, landings: { day: 10 } }
+        - { date: 2024-09-15, class: SEP_LAND, minutes: { total: 300, pic: 300 }, takeoffs: { day: 5 }, landings: { day: 5 } }
+        - { date: 2025-11-20, class: TMG, minutes: { total: 60, dual: 60 }, takeoffs: { day: 2 }, landings: { day: 2 } }
+        - { date: 2026-06-12, class: SEP_LAND, minutes: { total: 360, pic: 60, dual: 300 }, takeoffs: { day: 5 }, landings: { day: 5 } }
+    outcome: current
+    expect: { subject: { kind: rating, id: r-land }, message: rating.recency_current, validUntil: 2026-09-15, requirements: {flight_time: {current: 720, met: true}, takeoffs_landings: {current: 12, met: true}} }
+  - name: passenger-prerequisite-former-ppl
+    evaluation: passenger_prerequisite
+    says: A pilot who previously held a PPL(A) is exempt.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A), issued: 2025-04-01 }
+        - { id: l-old, authority: LBA, type: PPL(A), issued: 2001-05-01, expires: 2019-05-01 }
+      ratings:
+        - { id: r-sep, licenceId: l-lapl, class: SEP_LAND }
+      flights:
+        - { date: 2025-06-01, class: SEP_LAND, minutes: { total: 60, pic: 60, dual: 0 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect: { subject: { kind: passengers, id: l-lapl, class: SEP_LAND }, message: pax.prerequisite_exempt }
+  - name: passenger-prerequisite-issue-date-edges
+    evaluation: passenger_prerequisite
+    says: PIC time on the issue date counts; PIC time the day before (during training) does not.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A), issued: 2025-04-01 }
+      ratings:
+        - { id: r-sep, licenceId: l-lapl, class: SEP_LAND }
+      flights:
+        - { date: 2025-03-31, class: SEP_LAND, minutes: { total: 600, pic: 600, dual: 0 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-04-01, class: SEP_LAND, minutes: { total: 300, pic: 300, dual: 0 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: expired
+    expect: { subject: { kind: passengers, id: l-lapl, class: SEP_LAND }, message: pax.prerequisite_not_met, requirements: {pic_since_issue: {current: 300}} }
+  - name: passenger-prerequisite-met
+    evaluation: passenger_prerequisite
+    says: 10 hours as PIC on aeroplanes and TMGs since the licence was issued allow carrying passengers.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A), issued: 2025-04-01 }
+      ratings:
+        - { id: r-sep, licenceId: l-lapl, class: SEP_LAND }
+      flights:
+        - { date: 2025-06-01, class: SEP_LAND, minutes: { total: 300, pic: 300, dual: 0 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-07-01, class: TMG, minutes: { total: 240, pic: 240, dual: 0 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-08-01, class: MEP_LAND, minutes: { total: 60, pic: 60, dual: 0 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect: { subject: { kind: passengers, id: l-lapl, class: SEP_LAND }, message: pax.prerequisite_met, requirements: {pic_since_issue: {current: 600, required: 600, met: true}} }
+  - name: passenger-prerequisite-no-issue-date
+    evaluation: passenger_prerequisite
+    says: Without the licence issue date the hours cannot be counted.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-sep, licenceId: l-lapl, class: SEP_LAND }
+      flights:
+        - { date: 2025-06-01, class: SEP_LAND, minutes: { total: 600, pic: 600, dual: 0 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: unknown
+    expect: { subject: { kind: passengers, id: l-lapl, class: SEP_LAND }, message: pax.prerequisite_unknown, requirements: {pic_since_issue: {met: false, tracked: false}} }
+  - name: passenger-prerequisite-not-met
+    evaluation: passenger_prerequisite
+    says: Dual time and ultralight hours do not count; 5 hours as PIC leave 5 hours to fly.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A), issued: 2025-04-01 }
+      ratings:
+        - { id: r-sep, licenceId: l-lapl, class: SEP_LAND }
+      flights:
+        - { date: 2025-06-01, class: SEP_LAND, minutes: { total: 300, pic: 300, dual: 0 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-07-01, class: SEP_LAND, minutes: { total: 600, pic: 0, dual: 600 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-08-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 300, pic: 300 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: expired
+    expect: { subject: { kind: passengers, id: l-lapl, class: SEP_LAND }, message: pax.prerequisite_not_met, params: {needed: 300}, requirements: {pic_since_issue: {current: 300, met: false, remedyKey: remedy.fly_more, remedyParams: {missing: 300, unit: minutes}}} }
+  - name: passengers-night-lapl-evaluated
+    evaluation: passengers_night
+    says: 'A LAPL(A) holder is evaluated too: whether the pilot may fly at night (night rating) is a separate question.'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-sep, licenceId: l-lapl, class: SEP_LAND }
+      flights:
+        - { date: 2026-08-20, class: SEP_LAND, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 1 }, landings: { night: 1 }, pilotFlying: true }
+    outcome: current
+    expect: { subject: { kind: passengers, id: l-lapl, class: SEP_LAND }, message: pax.night_current }
+  - name: variants-differences-training
+    evaluation: variants
+    says: Further differences training on the variant restores the privilege. (FCL.710 case, recorded on a LAPL(A) SEP privilege, FCL.140.A(c).)
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-sep, licenceId: l-lapl, class: SEP_LAND, expires: 2027-06-30 }
+      variants:
+        - { id: v-electric, ratingId: r-sep, name: ELECTRIC, issued: 2023-05-01 }
+      events:
+        - { date: 2026-02-01, kind: differences_training, class: SEP_LAND, variant: ELECTRIC }
+        - { date: 2026-02-02, kind: differences_training, class: SEP_LAND, variant: PISTON }
+      flights:
+        - { date: 2023-06-01, class: SEP_LAND, variant: ELECTRIC, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect: { subject: { kind: type, id: v-electric, class: SEP_LAND }, message: type.current, validUntil: 2028-02-01 }
+  - name: variants-flown
+    evaluation: variants
+    says: A flight on the variant within 2 years keeps the privilege; it lasts until 2 years after that flight. (FCL.710 case, recorded on a LAPL(A) SEP privilege, FCL.140.A(c).)
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-sep, licenceId: l-lapl, class: SEP_LAND, expires: 2027-06-30 }
+      variants:
+        - { id: v-electric, ratingId: r-sep, name: ELECTRIC, issued: 2023-05-01 }
+      flights:
+        - { date: 2026-03-10, class: SEP_LAND, variant: ELECTRIC, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-04-10, class: SEP_LAND, variant: PISTON, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect: { subject: { kind: type, id: v-electric, class: SEP_LAND }, message: type.current, validUntil: 2028-03-10, requirements: {variant_flown: {current: 1, met: true, lastDate: 2026-03-10}} }
+  - name: variants-not-flown
+    evaluation: variants
+    says: The variant was last flown more than 2 years ago; flights on another variant do not count. (FCL.710 case, recorded on a LAPL(A) SEP privilege, FCL.140.A(c).)
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-sep, licenceId: l-lapl, class: SEP_LAND, expires: 2027-06-30 }
+      variants:
+        - { id: v-electric, ratingId: r-sep, name: ELECTRIC, issued: 2023-05-01 }
+      flights:
+        - { date: 2024-08-01, class: SEP_LAND, variant: ELECTRIC, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-04-10, class: SEP_LAND, variant: PISTON, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: lapsed
+    expect: { subject: { kind: type, id: v-electric, class: SEP_LAND }, message: type.not_flown, requirements: {variant_flown: {current: 0, met: false, remedyKey: remedy.differences_training}} }
+  - name: variants-proficiency-check
+    evaluation: variants
+    says: A proficiency check in the variant, logged as an event, restores the privilege. (FCL.710 case, recorded on a LAPL(A) SEP privilege, FCL.140.A(c).)
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-sep, licenceId: l-lapl, class: SEP_LAND, expires: 2027-06-30 }
+      variants:
+        - { id: v-electric, ratingId: r-sep, name: ELECTRIC, issued: 2023-05-01 }
+      events:
+        - { date: 2026-08-01, kind: proficiency_check, class: SEP_LAND, variant: ELECTRIC }
+      flights:
+        - { date: 2023-06-01, class: SEP_LAND, variant: ELECTRIC, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect: { subject: { kind: type, id: v-electric, class: SEP_LAND }, message: type.current }
+  - name: variants-refresher-training
+    evaluation: variants
+    says: Refresher training in the variant restores the privilege. (FCL.710 case, recorded on a LAPL(A) SEP privilege, FCL.140.A(c).)
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-sep, licenceId: l-lapl, class: SEP_LAND, expires: 2027-06-30 }
+      variants:
+        - { id: v-electric, ratingId: r-sep, name: ELECTRIC, issued: 2023-05-01 }
+      events:
+        - { date: 2026-05-01, kind: refresher_training, class: SEP_LAND, variant: ELECTRIC }
+      flights: []
+    outcome: current
+    expect: { subject: { kind: type, id: v-electric, class: SEP_LAND }, message: type.current }
+  - name: variants-variant-not-recorded
+    evaluation: variants
+    says: Flights in the class without a variant cannot be matched; the result is unknown. (FCL.710 case, recorded on a LAPL(A) SEP privilege, FCL.140.A(c).)
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-sep, licenceId: l-lapl, class: SEP_LAND, expires: 2027-06-30 }
+      variants:
+        - { id: v-electric, ratingId: r-sep, name: ELECTRIC, issued: 2023-05-01 }
+      flights:
+        - { date: 2026-05-01, class: SEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: unknown
+    expect: { subject: { kind: type, id: v-electric, class: SEP_LAND }, message: type.unknown, requirements: {variant_flown: {met: false, tracked: false}} }
+  - name: variants-window-edges
+    evaluation: variants
+    says: A flight on 15 September 2024 counts on 15 September 2026; one on 14 September 2024 does not. (FCL.710 case, recorded on a LAPL(A) SEP privilege, FCL.140.A(c).)
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-sep, licenceId: l-lapl, class: SEP_LAND, expires: 2027-06-30 }
+      variants:
+        - { id: v-electric, ratingId: r-sep, name: ELECTRIC, issued: 2023-05-01 }
+      flights:
+        - { date: 2024-09-14, class: SEP_LAND, variant: ELECTRIC, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2024-09-15, class: SEP_LAND, variant: ELECTRIC, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect: { subject: { kind: type, id: v-electric, class: SEP_LAND }, message: type.current, validUntil: 2026-09-15, requirements: {variant_flown: {current: 1}} }
+  - name: variants-tmg-left-out
+    evaluation: variants
+    shows: [variants-sep-only]
+    says: TMG variants are exempt (FCL.710(da)) and variants on FAA licences are not evaluated; only the SEP variant on the LAPL(A) is (legacy not-applicable case, on a LAPL(A), with an SEP variant added).
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+        - { id: l-faa, authority: FAA, type: PRIVATE }
+      ratings:
+        - { id: r-tmg, licenceId: l-lapl, class: TMG }
+        - { id: r-faa, licenceId: l-faa, class: SEP_LAND }
+        - { id: r-sep, licenceId: l-lapl, class: SEP_LAND }
+      variants:
+        - { id: v-tmg, ratingId: r-tmg, name: RETRACTABLE }
+        - { id: v-faa, ratingId: r-faa, name: ELECTRIC }
+        - { id: v-sep, ratingId: r-sep, name: ELECTRIC }
+      flights:
+        - { date: 2026-05-01, class: SEP_LAND, variant: ELECTRIC, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect: { message: type.current }
+  - name: recency-not-applicable-other-items
+    evaluation: recency
+    shows: [lapl-privileges]
+    says: Class ratings on a PPL(A), LAPL(A) privileges on a DULV licence and sailplane or ultralight entries are not evaluated here; only the SEP land privilege on the EASA LAPL(A) is (legacy not-applicable case with that privilege added).
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+        - { id: l-dulv, authority: DULV, type: LAPL(A) }
+        - { id: l-lapl, authority: EASA, type: LAPL }
+      ratings:
+        - { id: r-ppl, licenceId: l-ppl, class: SEP_LAND, expires: 2026-10-31 }
+        - { id: r-dulv, licenceId: l-dulv, class: SEP_LAND }
+        - { id: r-glider, licenceId: l-lapl, class: GLIDER }
+        - { id: r-ul, licenceId: l-lapl, class: ULTRALIGHT }
+        - { id: r-land, licenceId: l-lapl, class: SEP_LAND }
+      events:
+        - { date: 2026-03-01, kind: proficiency_check, class: SEP_LAND }
+    outcome: current
+    expect: { message: rating.recency_current }
+  - name: passenger-prerequisite-not-applicable-other-items
+    evaluation: passenger_prerequisite
+    shows: [passenger-pic-since-issue]
+    says: 'PPL(A) holders and sailplane privileges are not subject to FCL.105.A(b); only the SEP land privilege of the LAPL(A) is evaluated (legacy not-applicable case on separate records: here the LAPL(A) holder has no PPL(A)).'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A), issued: 2025-04-01 }
+      ratings:
+        - { id: r-glider, licenceId: l-lapl, class: GLIDER }
+        - { id: r-sep, licenceId: l-lapl, class: SEP_LAND }
+      flights:
+        - { date: 2025-06-01, class: SEP_LAND, minutes: { total: 600, pic: 600 }, takeoffs: { day: 10 }, landings: { day: 10 } }
+    outcome: current
+    expect: { message: pax.prerequisite_met }
+  - name: passengers-day-current
+    evaluation: passengers_day
+    says: Three take-offs and landings as pilot flying in an SEP land aeroplane within 90 days allow carrying passengers.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-1, licenceId: l-lapl, class: SEP_LAND, expires: 2027-06-30 }
+      flights:
+        - { date: 2026-08-20, class: SEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 3 }, landings: { day: 3 }, pilotFlying: true }
+    outcome: current
+    expect: { subject: { kind: passengers, id: l-lapl, class: SEP_LAND }, message: pax.day_current }
+  - name: passengers-day-one-short
+    evaluation: passengers_day
+    says: Two take-offs and landings are one short.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-1, licenceId: l-lapl, class: SEP_LAND, expires: 2027-06-30 }
+      flights:
+        - { date: 2026-08-20, class: SEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 2 }, landings: { day: 2 }, pilotFlying: true }
+    outcome: expired
+    expect: { subject: { kind: passengers, id: l-lapl, class: SEP_LAND }, message: pax.not_current, params: { needed: 1 } }
+  - name: passengers-night-current-own
+    evaluation: passengers_night
+    says: One night take-off and landing as pilot flying in an SEP land aeroplane within 90 days allow carrying passengers at night.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-1, licenceId: l-lapl, class: SEP_LAND, expires: 2027-06-30 }
+      flights:
+        - { date: 2026-08-20, class: SEP_LAND, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 1 }, landings: { night: 1 }, pilotFlying: true }
+    outcome: current
+    expect: { subject: { kind: passengers, id: l-lapl, class: SEP_LAND }, message: pax.night_current }
+  - name: passengers-night-day-only
+    evaluation: passengers_night
+    says: Day take-offs and landings do not count for night passengers.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-1, licenceId: l-lapl, class: SEP_LAND, expires: 2027-06-30 }
+      flights:
+        - { date: 2026-08-20, class: SEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 3 }, landings: { day: 3 }, pilotFlying: true }
+    outcome: expired
+    expect: { subject: { kind: passengers, id: l-lapl, class: SEP_LAND }, message: pax.night_not_current }
+  - name: medical-lapl-valid
+    evaluation: medical
+    says: A valid LAPL medical certificate allows exercising the LAPL(A).
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      credentials:
+        - { id: c-1, type: EASA_LAPL_MEDICAL, issued: 2026-01-10, expires: 2027-01-10 }
+    outcome: current
+    expect: { message: licence.valid }
+  - name: medical-expired
+    evaluation: medical
+    says: An expired medical certificate does not allow exercising the LAPL(A).
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      credentials:
+        - { id: c-1, type: EASA_LAPL_MEDICAL, expires: 2026-09-14 }
+    outcome: expired
+    expect: { message: licence.medical_required }
+  - name: composite-recent-with-lapl-medical
+    composite: true
+    says: A LAPL(A) holder with a valid LAPL medical, a valid language endorsement and a proficiency check within 2 years may exercise the licence.
+    asOf: 2026-09-15
+    record:
+      holder: { dateOfBirth: 1976-01-01 }
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-land, licenceId: l-lapl, class: SEP_LAND }
+      credentials:
+        - { id: c-med, type: EASA_LAPL_MEDICAL, issued: 2026-06-01 }
+        - { id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2023-04-15 }
+      events:
+        - { date: 2026-03-01, kind: proficiency_check, class: SEP_LAND }
+    outcome: current
+    expect: { subject: { kind: licence, id: l-lapl } }
+  - name: composite-recency-lapsed
+    composite: true
+    says: With the medical and language valid but no recent experience or check, the recency of the SEP land privilege decides that the LAPL(A) may not be exercised.
+    asOf: 2026-09-15
+    record:
+      holder: { dateOfBirth: 1976-01-01 }
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      ratings:
+        - { id: r-land, licenceId: l-lapl, class: SEP_LAND }
+      credentials:
+        - { id: c-med, type: EASA_LAPL_MEDICAL, issued: 2026-06-01 }
+        - { id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2023-04-15 }
+      flights:
+        - { date: 2026-05-01, class: SEP_LAND, minutes: { total: 120, pic: 120 }, takeoffs: { day: 2 }, landings: { day: 2 } }
+    outcome: lapsed
+    expect: { subject: { kind: licence, id: l-lapl }, decidedBy: { evaluation: recency } }

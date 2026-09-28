@@ -46,6 +46,7 @@ type Selects struct {
 type Part struct {
 	Kinds           []string `yaml:"kinds"`
 	Classes         []string `yaml:"classes"`
+	ULKinds         []string `yaml:"ul_kinds"`
 	Authorities     []string `yaml:"authorities"`
 	NotAuthorities  []string `yaml:"not_authorities"`
 	LicenceKinds    []string `yaml:"licence_kinds"`
@@ -127,6 +128,7 @@ type Scope struct {
 	NotLicenceKinds []string      `yaml:"not_licence_kinds"`
 	Classes         []string      `yaml:"classes"`
 	NotClasses      []string      `yaml:"not_classes"`
+	ULKinds         []string      `yaml:"ul_kinds"`
 	CredentialTypes []string      `yaml:"credential_types"`
 	PrivilegeKinds  []string      `yaml:"privilege_kinds"`
 	LaunchMethods   []string      `yaml:"launch_methods"`

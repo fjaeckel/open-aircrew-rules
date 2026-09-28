@@ -1,0 +1,170 @@
+credential: faa.licence.private-rotorcraft
+examples:
+  - name: passengers-day-current
+    evaluation: passengers_day
+    says: Three takeoffs and landings as sole manipulator in the HELICOPTER class on 1 July allow a private pilot holder to carry passengers there on 16 August.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: HELICOPTER}
+      flights:
+        - {date: 2026-07-01, class: HELICOPTER, minutes: {total: 90, pic: 90}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    outcome: current
+    expect: { message: pax.day_current }
+  - name: passengers-day-lapsed
+    evaluation: passengers_day
+    says: The last three takeoffs and landings in the HELICOPTER class were on 1 May, more than 90 days before 16 August; passenger recency has lapsed, the certificate stays valid.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: HELICOPTER}
+      flights:
+        - {date: 2026-05-01, class: HELICOPTER, minutes: {total: 90, pic: 90}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    outcome: lapsed
+    expect: { message: pax.not_current, params: { needed: 3 } }
+  - name: passengers-day-type-current
+    evaluation: passengers_day_type
+    says: Three takeoffs and landings as sole manipulator in a R44 on 1 July allow a private pilot holder to carry passengers there on 16 August.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: HELICOPTER, typeDesignator: R44}
+      flights:
+        - {date: 2026-07-01, class: HELICOPTER, typeDesignator: R44, minutes: {total: 90, pic: 90}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    outcome: current
+    expect: { message: pax.day_current }
+  - name: passengers-day-type-lapsed
+    evaluation: passengers_day_type
+    says: The last three takeoffs and landings in a R44 were on 1 May, more than 90 days before 16 August; passenger recency has lapsed, the certificate stays valid.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: HELICOPTER, typeDesignator: R44}
+      flights:
+        - {date: 2026-05-01, class: HELICOPTER, typeDesignator: R44, minutes: {total: 90, pic: 90}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    outcome: lapsed
+    expect: { message: pax.not_current, params: { needed: 3 } }
+  - name: passengers-night-current
+    evaluation: passengers_night
+    says: Three night takeoffs and three full-stop night landings as sole manipulator in the GYROPLANE class on 10 July allow a private pilot holder to carry passengers at night there.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: GYROPLANE}
+      flights:
+        - {date: 2026-07-10, class: GYROPLANE, minutes: {total: 90, pic: 90, night: 60}, takeoffs: {night: 3}, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
+    outcome: current
+    expect: { message: pax.night_current }
+  - name: passengers-night-day-only
+    evaluation: passengers_night
+    says: Only day takeoffs and landings in the GYROPLANE class in the last 90 days; night passenger recency has lapsed.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: GYROPLANE}
+      flights:
+        - {date: 2026-07-10, class: GYROPLANE, minutes: {total: 90, pic: 90}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    outcome: lapsed
+    expect: { message: pax.night_not_current, params: { needed: 3 } }
+  - name: passengers-night-type-current
+    evaluation: passengers_night_type
+    says: Three night takeoffs and three full-stop night landings as sole manipulator in a R44 on 10 July allow a private pilot holder to carry passengers at night there.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: HELICOPTER, typeDesignator: R44}
+      flights:
+        - {date: 2026-07-10, class: HELICOPTER, typeDesignator: R44, minutes: {total: 90, pic: 90, night: 60}, takeoffs: {night: 3}, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
+    outcome: current
+    expect: { message: pax.night_current }
+  - name: passengers-night-type-day-only
+    evaluation: passengers_night_type
+    says: Only day takeoffs and landings in a R44 in the last 90 days; night passenger recency has lapsed.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: HELICOPTER, typeDesignator: R44}
+      flights:
+        - {date: 2026-07-10, class: HELICOPTER, typeDesignator: R44, minutes: {total: 90, pic: 90}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    outcome: lapsed
+    expect: { message: pax.night_not_current, params: { needed: 3 } }
+  - name: flight-review-current
+    evaluation: flight_review
+    says: A private pilot certificate holder with a flight review on 1 September 2025 may act as pilot in command through 30 September 2027.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      events:
+        - {date: 2025-09-01, kind: flight_review}
+    outcome: current
+    expect: { message: flight_review.current }
+  - name: flight-review-none
+    evaluation: flight_review
+    says: A private pilot certificate holder with no flight review, proficiency check or practical test on record may not act as pilot in command.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+    outcome: expired
+    expect: { message: flight_review.none_on_record }
+  - name: composite-helicopter-third-class
+    composite: true
+    shows: [rating-items]
+    says: The helicopter rating on a private pilot certificate may be exercised with a valid third-class medical certificate.
+    asOf: 2026-08-16
+    record:
+      holder: {dateOfBirth: 1990-01-01}
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-heli, licenceId: l-faa, class: HELICOPTER}
+      credentials:
+        - {id: c-med, type: FAA_CLASS3_MEDICAL, issued: 2025-03-01}
+      events:
+        - {date: 2025-09-01, kind: flight_review}
+    outcome: current
+    expect: { subject: { kind: rating, id: r-heli } }
+  - name: composite-helicopter-no-medical
+    composite: true
+    says: With no medical certificate or BasicMed recorded, whether the helicopter rating may be exercised is unknown.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-heli, licenceId: l-faa, class: HELICOPTER}
+      events:
+        - {date: 2025-09-01, kind: flight_review}
+    outcome: unknown
+    expect: { subject: { kind: rating, id: r-heli }, decidedBy: { evaluation: medical } }
+  - name: passengers-day-helicopter-on-glider-certificate
+    evaluation: passengers_day
+    shows: [glider-certificate-powered-ratings]
+    says: A helicopter rating recorded on a glider pilot certificate is evaluated here; two takeoffs and landings are one short of passenger recency.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-glider, authority: FAA, type: GLIDER}
+      ratings:
+        - {id: r-heli, licenceId: l-glider, class: HELICOPTER}
+      flights:
+        - {date: 2026-07-10, class: HELICOPTER, minutes: {total: 90, pic: 90}, takeoffs: {day: 2}, landings: {day: 2}, soleManipulator: true}
+    outcome: lapsed
+    expect: { subject: { kind: passengers, id: l-glider, class: HELICOPTER }, message: pax.not_current, params: { needed: 1 } }

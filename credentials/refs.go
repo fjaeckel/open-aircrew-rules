@@ -51,13 +51,18 @@ func (v *Vocab) Cite(r Ref) string {
 	return strings.ReplaceAll(a.Cite, "{article}", r.Article+lab)
 }
 
+// AssociationPrefix marks a reference to an association document: assoc:<publisher>:<doc id>.
+const AssociationPrefix = "assoc"
+
 // Resolver checks references against sources/ and the policies of policies.yaml.
 type Resolver struct {
 	root     string
 	v        *Vocab
 	policies map[string]*Policy
-	mu       sync.Mutex
-	files    map[string][]label
+	// associations are the association documents of associations.yaml (assoc: refs).
+	associations map[string]*Association
+	mu           sync.Mutex
+	files        map[string][]label
 }
 
 // NewResolver returns a resolver for the module rooted at root.
@@ -78,8 +83,8 @@ func (rs *Resolver) SourceFile(r Ref) (string, error) {
 	return filepath.Join(rs.root, "sources", a.Directory, name+".md"), nil
 }
 
-// Resolve checks one reference: the prefix is known, a policy is declared, the article
-// file exists and the paragraph labels occur in order in its text.
+// Resolve checks one reference: the prefix is known, a policy or association document is
+// declared, the article file exists and the paragraph labels occur in order in its text.
 func (rs *Resolver) Resolve(s string) error {
 	r, err := ParseRef(s)
 	if err != nil {
@@ -91,6 +96,15 @@ func (rs *Resolver) Resolve(s string) error {
 		}
 		if _, ok := rs.policies[r.Article]; !ok {
 			return fmt.Errorf("ref %q: policy not declared in policies.yaml", s)
+		}
+		return nil
+	}
+	if r.Prefix == AssociationPrefix {
+		if len(r.Labels) > 0 {
+			return fmt.Errorf("ref %q: an association ref has no paragraph labels (the text is not stored)", s)
+		}
+		if _, ok := rs.associations[r.Article]; !ok {
+			return fmt.Errorf("ref %q: association document not declared in associations.yaml", s)
 		}
 		return nil
 	}
@@ -197,9 +211,22 @@ func kinds(s string) []string {
 	return []string{"lower"}
 }
 
-// place puts a label into the outline: as the next sibling of an open level, else as the
-// first child of the current level.
+// insertedLabel matches a paragraph inserted after another by amendment: "(2a)" after
+// "(2)", "(da)" after "(d)". Roman numerals such as "(ii)" are not inserted labels.
+var insertedLabel = regexp.MustCompile(`^([0-9]+|[a-z])[a-z]$`)
+
+// place puts a label into the outline: an inserted label as the sibling of the label it
+// follows (the next ordinary label still follows that one), otherwise as the next sibling
+// of an open level, else as the first child of the current level.
 func place(stack []outline, s string) []outline {
+	if m := insertedLabel.FindStringSubmatch(s); m != nil && !slices.Contains(romans, s) {
+		for d := len(stack) - 1; d >= 0; d-- {
+			e := stack[d]
+			if slices.Contains(kinds(m[1]), e.kind) && e.ord == ordinal(m[1], e.kind) {
+				return append(stack[:d], outline{s, e.kind, e.ord})
+			}
+		}
+	}
 	ks := kinds(s)
 	for d := len(stack) - 1; d >= 0; d-- {
 		e := stack[d]

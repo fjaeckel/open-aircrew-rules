@@ -1,0 +1,61 @@
+credential: easa.licence.mpl
+examples:
+  - name: medical-class-1-valid
+    evaluation: medical
+    shows: [licence-authorities]
+    says: A valid class 1 medical certificate allows exercising the MPL.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: MPL }
+      credentials:
+        - { id: c-1, type: EASA_CLASS1_MEDICAL, expires: 2027-01-10 }
+    outcome: current
+    expect: { message: licence.valid }
+  - name: medical-class-2-not-enough
+    evaluation: medical
+    shows: [class-1-only]
+    says: A class 2 medical certificate is not enough for the MPL.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: MPL }
+      credentials:
+        - { id: c-1, type: EASA_CLASS2_MEDICAL, expires: 2027-09-14 }
+    outcome: expired
+    expect: { message: licence.medical_required }
+  - name: medical-none-recorded
+    evaluation: medical
+    says: With no medical certificate recorded the result is unknown, not expired.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: MPL }
+    outcome: unknown
+    expect: { message: licence.medical_not_recorded }
+  - name: composite-class-1-and-language-valid
+    composite: true
+    says: With a valid class 1 medical and a valid language endorsement the MPL may be exercised.
+    asOf: 2026-09-15
+    record:
+      holder: { dateOfBirth: 1976-01-01 }
+      licences:
+        - { id: l-1, authority: EASA, type: MPL }
+      credentials:
+        - { id: c-med, type: EASA_CLASS1_MEDICAL, issued: 2026-06-01 }
+        - { id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2023-04-15 }
+    outcome: current
+    expect: { subject: { kind: licence, id: l-1 } }
+  - name: composite-class-2-only
+    composite: true
+    says: A class 2 medical does not allow the privileges of a MPL; the medical decides.
+    asOf: 2026-09-15
+    record:
+      holder: { dateOfBirth: 1976-01-01 }
+      licences:
+        - { id: l-1, authority: EASA, type: MPL }
+      credentials:
+        - { id: c-med, type: EASA_CLASS2_MEDICAL, issued: 2026-06-01 }
+        - { id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2023-04-15 }
+    outcome: expired
+    expect: { subject: { kind: licence, id: l-1 }, decidedBy: { evaluation: medical } }

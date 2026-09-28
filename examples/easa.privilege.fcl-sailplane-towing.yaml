@@ -1,0 +1,191 @@
+credential: easa.privilege.fcl-sailplane-towing
+examples:
+  - name: recency-current
+    evaluation: recency
+    says: Five tows in the last 24 months keep the towing privilege.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      privileges:
+        - { id: p-tow, licenceId: l-1, kind: SAILPLANE_TOWING }
+      flights:
+        - { date: 2026-01-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-02-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-03-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-04-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-05-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+    outcome: current
+    expect: { subject: { kind: privilege, id: p-tow }, message: privilege.recency_current, params: {date: 2028-01-01}, validUntil: 2028-01-01, requirements: {tows: {current: 5, required: 5, met: true}} }
+  - name: recency-entered-expiry-after
+    evaluation: recency
+    says: After an entered expiry date the privilege is expired.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      privileges:
+        - { id: p-tow, licenceId: l-1, kind: SAILPLANE_TOWING, expires: 2026-09-14 }
+      flights:
+        - { date: 2026-01-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-02-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-03-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-04-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-05-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+    outcome: expired
+    expect: { subject: { kind: privilege, id: p-tow }, message: privilege.expired, params: {date: 2026-09-14} }
+  - name: recency-entered-expiry-before
+    evaluation: recency
+    says: An expiry date entered on the privilege is reported; before it the recency decides.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      privileges:
+        - { id: p-tow, licenceId: l-1, kind: SAILPLANE_TOWING, expires: 2026-12-31 }
+      flights:
+        - { date: 2026-01-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-02-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-03-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-04-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-05-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+    outcome: current
+    expect: { subject: { kind: privilege, id: p-tow } }
+  - name: recency-entered-expiry-on
+    evaluation: recency
+    says: On the entered expiry date the privilege is still valid.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      privileges:
+        - { id: p-tow, licenceId: l-1, kind: SAILPLANE_TOWING, expires: 2026-09-15 }
+      flights:
+        - { date: 2026-01-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-02-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-03-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-04-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-05-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+    outcome: current
+    expect: { subject: { kind: privilege, id: p-tow } }
+  - name: recency-gyroplane-tows
+    evaluation: recency
+    says: Tows flown in a gyroplane are not tows in an aeroplane or TMG; with three tows in an aeroplane the pilot needs two more.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      privileges:
+        - { id: p-tow, licenceId: l-1, kind: SAILPLANE_TOWING }
+      flights:
+        - { date: 2026-01-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-02-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-03-01, class: TMG, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-04-01, class: GYROPLANE, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-05-01, class: GYROPLANE, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+    outcome: lapsed
+    expect: { subject: { kind: privilege, id: p-tow }, message: privilege.recency_not_met, requirements: {tows: {current: 3, met: false}} }
+  - name: recency-lapsed
+    evaluation: recency
+    says: Three tows are not enough; the missing two are flown with or under the supervision of an instructor.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      privileges:
+        - { id: p-tow, licenceId: l-1, kind: SAILPLANE_TOWING }
+      flights:
+        - { date: 2026-01-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-02-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-03-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+    outcome: lapsed
+    expect: { subject: { kind: privilege, id: p-tow }, message: privilege.recency_not_met, requirements: {tows: {current: 3, met: false, remedyKey: remedy.privilege_with_instructor, remedyParams: {missing: 2, unit: tows}}} }
+  - name: recency-tow-kind
+    evaluation: recency
+    says: Only glider tows count; banner tows do not, and a tow flight without a recorded tow kind is unknown.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      privileges:
+        - { id: p-tow, licenceId: l-1, kind: SAILPLANE_TOWING }
+      flights:
+        - { date: 2026-01-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-02-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-03-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-04-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-05-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: banner }
+        - { date: 2026-06-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true } }
+    outcome: lapsed
+    expect: { subject: { kind: privilege, id: p-tow }, requirements: {tows: {current: 4, met: false, tracked: true}} }
+  - name: recency-ultralight-tug
+    evaluation: recency
+    says: Tows flown with an ultralight tug do not count toward the Part-FCL rating.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      privileges:
+        - { id: p-tow, licenceId: l-1, kind: SAILPLANE_TOWING }
+      flights:
+        - { date: 2026-01-01, class: ULTRALIGHT, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-02-01, class: ULTRALIGHT, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-03-01, class: ULTRALIGHT, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-04-01, class: ULTRALIGHT, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-05-01, class: ULTRALIGHT, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+    outcome: lapsed
+    expect: { subject: { kind: privilege, id: p-tow }, requirements: {tows: {current: 0}} }
+  - name: recency-window-edges
+    evaluation: recency
+    says: A tow on 15 September 2024 counts on 15 September 2026; one on 14 September 2024 does not.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      privileges:
+        - { id: p-tow, licenceId: l-1, kind: SAILPLANE_TOWING }
+      flights:
+        - { date: 2024-09-14, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2024-09-15, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-01-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-02-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-03-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+        - { date: 2026-04-01, class: SEP_LAND, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { towFlight: true }, towKind: glider }
+    outcome: current
+    expect: { subject: { kind: privilege, id: p-tow }, validUntil: 2026-09-15, requirements: {tows: {current: 5}} }
+  - name: recency-not-applicable-other-items
+    evaluation: recency
+    shows: [part-fcl-licences-only]
+    says: The towing privilege of a sailplane licence follows SFCL.205, and FAA licences and other privileges are not evaluated here; only the privilege on the PPL(A) is (legacy not-applicable case with that privilege added).
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-spl, authority: EASA, type: SPL }
+        - { id: l-faa, authority: FAA, type: PRIVATE }
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      privileges:
+        - { id: p-spl, licenceId: l-spl, kind: SAILPLANE_TOWING }
+        - { id: p-faa, licenceId: l-faa, kind: SAILPLANE_TOWING }
+        - { id: p-other, licenceId: l-ppl, kind: BANNER_TOWING }
+        - { id: p-tow, licenceId: l-ppl, kind: SAILPLANE_TOWING }
+      flights:
+        - { date: 2026-06-01, class: SEP_LAND, minutes: { total: 120, pic: 120 }, takeoffs: { day: 5 }, landings: { day: 5 }, towKind: glider, towedGliders: 5, flags: { towFlight: true } }
+    outcome: current
+    expect: { message: privilege.recency_current }
+  - name: composite-lapl-medical-expired
+    composite: true
+    says: 'The towing recency is met, but the LAPL(A) the rating is held on has an expired medical: the rating may not be exercised.'
+    asOf: 2026-09-15
+    record:
+      holder: { dateOfBirth: 1976-01-01 }
+      licences:
+        - { id: l-lapl, authority: EASA, type: LAPL(A) }
+      privileges:
+        - { id: p-tow, licenceId: l-lapl, kind: SAILPLANE_TOWING }
+      credentials:
+        - { id: c-med, type: EASA_LAPL_MEDICAL, issued: 2024-06-01, expires: 2025-06-01 }
+        - { id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2023-04-15 }
+      flights:
+        - { date: 2026-06-01, class: SEP_LAND, minutes: { total: 120, pic: 120 }, takeoffs: { day: 5 }, landings: { day: 5 }, towKind: glider, towedGliders: 5, flags: { towFlight: true } }
+    outcome: expired
+    expect: { subject: { kind: privilege, id: p-tow }, decidedBy: { evaluation: licence, credential: easa.licence.lapl-a } }

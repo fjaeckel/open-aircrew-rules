@@ -1,0 +1,129 @@
+credential: de.privilege.ul-towing
+examples:
+  - name: current-edge-in
+    evaluation: recency
+    shows: [tow-kind-not-recorded, tows-counted]
+    says: Ten tows in ultralights in the last 24 months, the first four on the window's first day; a trike banner tow and three-axis glider tows both count, a tow in an SEP aeroplane does not, and a flight not flagged as a tow flight never counts.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-3ax, licenceId: l-ul, class: ULTRALIGHT, ulKind: THREE_AXIS }
+      privileges:
+        - { id: p-tow, licenceId: l-ul, kind: UL_TOWING, detail: THREE_AXIS, expires: 2030-01-01 }
+      flights:
+        - { date: 2024-09-15, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 60, pic: 60 }, towedGliders: 4, flags: { towFlight: true } }
+        - { date: 2025-05-01, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 30, pic: 30 }, towKind: banner, flags: { towFlight: true } }
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 90, pic: 90 }, towedGliders: 5, flags: { towFlight: true } }
+        - { date: 2026-05-02, class: SEP_LAND, minutes: { total: 90, pic: 90 }, towedGliders: 5, flags: { towFlight: true } }
+        - { date: 2026-05-03, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 90, pic: 90 } }
+    outcome: current
+    expect:
+      subject: { kind: privilege, id: p-tow, detail: THREE_AXIS }
+      message: privilege.recency_current
+      params: { date: "2030-01-01" }
+      expiresOn: 2030-01-01
+      validUntil: 2026-09-15
+      requirements:
+        tows: { current: 10, required: 10, met: true }
+
+  - name: expired-day-after
+    evaluation: recency
+    shows: [statutory-for-every-authority]
+    says: The day after its recorded expiry date the towing rating is expired, whatever the tows.
+    asOf: 2026-09-16
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      privileges:
+        - { id: p-tow, licenceId: l-ul, kind: UL_TOWING, expires: 2026-09-15 }
+      flights:
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 90, pic: 90 }, towedGliders: 10, flags: { towFlight: true } }
+    outcome: expired
+    expect:
+      subject: { kind: privilege, id: p-tow }
+      message: privilege.expired
+      params: { date: "2026-09-15" }
+
+  - name: not-applicable
+    evaluation: recency
+    says: 'Only the ultralight towing rating is evaluated: a passenger authorisation and a Part-SFCL sailplane towing privilege held alongside it are not ultralight towing ratings (a second result would fail the example).'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      privileges:
+        - { id: p-tow, licenceId: l-ul, kind: UL_TOWING }
+        - { id: p-pax, licenceId: l-ul, kind: UL_PASSENGER_AUTH }
+        - { id: p-st, licenceId: l-ppl, kind: SAILPLANE_TOWING }
+      flights:
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 90, pic: 90 }, towedGliders: 10, flags: { towFlight: true } }
+    outcome: current
+    expect: { message: privilege.recency_current }
+
+  - name: valid-on-expiry-day
+    evaluation: recency
+    says: A towing rating with a recorded expiry date is valid on that date and its recency still decides the status.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      privileges:
+        - { id: p-tow, licenceId: l-ul, kind: UL_TOWING, expires: 2026-09-15 }
+      flights:
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 90, pic: 90 }, towedGliders: 10, flags: { towFlight: true } }
+    outcome: current
+    expect:
+      subject: { kind: privilege, id: p-tow }
+      message: privilege.recency_current
+      params: { date: "2026-09-15" }
+
+  - name: window-day-before
+    evaluation: recency
+    shows: [supervised-tows-not-restoring]
+    says: The four tows of 14 September 2024 are one day outside the 24 months; the rating may not be used until the tows are made up.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DAeC, type: UL }
+      privileges:
+        - { id: p-tow, licenceId: l-ul, kind: UL_TOWING }
+      flights:
+        - { date: 2024-09-14, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 60, pic: 60 }, towedGliders: 4, flags: { towFlight: true } }
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 90, pic: 90 }, towedGliders: 6, flags: { towFlight: true } }
+    outcome: lapsed
+    expect:
+      subject: { kind: privilege, id: p-tow }
+      message: privilege.recency_not_met
+      requirements:
+        tows: { current: 6, met: false, remedyKey: remedy.fly_more, remedyParams: { missing: 4, unit: tows } }
+
+  - name: composite-may-tow
+    composite: true
+    says: With ten tows in the last 24 months, entered in an ultralight licence (which has no time limit), the towing rating may be exercised.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      privileges:
+        - { id: p-tow, licenceId: l-ul, kind: UL_TOWING }
+      flights:
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 90, pic: 90 }, towedGliders: 10, flags: { towFlight: true } }
+    outcome: current
+    expect: { subject: { kind: privilege, id: p-tow } }
+
+  - name: composite-tows-missing
+    composite: true
+    says: With six tows in the last 24 months the towing rating may not be exercised; the recency decides.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      privileges:
+        - { id: p-tow, licenceId: l-ul, kind: UL_TOWING }
+      flights:
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 90, pic: 90 }, towedGliders: 6, flags: { towFlight: true } }
+    outcome: lapsed
+    expect: { subject: { kind: privilege, id: p-tow }, decidedBy: { evaluation: recency } }

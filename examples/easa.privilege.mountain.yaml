@@ -1,0 +1,78 @@
+credential: easa.privilege.mountain
+examples:
+  - name: recency-landings
+    evaluation: recency
+    says: Six landings on designated mountain surfaces in the last 2 years keep the mountain rating current; the first counted flight is on the first day of the window, and landings made the day before no longer count.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      privileges:
+        - { id: p-mtn, licenceId: l-ppl, kind: MOUNTAIN }
+      flights:
+        - { date: 2024-09-14, class: SEP_LAND, minutes: { total: 90, pic: 90 }, takeoffs: { day: 4 }, landings: { day: 4 }, mountainLandings: 4 }
+        - { date: 2024-09-15, class: SEP_LAND, minutes: { total: 90, pic: 90 }, takeoffs: { day: 3 }, landings: { day: 3 }, mountainLandings: 3 }
+        - { date: 2026-03-01, class: TMG, minutes: { total: 120, pic: 120 }, takeoffs: { day: 4 }, landings: { day: 4 }, mountainLandings: 3 }
+    outcome: current
+    expect: { subject: { kind: privilege, id: p-mtn }, message: privilege.recency_current, params: {date: 2026-09-15}, validUntil: 2026-09-15, requirements: {mountain_landings: {current: 6, met: true}, proficiency_check: {current: 0, met: false}} }
+  - name: recency-lapsed
+    evaluation: recency
+    says: 'Four mountain landings and no check in 2 years: the rating may not be used; a proficiency check for another rating does not count, and a helicopter flight is not an aeroplane flight.'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      privileges:
+        - { id: p-mtn, licenceId: l-ppl, kind: MOUNTAIN }
+      events:
+        - { date: 2026-01-10, kind: proficiency_check, class: SEP_LAND, rating: SEP_LAND }
+      flights:
+        - { date: 2026-06-01, class: SEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 4 }, landings: { day: 4 }, mountainLandings: 4 }
+        - { date: 2026-06-02, class: HELICOPTER, minutes: { total: 60, pic: 60 }, takeoffs: { day: 4 }, landings: { day: 4 }, mountainLandings: 4 }
+    outcome: lapsed
+    expect: { subject: { kind: privilege, id: p-mtn }, message: privilege.recency_not_met, requirements: {mountain_landings: {current: 4, met: false, remedyKey: remedy.fly_more, remedyParams: {missing: 2, unit: landings}}, proficiency_check: {current: 0, met: false}} }
+  - name: recency-not-logged
+    evaluation: recency
+    says: 'Flights in the window do not record whether any landing was on a mountain surface, so the recency cannot be decided: unknown, not lapsed.'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      privileges:
+        - { id: p-mtn, licenceId: l-ppl, kind: MOUNTAIN }
+      flights:
+        - { date: 2026-06-01, class: SEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 6 }, landings: { day: 6 } }
+    outcome: unknown
+    expect: { subject: { kind: privilege, id: p-mtn }, message: privilege.recency_not_logged, requirements: {mountain_landings: {tracked: false, met: false}} }
+  - name: recency-proficiency-check
+    evaluation: recency
+    says: A mountain proficiency check a year ago keeps the rating current without mountain landings.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      privileges:
+        - { id: p-mtn, licenceId: l-ppl, kind: MOUNTAIN }
+      events:
+        - { date: 2025-09-20, kind: proficiency_check, class: SEP_LAND, rating: MOUNTAIN }
+      flights:
+        - { date: 2026-05-01, class: SEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, mountainLandings: 0 }
+    outcome: current
+    expect: { subject: { kind: privilege, id: p-mtn }, message: privilege.recency_current, validUntil: 2027-09-20, requirements: {proficiency_check: {current: 1, met: true}, mountain_landings: {current: 0, met: false}} }
+  - name: recency-not-applicable-other-items
+    evaluation: recency
+    shows: [part-fcl-authorities]
+    says: Only MOUNTAIN privileges on Part-FCL licences are evaluated; other privileges and FAA licences are not (legacy not-applicable case with a MOUNTAIN privilege added).
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+        - { id: l-faa, authority: FAA, type: PRIVATE }
+      privileges:
+        - { id: p-night, licenceId: l-ppl, kind: NIGHT }
+        - { id: p-faa, licenceId: l-faa, kind: MOUNTAIN }
+        - { id: p-mtn, licenceId: l-ppl, kind: MOUNTAIN }
+      events:
+        - { date: 2026-03-01, kind: proficiency_check, class: SEP_LAND, rating: MOUNTAIN }
+    outcome: current
+    expect: { message: privilege.recency_current }

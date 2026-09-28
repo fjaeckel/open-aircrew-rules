@@ -1,0 +1,170 @@
+credential: de.rating.ul-helicopter
+examples:
+  - name: current-by-experience
+    evaluation: recency
+    shows: [training-flight-as-dual]
+    says: Six hours on ultralight helicopters in 12 months, with 6 take-offs and landings and a 75-minute flight with an instructor; the first flight is on the first day of the 12 months.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-heli, licenceId: l-ul, class: ULTRALIGHT, ulKind: HELICOPTER }
+      flights:
+        - { date: 2025-09-15, class: ULTRALIGHT, ulKind: HELICOPTER, minutes: { total: 75, dual: 75 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: HELICOPTER, minutes: { total: 285, pic: 285 }, takeoffs: { day: 5 }, landings: { day: 5 } }
+    outcome: current
+    expect:
+      subject: { kind: rating, id: r-heli, ulKind: HELICOPTER }
+      message: rating.recency_current
+      validUntil: 2026-09-15
+      requirements:
+        total_time: { current: 360, required: 360, met: true }
+        takeoffs: { current: 6, met: true }
+        landings: { current: 6, met: true }
+        training_flight: { current: 75, met: true }
+        proficiency_check: { current: 0, met: false }
+
+  - name: kind-unknown
+    evaluation: recency
+    shows: [kindless-flights-unknown]
+    says: Ultralight flights with no kind recorded cannot be counted as helicopter flights; the recency is unknown.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-heli, licenceId: l-ul, class: ULTRALIGHT, ulKind: HELICOPTER }
+      flights:
+        - { date: 2026-04-01, class: ULTRALIGHT, minutes: { total: 400, pic: 340, dual: 60 }, takeoffs: { day: 6 }, landings: { day: 6 } }
+    outcome: unknown
+    expect:
+      subject: { kind: rating, id: r-heli }
+      message: rating.ul_flights_kind_unknown
+      requirements:
+        total_time: { tracked: false }
+
+  - name: not-applicable
+    evaluation: recency
+    says: 'Only the ultralight helicopter rating is evaluated: three-axis and gyroplane ultralight ratings and a Part-FCL helicopter rating are not (a second result would fail the example).'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+        - { id: l-ppl, authority: LBA, type: PPL(H) }
+      ratings:
+        - { id: r-heli, licenceId: l-ul, class: ULTRALIGHT, ulKind: HELICOPTER }
+        - { id: r-3ax, licenceId: l-ul, class: ULTRALIGHT, ulKind: THREE_AXIS }
+        - { id: r-gyro, licenceId: l-ul, class: ULTRALIGHT, ulKind: GYROPLANE }
+        - { id: r-h, licenceId: l-ppl, class: HELICOPTER }
+    outcome: lapsed
+    expect: { message: rating.recency_not_met }
+
+  - name: proficiency-check
+    evaluation: recency
+    shows: [only-ultralight-helicopters, proficiency-check-period]
+    says: A proficiency check on an ultralight helicopter replaces the experience; a check in a Part-FCL helicopter does not.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DAeC, type: UL }
+      ratings:
+        - { id: r-heli, licenceId: l-ul, class: ULTRALIGHT, ulKind: HELICOPTER }
+      events:
+        - { date: 2026-01-20, kind: proficiency_check, class: HELICOPTER }
+        - { date: 2026-02-20, kind: proficiency_check, class: ULTRALIGHT, ulKind: HELICOPTER }
+    outcome: current
+    expect:
+      subject: { kind: rating, id: r-heli }
+      message: rating.recency_current
+      validUntil: 2027-02-20
+      requirements:
+        proficiency_check: { current: 1, met: true }
+
+  - name: takeoffs-short
+    evaluation: recency
+    shows: [takeoffs-and-landings]
+    says: Six hours with six landings but only four take-offs logged on ultralight helicopters, and a training flight with an instructor; the article asks for 6 take-offs and 6 landings.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-heli, licenceId: l-ul, class: ULTRALIGHT, ulKind: HELICOPTER }
+      flights:
+        - { date: 2026-03-01, class: ULTRALIGHT, ulKind: HELICOPTER, minutes: { total: 75, dual: 75 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: HELICOPTER, minutes: { total: 300, pic: 300 }, takeoffs: { day: 3 }, landings: { day: 5 } }
+    outcome: lapsed
+    expect:
+      subject: { kind: rating, class: ULTRALIGHT, id: r-heli, ulKind: HELICOPTER }
+      message: rating.recency_not_met
+      requirements:
+        total_time: { current: 375, met: true }
+        takeoffs: { current: 4, met: false }
+        landings: { current: 6, met: true }
+        training_flight: { current: 75, met: true }
+        proficiency_check: { current: 0, met: false }
+
+  - name: window-day-before
+    evaluation: recency
+    shows: [only-ultralight-helicopters]
+    says: The training flight of 14 September 2025 is one day outside the 12 months; time, take-offs, landings and the training flight all fall short, and Part-FCL helicopter time does not count.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-heli, licenceId: l-ul, class: ULTRALIGHT, ulKind: HELICOPTER }
+      flights:
+        - { date: 2025-09-14, class: ULTRALIGHT, ulKind: HELICOPTER, minutes: { total: 75, dual: 75 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: HELICOPTER, minutes: { total: 285, pic: 285 }, takeoffs: { day: 5 }, landings: { day: 5 } }
+        - { date: 2026-06-01, class: HELICOPTER, minutes: { total: 600, pic: 540, dual: 60 }, takeoffs: { day: 10 }, landings: { day: 10 } }
+    outcome: lapsed
+    expect:
+      subject: { kind: rating, id: r-heli }
+      message: rating.recency_not_met
+      requirements:
+        total_time: { current: 285, met: false, remedyParams: { missing: 75, unit: minutes } }
+        takeoffs: { current: 5, met: false }
+        landings: { current: 5, met: false }
+        training_flight: { current: 0, met: false, remedyKey: remedy.training_flight }
+
+  - name: pax-progress-short-distance-unknown
+    evaluation: passengers
+    shows: [authorisation-progress-informational, xc-200-km-per-flight]
+    says: No authorisation and no recency on an ultralight helicopter; two cross-country flights with an instructor, one landing flight covers 210 km, the other has no distance recorded.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL, issued: 2025-03-01 }
+      ratings:
+        - { id: r-heli, licenceId: l-ul, class: ULTRALIGHT, ulKind: HELICOPTER }
+      flights:
+        - { date: 2025-05-01, class: ULTRALIGHT, ulKind: HELICOPTER, minutes: { total: 120, dual: 120, crossCountry: 120 }, landings: { day: 2 }, distanceKm: 210 }
+        - { date: 2025-05-02, class: ULTRALIGHT, ulKind: HELICOPTER, minutes: { total: 120, dual: 120, crossCountry: 120 }, landings: { day: 2 } }
+    outcome: expired
+    expect:
+      subject: { kind: passengers, id: l-ul, ulKind: HELICOPTER }
+      message: pax.not_current
+      params: { needed: 3 }
+      requirements:
+        ul_xc_flights: { current: 2, met: false }
+        ul_xc_landing_flights: { current: 1, met: false }
+
+  - name: pax-current
+    evaluation: passengers
+    says: Three take-offs and landings on an ultralight helicopter in the last 90 days and a recorded passenger authorisation; passengers may be carried by day.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-heli, licenceId: l-ul, class: ULTRALIGHT, ulKind: HELICOPTER }
+      privileges:
+        - { id: p-pax, licenceId: l-ul, kind: UL_PASSENGER_AUTH }
+      flights:
+        - { date: 2026-08-01, class: ULTRALIGHT, ulKind: HELICOPTER, minutes: { total: 60, pic: 60 }, takeoffs: { day: 3 }, landings: { day: 3 } }
+    outcome: current
+    expect:
+      subject: { kind: passengers, id: l-ul, ulKind: HELICOPTER }
+      message: pax.current_day_no_night_privilege

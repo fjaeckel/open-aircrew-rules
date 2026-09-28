@@ -1,0 +1,71 @@
+credential: easa.privilege.sfcl-launch-methods
+examples:
+  - name: trained-valid-winch
+    evaluation: trained
+    says: A recorded launch method training is valid.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-spl, authority: EASA, type: SPL }
+      privileges:
+        - { id: p-winch, licenceId: l-spl, kind: LAUNCH_METHOD_TRAINED, detail: winch }
+        - { id: p-aero, licenceId: l-spl, kind: LAUNCH_METHOD_TRAINED, detail: aerotow, expires: 2026-09-15 }
+        - { id: p-bungee, licenceId: l-spl, kind: LAUNCH_METHOD_TRAINED, detail: bungee, expires: 2027-03-01 }
+        - { id: p-cloud, licenceId: l-spl, kind: CLOUD_FLYING }
+    outcome: current
+    expect: {subject: {kind: privilege, id: p-winch, detail: winch}, message: privilege.valid}
+  - name: trained-valid-on-expiry-day
+    evaluation: trained
+    says: A launch method training recorded with an expiry date is valid on that date.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-spl, authority: EASA, type: SPL }
+      privileges:
+        - { id: p-winch, licenceId: l-spl, kind: LAUNCH_METHOD_TRAINED, detail: winch }
+        - { id: p-aero, licenceId: l-spl, kind: LAUNCH_METHOD_TRAINED, detail: aerotow, expires: 2026-09-15 }
+        - { id: p-bungee, licenceId: l-spl, kind: LAUNCH_METHOD_TRAINED, detail: bungee, expires: 2027-03-01 }
+        - { id: p-cloud, licenceId: l-spl, kind: CLOUD_FLYING }
+    outcome: current
+    expect: {subject: {kind: privilege, id: p-aero, detail: aerotow}, message: privilege.valid, params: {date: 2026-09-15}}
+  - name: trained-valid-before-expiry
+    evaluation: trained
+    says: A launch method training recorded with a later expiry date is valid; the cloud flying privilege in the record is not evaluated here.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-spl, authority: EASA, type: SPL }
+      privileges:
+        - { id: p-winch, licenceId: l-spl, kind: LAUNCH_METHOD_TRAINED, detail: winch }
+        - { id: p-aero, licenceId: l-spl, kind: LAUNCH_METHOD_TRAINED, detail: aerotow, expires: 2026-09-15 }
+        - { id: p-bungee, licenceId: l-spl, kind: LAUNCH_METHOD_TRAINED, detail: bungee, expires: 2027-03-01 }
+        - { id: p-cloud, licenceId: l-spl, kind: CLOUD_FLYING }
+    outcome: current
+    expect: {subject: {kind: privilege, id: p-bungee, detail: bungee}, message: privilege.valid, expiresOn: 2027-03-01}
+  - name: trained-expired
+    evaluation: trained
+    says: A launch method training recorded with an expiry date is expired from the day after that date.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-spl, authority: EASA, type: SPL }
+      privileges:
+        - { id: p-car, licenceId: l-spl, kind: LAUNCH_METHOD_TRAINED, detail: car, expires: 2026-09-14 }
+    outcome: expired
+    expect: {subject: {kind: privilege, id: p-car, detail: car}, message: privilege.expired, params: {date: 2026-09-14}}
+  - name: trained-part-sfcl-licences-only
+    evaluation: trained
+    shows: [sfcl-licences-only]
+    says: A launch method training privilege on a DAeC ultralight licence or an FAA certificate is not a Part-SFCL training record; only the one on the SPL is evaluated.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DAeC, type: UL }
+        - { id: l-faa, authority: FAA, type: PRIVATE }
+        - { id: l-spl, authority: EASA, type: SPL }
+      privileges:
+        - { id: p-1, licenceId: l-ul, kind: LAUNCH_METHOD_TRAINED, detail: winch }
+        - { id: p-2, licenceId: l-faa, kind: LAUNCH_METHOD_TRAINED, detail: aerotow }
+        - { id: p-3, licenceId: l-spl, kind: LAUNCH_METHOD_TRAINED, detail: car }
+    outcome: current
+    expect: { message: privilege.valid }

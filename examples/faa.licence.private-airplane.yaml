@@ -234,3 +234,18 @@ examples:
         - {date: 2024-07-31, kind: flight_review}
     outcome: expired
     expect: { message: flight_review.expired }
+  - name: passengers-day-sep-on-glider-certificate
+    evaluation: passengers_day
+    shows: [glider-certificate-powered-ratings]
+    says: An SEP land rating recorded on a glider pilot certificate is evaluated here; three takeoffs and landings as sole manipulator allow passengers in the class, and the glider rating is left to the glider credential.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-glider, authority: FAA, type: GLIDER}
+      ratings:
+        - {id: r-glider, licenceId: l-glider, class: GLIDER}
+        - {id: r-sep, licenceId: l-glider, class: SEP_LAND}
+      flights:
+        - {date: 2026-07-10, class: SEP_LAND, minutes: {total: 90, pic: 90}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    outcome: current
+    expect: { subject: { kind: passengers, id: l-glider, class: SEP_LAND }, message: pax.day_current }

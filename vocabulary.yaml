@@ -81,7 +81,11 @@ licence_kinds:
   LAPL_S: { aliases: [LAPL(S)] }
   GPL: { aliases: [GPL] }
   BPL: { aliases: [BPL, LAPL(B)] }
-  HELICOPTER: { aliases: [PPL(H), CPL(H), ATPL(H)] }
+  PPL_H: { aliases: [PPL(H)] }
+  CPL_H: { aliases: [CPL(H)] }
+  ATPL_H: { aliases: [ATPL(H)] }
+  PPL_AS: { aliases: [PPL(AS)] }
+  CPL_AS: { aliases: [CPL(AS)] }
   LAPL_H: { aliases: [LAPL(H)] }
   UL: { aliases: [UL, ULTRALIGHT, ULTRALEICHT, SPL-UL, LUFTSPORTGERÄTEFÜHRER] }
   FAA_STUDENT: { aliases: [STUDENT] }
@@ -360,6 +364,8 @@ credential_vocabulary:
   # sources/<directory>/<file>.md. file: lower_dashed turns "FCL.740.A" into fcl-740-a;
   # as_is keeps "61.57". `policy:<id>` refs mark a condition with no legal text behind it (a
   # presentation or implementation choice); the ids are declared in policies.yaml.
+  # `assoc:<publisher>:<document>` refs cite an association document declared in
+  # associations.yaml (never stored under sources/).
   ref_authorities:
     easa: { directory: easa, file: lower_dashed, cite: "EASA {article}" }
     faa: { directory: faa, file: as_is, cite: "14 CFR {article}" }
@@ -378,6 +384,7 @@ credential_vocabulary:
     pic_dual_or_solo_time: { metric: minutes.picOrDualOrSpic, amount: time, id: flight_time, name: requirement.flight_time, unit: minutes, remedy: remedy.fly_more }
     refresher: { metric: minutes.dual, amount: time, id: refresher_training, name: requirement.refresher_training, unit: minutes, remedy: remedy.fly_more }
     cloud_flying_time: { metric: minutes.ifr, amount: time, id: cloud_flying_time, name: requirement.cloud_flying_time, unit: minutes, remedy: remedy.fly_more }
+    ifr_time: { metric: minutes.ifr, amount: time, id: ifr_time, name: requirement.ifr_time, unit: minutes, remedy: remedy.fly_more }
     cloud_flights: { metric: flights, amount: count, id: cloud_flying_flights, name: requirement.cloud_flying_flights, unit: flights, remedy: remedy.fly_more, filter: { withMinutes: [ifr] } }
     longest_training_flight: { metric: longest_training_flight_minutes, amount: time, id: training_flight, name: requirement.training_flight, unit: minutes, remedy: remedy.training_flight }
     flights: { metric: flights, amount: count, id: flights, name: requirement.cross_country_flights, unit: flights, remedy: remedy.fly_more }
@@ -407,6 +414,14 @@ credential_vocabulary:
     proficiency_program_phase: { metric: events, events: [proficiency_program_phase], amount: count, id: proficiency_program, name: requirement.proficiency_program, unit: events }
     basicmed_course: { metric: events, events: [basicmed_course], amount: count, id: course, name: requirement.basicmed_course, unit: training }
     basicmed_exam: { metric: events, events: [basicmed_exam], amount: count, id: exam, name: requirement.basicmed_exam, unit: check }
+    practical_test: { metric: events, events: [practical_test], amount: count, id: practical_test, name: requirement.practical_test, unit: check }
+    assessment_of_competence: { metric: events, events: [assessment_of_competence], amount: count, id: assessment, name: requirement.assessment_of_competence, unit: check, remedy: remedy.proficiency_check }
+    instructor_refresher: { metric: events, events: [instructor_refresher], amount: count, id: refresher, name: requirement.instructor_refresher, unit: training, remedy: remedy.refresher_training }
+    examiner_refresher: { metric: events, events: [examiner_refresher], amount: count, id: refresher, name: requirement.examiner_refresher, unit: training, remedy: remedy.refresher_training }
+    supervised_instruction: { metric: events, events: [supervised_instruction], amount: count, id: supervised_instruction, name: requirement.supervised_instruction, unit: check }
+    differences_training: { metric: events, events: [differences_training], amount: count, id: differences_training, name: requirement.differences_training, unit: training, remedy: remedy.differences_training }
+    solo_endorsement: { metric: events, events: [solo_endorsement], amount: count, id: solo_endorsement, name: requirement.solo_endorsement, unit: events }
+    instructor_endorsement: { metric: events, events: [instructor_endorsement], amount: count, id: endorsement, name: requirement.instructor_endorsement, unit: events }
 
   # Qualifiers: where a count is counted. Allowed on a count, on a combinator (inherited by
   # its children), in `counting` (the whole evaluation) and on `restored_by` events.

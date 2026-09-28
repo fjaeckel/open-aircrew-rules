@@ -1,0 +1,269 @@
+credential: de.rating.ul-weight-shift
+examples:
+  - name: dulv-current-edge-in
+    evaluation: recency_dulv
+    shows: [association-rules-by-authority, dulv-pic-only]
+    says: Twelve hours as PIC on trikes in 24 months, the first flight on the first day of the window; dual time does not count as PIC time, and a DULV licence uses the DULV numbers.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-ws, licenceId: l-ul, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+      flights:
+        - { date: 2024-09-15, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 300, pic: 240, dual: 60 }, landings: { day: 4 } }
+        - { date: 2026-06-01, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 480, pic: 480 }, landings: { day: 2 } }
+    outcome: current
+    expect:
+      subject: { kind: rating, id: r-ws, ulKind: WEIGHT_SHIFT }
+      message: rating.recency_current
+      validUntil: 2026-09-15
+      requirements:
+        pic_time: { current: 720, required: 720, met: true }
+
+  - name: dulv-kind-unknown
+    evaluation: recency_dulv
+    shows: [kindless-flights-unknown]
+    says: Ultralight flights with no kind recorded cannot be counted as trike flights; the recency is unknown.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-ws, licenceId: l-ul, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+      flights:
+        - { date: 2026-04-01, class: ULTRALIGHT, minutes: { total: 720, pic: 720 }, landings: { day: 12 } }
+    outcome: unknown
+    expect:
+      subject: { kind: rating, id: r-ws }
+      message: rating.ul_flights_kind_unknown
+      requirements:
+        pic_time: { tracked: false, met: false }
+
+  - name: dulv-not-applicable
+    evaluation: recency_dulv
+    shows: [association-rules-by-authority]
+    says: 'A trike rating on a DAeC licence follows the DAeC rule (the authority is matched case-insensitively), and other kinds are not evaluated here; only the DULV trike rating gets this result (a second result would fail the example).'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-daec, authority: " daec ", type: UL }
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-ws, licenceId: l-ul, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+        - { id: r-ws-daec, licenceId: l-daec, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+        - { id: r-ppg, licenceId: l-ul, class: ULTRALIGHT, ulKind: POWERED_PARAGLIDER }
+    outcome: lapsed
+    expect: { message: rating.recency_not_met }
+
+  - name: dulv-window-day-before
+    evaluation: recency_dulv
+    says: The flight of 14 September 2024 is outside the 24 months, and three-axis PIC time does not count; the privileges lapse.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: LBA, type: UL }
+      ratings:
+        - { id: r-ws, licenceId: l-ul, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+      flights:
+        - { date: 2024-09-14, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 300, pic: 240, dual: 60 }, landings: { day: 4 } }
+        - { date: 2026-06-01, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 480, pic: 480 }, landings: { day: 2 } }
+        - { date: 2026-07-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 600, pic: 600 }, landings: { day: 12 } }
+    outcome: lapsed
+    expect:
+      subject: { kind: rating, id: r-ws }
+      message: rating.recency_not_met
+      requirements:
+        pic_time: { current: 480, met: false, remedyKey: remedy.fly_more, remedyParams: { missing: 240, unit: minutes } }
+
+  - name: daec-current-edge-in
+    evaluation: recency_daec
+    shows: [daec-safety-training-not-recorded]
+    says: Twelve hours and 12 landings on trikes in 24 months under the DAeC rule; dual time counts toward the hours. The first flight is on the first day of the window; the safety training is shown as an untracked row.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DAeC, type: UL }
+      ratings:
+        - { id: r-ws, licenceId: l-ul, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+      flights:
+        - { date: 2024-09-15, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 300, dual: 300 }, landings: { day: 4 } }
+        - { date: 2026-06-01, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 420, pic: 420 }, landings: { day: 8 } }
+    outcome: current
+    expect:
+      subject: { kind: rating, id: r-ws, ulKind: WEIGHT_SHIFT }
+      message: rating.recency_current
+      validUntil: 2026-09-15
+      requirements:
+        total_time: { current: 720, met: true }
+        landings: { current: 12, met: true }
+        safety_training: { tracked: false, met: false, messageKey: requirement.untracked }
+
+  - name: daec-kind-unknown
+    evaluation: recency_daec
+    shows: [kindless-flights-unknown]
+    says: Ultralight flights with no kind recorded cannot be counted as trike flights; the recency is unknown.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DAeC, type: UL }
+      ratings:
+        - { id: r-ws, licenceId: l-ul, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+      flights:
+        - { date: 2026-04-01, class: ULTRALIGHT, minutes: { total: 720, pic: 720 }, landings: { day: 12 } }
+    outcome: unknown
+    expect:
+      subject: { kind: rating, id: r-ws }
+      message: rating.ul_flights_kind_unknown
+
+  - name: daec-not-applicable
+    evaluation: recency_daec
+    shows: [association-rules-by-authority]
+    says: 'Trike ratings on DULV and LBA licences follow the DULV rule; only the DAeC trike rating gets this result (a second result would fail the example).'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-dulv, authority: DULV, type: UL }
+        - { id: l-lba, authority: LBA, type: UL }
+        - { id: l-daec, authority: DAeC, type: UL }
+      ratings:
+        - { id: r-ws-dulv, licenceId: l-dulv, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+        - { id: r-ws-lba, licenceId: l-lba, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+        - { id: r-ws, licenceId: l-daec, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+    outcome: lapsed
+    expect: { message: rating.recency_not_met }
+
+  - name: daec-window-day-before
+    evaluation: recency_daec
+    says: The flight of 14 September 2024 is outside the 24 months; hours and landings fall short.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DAeC, type: UL }
+      ratings:
+        - { id: r-ws, licenceId: l-ul, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+      flights:
+        - { date: 2024-09-14, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 300, dual: 300 }, landings: { day: 4 } }
+        - { date: 2026-06-01, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 420, pic: 420 }, landings: { day: 8 } }
+    outcome: lapsed
+    expect:
+      subject: { kind: rating, id: r-ws }
+      message: rating.recency_not_met
+      requirements:
+        total_time: { current: 420, met: false, remedyParams: { missing: 300, unit: minutes } }
+        landings: { current: 8, met: false, remedyParams: { missing: 4, unit: landings } }
+
+  - name: pax-authorisation-missing
+    evaluation: passengers
+    shows: [authorisation-recorded, authorisation-progress-informational]
+    says: Trike recency met, but the passenger authorisation expired the day before; the status is unknown with the progress toward § 84a. Five cross-country trike flights with an instructor since the licence was issued (not the one the day before issue), two of them with an intermediate landing over at least 200 km. A PPL does not replace the authorisation for trike pilots.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL, issued: 2025-03-01 }
+        - { id: l-ppl, authority: LBA, type: PPL(A) }
+      ratings:
+        - { id: r-ws, licenceId: l-ul, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+        - { id: r-sep, licenceId: l-ppl, class: SEP_LAND }
+      privileges:
+        - { id: p-pax, licenceId: l-ul, kind: UL_PASSENGER_AUTH, expires: 2026-09-14 }
+      flights:
+        - { date: 2025-02-28, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 120, dual: 120, crossCountry: 120 }, landings: { day: 2 }, distanceKm: 250 }
+        - { date: 2025-03-01, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 120, dual: 120, crossCountry: 120 }, landings: { day: 2 }, distanceKm: 200 }
+        - { date: 2025-04-01, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 150, dual: 150, crossCountry: 150 }, landings: { day: 3 }, distanceKm: 260 }
+        - { date: 2025-04-02, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 60, dual: 60, crossCountry: 60 }, landings: { day: 1 }, distanceKm: 90 }
+        - { date: 2025-04-03, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 60, dual: 60, crossCountry: 60 }, landings: { day: 1 }, distanceKm: 90 }
+        - { date: 2025-04-04, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 60, dual: 60, crossCountry: 60 }, landings: { day: 1 }, distanceKm: 90 }
+        - { date: 2026-09-01, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 60, pic: 60 }, takeoffs: { day: 3 }, landings: { day: 3 } }
+    outcome: unknown
+    expect:
+      subject: { kind: passengers, id: l-ul }
+      message: pax.ul_authorisation_missing
+      requirements:
+        day: { current: 3, met: true }
+        ul_xc_flights: { current: 5, met: true }
+        ul_xc_landing_flights: { current: 2, met: true }
+
+  - name: pax-not-applicable
+    evaluation: passengers
+    says: 'Only the trike rating on the ultralight licence gets this passenger evaluation: three-axis ratings follow their own credential, and kindless ratings and ultralight ratings on EASA licences get none (a second result would fail the example).'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+        - { id: l-easa, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-ws, licenceId: l-ul, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+        - { id: r-3ax, licenceId: l-ul, class: ULTRALIGHT, ulKind: THREE_AXIS }
+        - { id: r-none, licenceId: l-ul, class: ULTRALIGHT }
+        - { id: r-easa-ws, licenceId: l-easa, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+    outcome: expired
+    expect: { message: pax.not_current }
+
+  - name: pax-per-kind-weight-shift
+    evaluation: passengers
+    shows: [same-kind-any-role, authorisation-recorded]
+    says: A licence with trike and ultralight sailplane ratings is evaluated per kind; three trike take-offs and landings in 90 days (the first on the first day) and an authorisation valid through the date evaluated make the trike current.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DAeC, type: UL, issued: 2018-04-01 }
+      ratings:
+        - { id: r-ws, licenceId: l-ul, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+        - { id: r-sail, licenceId: l-ul, class: ULTRALIGHT, ulKind: SAILPLANE }
+      privileges:
+        - { id: p-pax, licenceId: l-ul, kind: UL_PASSENGER_AUTH, detail: WEIGHT_SHIFT, expires: 2026-09-15 }
+      flights:
+        - { date: 2026-06-17, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-08-01, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 60, pic: 60 }, takeoffs: { day: 2 }, landings: { day: 2 } }
+        - { date: 2026-08-10, class: ULTRALIGHT, ulKind: SAILPLANE, launchMethod: winch, minutes: { total: 20, pic: 20 }, takeoffs: { day: 2 }, landings: { day: 2 } }
+    outcome: current
+    expect:
+      subject: { kind: passengers, id: l-ul, ulKind: WEIGHT_SHIFT }
+      message: pax.current_day_no_night_privilege
+      validUntil: 2026-09-15
+      requirements:
+        day: { current: 3, met: true }
+        ul_xc_flights: { absent: true }
+
+  - name: pax-takeoffs-not-logged
+    evaluation: passengers
+    says: Three landings in 90 days on trikes, but one of the three flights logs no take-off; only the logged take-offs count, so the pilot has two take-offs and landings.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL, issued: 2020-05-01 }
+      ratings:
+        - { id: r-ul, licenceId: l-ul, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+      privileges:
+        - { id: p-pax, licenceId: l-ul, kind: UL_PASSENGER_AUTH, detail: WEIGHT_SHIFT }
+      flights:
+        - { date: 2026-08-01, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-08-02, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-08-03, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 30, pic: 30 }, landings: { day: 1 } }
+    outcome: expired
+    expect:
+      subject: { kind: passengers, class: ULTRALIGHT, id: l-ul, ulKind: WEIGHT_SHIFT }
+      message: pax.not_current
+      requirements:
+        day: { current: 2, met: false }
+
+  - name: pax-towed-launches
+    evaluation: passengers
+    says: Three take-offs and landings in 90 days on trikes launched by winch count toward passenger recency like any other.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL, issued: 2020-05-01 }
+      ratings:
+        - { id: r-ul, licenceId: l-ul, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+      privileges:
+        - { id: p-pax, licenceId: l-ul, kind: UL_PASSENGER_AUTH, detail: WEIGHT_SHIFT }
+      flights:
+        - { date: 2026-08-01, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, launchMethod: winch, minutes: { total: 90, pic: 90 }, takeoffs: { day: 3 }, landings: { day: 3 } }
+    outcome: current
+    expect:
+      subject: { kind: passengers, class: ULTRALIGHT, id: l-ul, ulKind: WEIGHT_SHIFT }
+      message: pax.current_day_no_night_privilege
+      requirements:
+        day: { current: 3, met: true }

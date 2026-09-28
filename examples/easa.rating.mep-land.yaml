@@ -1,0 +1,424 @@
+credential: easa.rating.mep-land
+examples:
+  - name: revalidation-check-too-early
+    evaluation: revalidation
+    says: A proficiency check 4 months before expiry is outside the 3-month window.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-mep, licenceId: l-ppl, class: MEP_LAND, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-01-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-02-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-03-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-04-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-05-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-06-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-06-20, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-07-05, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-07-15, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-06-30, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30, flags: { proficiencyCheck: true } }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-mep }, message: rating.revalidation_not_met_prof_check, requirements: {proficiency_check: {current: 0, met: false}, sectors: {current: 10, met: true}} }
+  - name: revalidation-check-window-edges
+    evaluation: revalidation
+    says: A check on 31 July, 3 months before the 31 October expiry, counts; one on 30 July does not.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-mep, licenceId: l-ppl, class: MEP_LAND, expires: 2026-10-31 }
+      events:
+        - { date: 2026-07-30, kind: proficiency_check, class: MEP_LAND }
+        - { date: 2026-07-31, kind: proficiency_check, class: MEP_LAND }
+      flights:
+        - { date: 2026-01-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-02-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-03-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-04-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-05-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-06-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-06-20, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-07-05, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-07-15, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-07-25, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-mep }, message: rating.revalidation_expiring_met, requirements: {proficiency_check: {current: 1, met: true, lastDate: 2026-07-31}} }
+  - name: revalidation-check-without-sectors
+    evaluation: revalidation
+    says: 'A proficiency check in the class alone does not revalidate an MEP rating: the 10 route sectors, or one with an examiner, are needed as well.'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-mep, licenceId: l-ppl, class: MEP_LAND, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-08-20, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 10, flags: { proficiencyCheck: true } }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-mep, class: MEP_LAND }, message: rating.revalidation_not_met_prof_check, requirements: {proficiency_check: {current: 1, met: true}, sectors: {current: 0, met: false}, examiner_sector: {current: 0, met: false}} }
+  - name: revalidation-cruise-not-recorded
+    evaluation: revalidation
+    says: With the proficiency check passed but no cruise time recorded on any flight, the route sectors cannot be counted and the rating is reported unknown, never current.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-mep, licenceId: l-ppl, class: MEP_LAND, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-05-10, class: MEP_LAND, minutes: { total: 90, pic: 90 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-08-20, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { proficiencyCheck: true } }
+    outcome: unknown
+    expect: { subject: { kind: rating, id: r-mep }, message: rating.route_sectors_not_logged, requirements: {proficiency_check: {met: true}, sectors: {met: false, tracked: false}, examiner_sector: {current: 0, met: false, tracked: true}} }
+  - name: revalidation-examiner-route-sector
+    evaluation: revalidation
+    says: The proficiency check flown with an examiner is also the one route sector with an examiner; no further sectors are needed.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-mep, licenceId: l-ppl, class: MEP_LAND, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-08-20, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-mep }, message: rating.revalidation_expiring_met, requirements: {proficiency_check: {current: 1, met: true}, sectors: {current: 1, met: false, remedyKey: remedy.fly_more, remedyParams: {missing: 9, unit: sectors}}, examiner_sector: {current: 1, met: true}} }
+  - name: revalidation-expired-day-after
+    evaluation: revalidation
+    says: The day after its expiry date the rating is expired.
+    asOf: 2026-11-01
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-mep, licenceId: l-ppl, class: MEP_LAND, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-08-20, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: expired
+    expect: { subject: { kind: rating, id: r-mep }, message: rating.expired }
+  - name: revalidation-fstd-check-and-ffs-sector
+    evaluation: revalidation
+    says: A proficiency check in an FNPT counts toward (a)(1); a route sector with an examiner counts in an FFS but not in an FNPT.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-mep, licenceId: l-ppl, class: MEP_LAND, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-08-20, class: MEP_LAND, isSimulator: true, fstdType: FNPT, minutes: { total: 60 }, cruiseMinutes: 20, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+        - { date: 2026-08-21, class: MEP_LAND, isSimulator: true, fstdType: FFS, minutes: { total: 60 }, cruiseMinutes: 20, flags: { examinerOnBoard: true } }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-mep }, message: rating.revalidation_expiring_met, requirements: {proficiency_check: {current: 1, met: true, lastDate: 2026-08-20}, sectors: {current: 0, met: false}, examiner_sector: {current: 1, met: true, lastDate: 2026-08-21}} }
+  - name: revalidation-met-current
+    evaluation: revalidation
+    says: With 92 days to expiry (the first day of the 3-month window) a met rating is current.
+    asOf: 2026-09-30
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-mep, licenceId: l-ppl, class: MEP_LAND, expires: 2026-12-31 }
+      flights:
+        - { date: 2026-09-30, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: current
+    expect: { subject: { kind: rating, id: r-mep }, message: rating.revalidation_current }
+  - name: revalidation-met-expiring
+    evaluation: revalidation
+    says: A proficiency check in the 3 months before expiry and 10 route sectors in the 12 months before expiry revalidate the rating; with 46 days left it shows as expiring.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-mep, licenceId: l-ppl, class: MEP_LAND, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-01-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-02-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-03-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-04-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-05-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-06-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-06-20, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-07-05, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-07-15, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-08-20, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30, flags: { proficiencyCheck: true } }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-mep, class: MEP_LAND }, message: rating.revalidation_expiring_met, params: {days: 46}, expiresOn: 2026-10-31, requirements: {proficiency_check: {current: 1, required: 1, met: true, lastDate: 2026-08-20}, sectors: {current: 10, required: 10, met: true}, examiner_sector: {current: 0, met: false}} }
+  - name: revalidation-no-expiry-date
+    evaluation: revalidation
+    says: Without an expiry date the windows cannot be placed.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-mep, licenceId: l-ppl, class: MEP_LAND }
+      flights:
+        - { date: 2026-08-20, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: unknown
+    expect: { subject: { kind: rating, id: r-mep }, message: rating.no_expiry_date, requirements: {proficiency_check: {met: false, tracked: false}} }
+  - name: revalidation-route-sector-cruise
+    evaluation: revalidation
+    says: A flight with less than 15 minutes of cruise is not a route sector (FCL.010); a flight without a recorded cruise time is unknown, and a sector with an examiner in an FSTD of unknown type is unknown too, so the rating cannot be shown as current or not met.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-mep, licenceId: l-ppl, class: MEP_LAND, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-01-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-02-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-03-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-04-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-05-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-06-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-06-20, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-07-05, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-08-01, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 10 }
+        - { date: 2026-08-02, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-08-20, class: MEP_LAND, isSimulator: true, minutes: { total: 60 }, cruiseMinutes: 20, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: unknown
+    expect: { subject: { kind: rating, id: r-mep }, message: rating.route_sectors_not_logged, requirements: {proficiency_check: {current: 1, met: true}, sectors: {current: 8, met: false, tracked: true}, examiner_sector: {current: 0, met: false, tracked: false}} }
+  - name: revalidation-sector-window-edges
+    evaluation: revalidation
+    says: A route sector on 31 October 2025, 12 months before expiry, counts; one on 30 October 2025 does not.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-mep, licenceId: l-ppl, class: MEP_LAND, expires: 2026-10-31 }
+      flights:
+        - { date: 2025-10-30, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2025-10-31, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-01-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-02-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-03-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-04-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-05-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-06-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-06-20, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-07-05, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-08-20, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30, flags: { proficiencyCheck: true } }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-mep }, message: rating.revalidation_expiring_met, requirements: {sectors: {current: 10, met: true}} }
+  - name: revalidation-sectors-without-check
+    evaluation: revalidation
+    says: Ten route sectors do not revalidate a multi-engine rating without a proficiency check.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-mep, licenceId: l-ppl, class: MEP_LAND, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-01-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-02-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-03-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-04-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-05-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-06-10, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-06-20, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-07-05, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-07-15, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-07-25, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+        - { date: 2026-08-01, class: MEP_LAND, minutes: { total: 60, dual: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30 }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-mep }, message: rating.revalidation_not_met_prof_check, requirements: {proficiency_check: {current: 0, met: false, remedyKey: remedy.proficiency_check}, sectors: {current: 11, met: true}} }
+  - name: revalidation-towed-launch-recorded
+    evaluation: revalidation
+    says: An MEP flight recorded with an aerotow launch method (imported data) still counts as a route sector; the proficiency check and two sectors do not yet revalidate the rating.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-mep, licenceId: l-ppl, class: MEP_LAND, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-03-10, class: MEP_LAND, minutes: { total: 600, pic: 600 }, takeoffs: { day: 9 }, landings: { day: 9 }, cruiseMinutes: 400 }
+        - { date: 2026-08-20, class: MEP_LAND, launchMethod: aerotow, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30, flags: { proficiencyCheck: true } }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-mep, class: MEP_LAND }, message: rating.revalidation_not_met_prof_check, requirements: {proficiency_check: {current: 1, met: true}, sectors: {current: 2, met: false}, examiner_sector: {current: 0, met: false}} }
+  - name: revalidation-valid-on-expiry-day
+    evaluation: revalidation
+    says: On its expiry date the rating is still valid; 0 days remain.
+    asOf: 2026-10-31
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-mep, licenceId: l-ppl, class: MEP_LAND, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-08-20, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-mep }, message: rating.revalidation_expiring_met, params: {days: 0} }
+  - name: revalidation-window-not-open
+    evaluation: revalidation
+    says: More than 12 months before expiry the revalidation window is not open yet.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-mep, licenceId: l-ppl, class: MEP_LAND, expires: 2027-12-31 }
+      flights: []
+    outcome: current
+    expect: { subject: { kind: rating, id: r-mep }, message: rating.window_not_open, params: {date: 2026-12-31} }
+  - name: passengers-day-per-class
+    evaluation: passengers_day
+    says: 'Each class is evaluated on its own flights: MEP landings do not count for SEP passengers; night landings count toward the three.'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-06-30 }
+        - { id: r-mep, licenceId: l-ppl, class: MEP_LAND, expires: 2027-06-30 }
+      flights:
+        - { date: 2026-08-01, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 3 }, landings: { day: 3 }, pilotFlying: true }
+        - { date: 2026-08-05, class: SEP_LAND, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 1 }, landings: { night: 1 }, pilotFlying: true }
+        - { date: 2026-08-06, class: SEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, pilotFlying: true }
+    outcome: current
+    expect: { subject: { kind: passengers, id: l-ppl, class: MEP_LAND }, message: pax.day_current }
+  - name: passengers-day-current-own-flights
+    evaluation: passengers_day
+    says: Three take-offs and landings as pilot flying in an MEP land aeroplane within 90 days allow carrying passengers.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-1, licenceId: l-1, class: MEP_LAND, expires: 2027-06-30 }
+      flights:
+        - { date: 2026-08-20, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 3 }, landings: { day: 3 }, pilotFlying: true }
+    outcome: current
+    expect: { subject: { kind: passengers, id: l-1, class: MEP_LAND }, message: pax.day_current }
+  - name: passengers-day-one-short
+    evaluation: passengers_day
+    says: Two take-offs and landings are one short.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-1, licenceId: l-1, class: MEP_LAND, expires: 2027-06-30 }
+      flights:
+        - { date: 2026-08-20, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 2 }, landings: { day: 2 }, pilotFlying: true }
+    outcome: expired
+    expect: { subject: { kind: passengers, id: l-1, class: MEP_LAND }, message: pax.not_current, params: { needed: 1 } }
+  - name: passengers-night-current
+    evaluation: passengers_night
+    says: One night take-off and landing as pilot flying in an MEP land aeroplane within 90 days allow carrying passengers at night.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-1, licenceId: l-1, class: MEP_LAND, expires: 2027-06-30 }
+      flights:
+        - { date: 2026-08-20, class: MEP_LAND, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 1 }, landings: { night: 1 }, pilotFlying: true }
+    outcome: current
+    expect: { subject: { kind: passengers, id: l-1, class: MEP_LAND }, message: pax.night_current }
+  - name: passengers-night-day-only
+    evaluation: passengers_night
+    says: Day take-offs and landings do not count for night passengers.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-1, licenceId: l-1, class: MEP_LAND, expires: 2027-06-30 }
+      flights:
+        - { date: 2026-08-20, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 3 }, landings: { day: 3 }, pilotFlying: true }
+    outcome: expired
+    expect: { subject: { kind: passengers, id: l-1, class: MEP_LAND }, message: pax.night_not_current }
+  - name: variants-flown
+    evaluation: variants
+    shows: [variant-is-recorded-variant]
+    says: A flight in the variant within 2 years keeps its privileges.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-1, licenceId: l-1, class: MEP_LAND, expires: 2027-06-30 }
+      variants:
+        - { id: v-1, ratingId: r-1, name: GLASS_COCKPIT, issued: 2023-05-01 }
+      flights:
+        - { date: 2026-03-10, class: MEP_LAND, variant: GLASS_COCKPIT, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect: { subject: { kind: type, id: v-1 }, message: type.current, validUntil: 2028-03-10 }
+  - name: variants-not-flown
+    evaluation: variants
+    says: The variant was last flown more than 2 years ago; flights without it do not count, so it may not be flown before differences training or a proficiency check in it.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-1, licenceId: l-1, class: MEP_LAND, expires: 2027-06-30 }
+      variants:
+        - { id: v-1, ratingId: r-1, name: GLASS_COCKPIT, issued: 2023-05-01 }
+      flights:
+        - { date: 2024-08-01, class: MEP_LAND, variant: GLASS_COCKPIT, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-04-10, class: MEP_LAND, variant: STANDARD, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: lapsed
+    expect: { subject: { kind: type, id: v-1 }, message: type.not_flown, requirements: { variant_flown: { current: 0, met: false, remedyKey: remedy.differences_training } } }
+  - name: revalidation-not-applicable-other-items
+    evaluation: revalidation
+    shows: [part-fcl-licences]
+    says: SET and SEP ratings and MEP ratings on FAA or DULV licences are not evaluated by this credential; only the MEP land rating on the EASA licence is (legacy not-applicable case with that rating added).
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+        - { id: l-faa, authority: FAA, type: PRIVATE }
+        - { id: l-dulv, authority: DULV, type: UL }
+      ratings:
+        - { id: r-set, licenceId: l-ppl, class: SET_LAND, expires: 2026-10-31 }
+        - { id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2026-10-31 }
+        - { id: r-faa, licenceId: l-faa, class: MEP_LAND }
+        - { id: r-dulv, licenceId: l-dulv, class: MEP_LAND, expires: 2026-10-31 }
+        - { id: r-mep, licenceId: l-ppl, class: MEP_LAND, expires: 2027-12-31 }
+    outcome: current
+    expect: { message: rating.window_not_open }
+  - name: composite-cpl-medical-lower-class
+    composite: true
+    says: 'The MEP land rating is revalidated (expiring with the requirements met), but it is held on a CPL(A) whose holder has only a class 2 medical: the licence requirement decides that the rating may not be exercised.'
+    asOf: 2026-09-15
+    record:
+      holder: { dateOfBirth: 1976-01-01 }
+      licences:
+        - { id: l-cpl, authority: EASA, type: CPL(A) }
+      ratings:
+        - { id: r-mep, licenceId: l-cpl, class: MEP_LAND, expires: 2026-10-31 }
+      credentials:
+        - { id: c-med, type: EASA_CLASS2_MEDICAL, issued: 2026-06-01 }
+        - { id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2023-04-15 }
+      flights:
+        - { date: 2026-09-01, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: expired
+    expect: { subject: { kind: rating, id: r-mep }, decidedBy: { evaluation: licence, credential: easa.licence.cpl-a } }
+  - name: composite-revalidated-on-ppl
+    composite: true
+    says: 'The MEP land rating is revalidated by a check flight that is also the examiner route sector, and its PPL(A) has a valid medical and language endorsement: the rating may be exercised.'
+    asOf: 2026-09-15
+    record:
+      holder: { dateOfBirth: 1976-01-01 }
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-mep, licenceId: l-ppl, class: MEP_LAND, expires: 2026-10-31 }
+      credentials:
+        - { id: c-med, type: EASA_CLASS2_MEDICAL, issued: 2026-06-01 }
+        - { id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2023-04-15 }
+      flights:
+        - { date: 2026-09-01, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-mep } }

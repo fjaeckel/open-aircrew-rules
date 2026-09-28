@@ -1,0 +1,110 @@
+credential: easa.instructor.fi-s
+examples:
+  - name: recency-hours-current
+    evaluation: recency
+    says: Refresher training on the first day of the 3-year window, 30 hours of instruction on sailplanes and TMGs and a supervised instruction flight on the first day of the 9-year window keep the FI(S) certificate current.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-spl, authority: EASA, type: SPL }
+      privileges:
+        - { id: p-fis, licenceId: l-spl, kind: FI_S, expires: 2029-12-31 }
+      events:
+        - { date: 2023-09-15, kind: instructor_refresher }
+        - { date: 2017-09-15, kind: supervised_instruction, class: GLIDER }
+      flights:
+        - { date: 2025-05-01, class: GLIDER, launchMethod: winch, minutes: { total: 1200, pic: 1200, dualGiven: 1200 }, launches: 40, landings: { day: 40 } }
+        - { date: 2025-08-01, class: TMG, minutes: { total: 600, pic: 600, dualGiven: 600 }, takeoffs: { day: 10 }, landings: { day: 10 }, launches: 10 }
+    outcome: current
+    expect: {subject: {kind: privilege, id: p-fis}, message: privilege.recency_current, params: {date: 2029-12-31}, validUntil: 2026-09-15, requirements: {refresher: {current: 1, met: true}, instruction_time: {current: 1800, met: true}, instruction_launches: {current: 50, met: false}, demonstration: {current: 1, met: true}}}
+  - name: recency-launches-and-examiner-time
+    evaluation: recency
+    says: Sixty launches with instruction given keep the certificate current; examiner time counts toward the hours but not the launches; the certificate is valid on its expiry day.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-spl, authority: EASA, type: SPL }
+      privileges:
+        - { id: p-fis, licenceId: l-spl, kind: FI_S, expires: 2026-09-15 }
+      events:
+        - { date: 2025-02-01, kind: instructor_refresher }
+        - { date: 2022-06-01, kind: supervised_instruction }
+      flights:
+        - { date: 2026-04-01, class: GLIDER, launchMethod: winch, minutes: { total: 600, pic: 600, dualGiven: 600 }, launches: 60, landings: { day: 60 } }
+        - { date: 2026-05-01, class: GLIDER, launchMethod: winch, minutes: { total: 300, pic: 300, examiner: 300 }, launches: 12, landings: { day: 12 } }
+    outcome: current
+    expect: {subject: {kind: privilege, id: p-fis}, message: privilege.recency_current, requirements: {instruction_time: {current: 900, met: false}, instruction_launches: {current: 60, met: true}}}
+  - name: recency-resumption
+    evaluation: recency
+    says: A lapsed instructor resumes with refresher training and an assessment of competence; the assessment also stands in for the supervised instruction flight.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-spl, authority: EASA, type: SPL }
+      privileges:
+        - { id: p-fis, licenceId: l-spl, kind: FI_S }
+      events:
+        - { date: 2026-06-01, kind: instructor_refresher }
+        - { date: 2026-06-20, kind: assessment_of_competence, class: GLIDER }
+    outcome: current
+    expect: {subject: {kind: privilege, id: p-fis}, message: privilege.recency_current, requirements: {resumption_assessment: {current: 1, met: true}, demonstration: {current: 1, met: true}}}
+  - name: recency-lapsed
+    evaluation: recency
+    says: Refresher training the day before the 3-year window, a supervised instruction flight the day before the 9-year window and 10 hours of instruction leave the certificate lapsed; instruction in an aeroplane does not count.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-spl, authority: EASA, type: SPL }
+      privileges:
+        - { id: p-fis, licenceId: l-spl, kind: FI_S }
+      events:
+        - { date: 2023-09-14, kind: instructor_refresher }
+        - { date: 2017-09-14, kind: supervised_instruction }
+      flights:
+        - { date: 2026-03-01, class: GLIDER, launchMethod: aerotow, minutes: { total: 600, pic: 600, dualGiven: 600 }, launches: 8, landings: { day: 8 } }
+        - { date: 2026-03-02, class: SEP_LAND, minutes: { total: 1800, pic: 1800, dualGiven: 1800 }, takeoffs: { day: 60 }, landings: { day: 60 } }
+    outcome: lapsed
+    expect: {subject: {kind: privilege, id: p-fis}, message: privilege.recency_not_met, requirements: {refresher: {current: 0, met: false}, instruction_time: {current: 600, met: false, remedyKey: remedy.fly_more, remedyParams: {missing: 1200, unit: minutes}}, instruction_launches: {current: 8, met: false, remedyParams: {missing: 52, unit: launches}}, demonstration: {current: 0, met: false}}}
+  - name: recency-demonstration-missing
+    evaluation: recency
+    says: 'Refresher training and 30 hours of instruction in the last three years, but no demonstration of instructional ability or assessment of competence in the last nine years: the FI(S) privileges may not be exercised.'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-spl, authority: EASA, type: SPL }
+      privileges:
+        - { id: p-fis, licenceId: l-spl, kind: FI_S, expires: 2029-12-31 }
+      events:
+        - { date: 2025-09-15, kind: instructor_refresher }
+        - { date: 2016-09-14, kind: supervised_instruction, class: GLIDER }
+      flights:
+        - { date: 2025-05-01, class: GLIDER, launchMethod: winch, minutes: { total: 1800, pic: 1800, dualGiven: 1800 }, launches: 40, landings: { day: 40 } }
+    outcome: lapsed
+    expect: {subject: {kind: privilege, id: p-fis}, message: privilege.recency_not_met, requirements: {refresher: {current: 1, met: true}, instruction_time: {current: 1800, met: true}, instruction_launches: {current: 40, met: false}, resumption_assessment: {current: 0, met: false}, demonstration: {current: 0, met: false}}}
+  - name: recency-expired
+    evaluation: recency
+    says: An FI(S) certificate recorded with an expiry date is expired from the next day.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-spl, authority: EASA, type: SPL }
+      privileges:
+        - { id: p-fis, licenceId: l-spl, kind: FI_S, expires: 2026-09-14 }
+    outcome: expired
+    expect: {subject: {kind: privilege, id: p-fis}, message: privilege.expired, params: {date: 2026-09-14}}
+  - name: recency-other-certificates-not-selected
+    evaluation: recency
+    shows: [sfcl-certificate]
+    says: An aeroplane FI certificate and an FI_S privilege on an FAA certificate are not evaluated; only the FI(S) on the SPL is, lapsed without refresher training or instruction.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+        - { id: l-faa, authority: FAA, type: COMMERCIAL }
+        - { id: l-spl, authority: EASA, type: SPL }
+      privileges:
+        - { id: p-fi, licenceId: l-ppl, kind: FI }
+        - { id: p-faa, licenceId: l-faa, kind: FI_S }
+        - { id: p-fis, licenceId: l-spl, kind: FI_S }
+    outcome: lapsed
+    expect: { message: privilege.recency_not_met }

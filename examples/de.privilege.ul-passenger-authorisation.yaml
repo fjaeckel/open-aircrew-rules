@@ -1,0 +1,47 @@
+credential: de.privilege.ul-passenger-authorisation
+examples:
+  - name: valid-without-expiry
+    evaluation: validity
+    shows: [validity-follows-licence]
+    says: A passenger authorisation with no expiry date follows the ultralight licence, which has no time limit; a UL_PASSENGER_AUTH privilege on an EASA licence is not this authorisation (a second result would fail the example).
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      privileges:
+        - { id: p-pax, licenceId: l-ul, kind: UL_PASSENGER_AUTH }
+        - { id: p-pax-easa, licenceId: l-ppl, kind: UL_PASSENGER_AUTH }
+    outcome: current
+    expect: { message: privilege.valid }
+
+  - name: valid-on-limited-expiry-day
+    evaluation: validity
+    shows: [validity-follows-licence]
+    says: An authorisation whose validity the Beauftragte limited is valid through the recorded expiry date.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DAeC, type: UL }
+      privileges:
+        - { id: p-pax, licenceId: l-ul, kind: UL_PASSENGER_AUTH, expires: 2026-09-15 }
+    outcome: current
+    expect:
+      subject: { kind: privilege, id: p-pax }
+      message: privilege.valid
+      params: { date: "2026-09-15" }
+
+  - name: expired-after-limited-expiry
+    evaluation: validity
+    says: The day after a recorded expiry date the authorisation is expired; the conditions for extending it are the Beauftragte's and are not evaluated.
+    asOf: 2026-09-16
+    record:
+      licences:
+        - { id: l-ul, authority: LBA, type: UL }
+      privileges:
+        - { id: p-pax, licenceId: l-ul, kind: UL_PASSENGER_AUTH, expires: 2026-09-15 }
+    outcome: expired
+    expect:
+      subject: { kind: privilege, id: p-pax }
+      message: privilege.expired
+      params: { date: "2026-09-15" }

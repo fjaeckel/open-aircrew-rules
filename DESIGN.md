@@ -35,6 +35,7 @@ sources/<authority>/<article>.md                 verbatim texts of allowed origi
 vocabulary.yaml                                  the closed vocabulary, incl. credential_vocabulary
 messages/keys.yaml                               every message, requirement, remedy and description key
 policies.yaml                                    every convention with no legal text behind it (policy:<id>)
+associations.yaml                                association documents cited by title (assoc:<id>), never stored
 fragments/<kind>/                                unmerged changes to shared files during parallel work (section 12)
 schema/                                          JSON Schema 2020-12 for every YAML file
 engine/, engine/hatches/                         the evaluator (package engine)
@@ -177,8 +178,14 @@ exact paragraph label path occurs in its outline. Credential files contain no qu
 
 - `regulation`: EU regulations and US federal regulations, stored verbatim;
 - `national_law`: German statutes and ordinances, stored verbatim;
-- `association`: rules an association sets under a statutory delegation (DULV, DAeC). They
-  are cited by title and never stored or quoted; the delegating statute is stored;
+- `association`: rules an association sets under a statutory delegation (DULV, DAeC). Each
+  document is declared once in `associations.yaml` (`id` `<publisher>:<document>`,
+  `publisher`, `title` as known, `delegated_by`: the stored paragraph that delegates it,
+  `verified`) and cited as `assoc:<id>` next to that paragraph (`ref: [de:LuftPersV.45(4),
+  assoc:dulv:ul-recency-gyroplane]`). No text is stored or quoted and an assoc ref has no
+  paragraph labels; the gate fails on an undeclared document, a document cited without its
+  delegating paragraph or cited nowhere, and a file under `sources/` named after one. An
+  unverified document is read in an interpretation of every credential citing it;
 - `policy:<id>`: a presentation or implementation choice with no legal text behind it (the
   90-day expiring notice, unknown when input is missing, the status an unmet recency is
   reported with). Every id is declared once in `policies.yaml` with a statement and a
@@ -244,7 +251,8 @@ reference cites; unknown message keys or statuses; missing or failing worked exa
 credentials that select the same record item; malformed interpretations; vocabulary entries
 the engine does not implement; articles of the scope missing from the coverage map, unknown
 evaluations, evaluations not listed under their source article, pending files that exist;
-source files that break the allow-list; engine and credentials statement coverage below
+source files that break the allow-list; association documents that are undeclared, cited
+without their delegating paragraph or cited nowhere; engine and credentials statement coverage below
 95 %; and any file under `fragments/` (section 12). It reports without failing: articles with pending
 credentials, and interpretations awaiting approval. CI also runs `go vet`, the tests with
 the race detector, the generator up-to-date check and a vulnerability scan.
@@ -281,3 +289,40 @@ them; each contributor writes fragments under `fragments/coverage/`, `fragments/
 key and policy fragments in memory, validates every fragment and lists what is pending; the
 default run fails while any fragment exists, so the main branch never ships one. An
 integration step merges the fragments into the shared files and deletes them.
+
+## 13. Format additions of the conversion round
+
+The conversion of the remaining credentials asked for these words; each is in the
+vocabulary or the format, the compiler or resolver, the schema and a worked example
+(docs/credential-format.md has the details). None was declined.
+
+- **Ultralight kinds in selection.** `selects.ratings`, `only_for` and `scope` take
+  `ul_kinds` (engine `applies_to.ulKinds`); `none` selects a rating recorded without a kind.
+  The overlap check treats two rating parts as distinct when their kinds (the vocabulary's
+  `ul_kinds` plus `none`) do not intersect, and the gate fails on a kind the vocabulary
+  lacks. The German ultralight kinds are one credential each (`de.rating.ul-three-axis` ...),
+  and `de.licence.ul#kind_required` selects the kindless ratings.
+- **Inserted paragraph labels.** A label a regulation inserted after another (`(2a)` after
+  `(2)`, `(da)` after `(d)`) is the sibling of that label in the outline, and the next
+  ordinary label still follows it; `de:LuftPersV.45(2a)` and `easa:FCL.710(da)` resolve.
+  Roman numerals (`(ii)`) are not inserted labels.
+- **Association documents.** The `assoc:` reference kind and `associations.yaml` (section 6)
+  replace the stop-gap of citing a policy for thresholds an association sets.
+- **Event count words.** `practical_test`, `assessment_of_competence`,
+  `instructor_refresher`, `examiner_refresher`, `supervised_instruction`,
+  `differences_training`, `solo_endorsement` and `instructor_endorsement` count events of
+  their own kind; `also:` adds kinds. They replace informational `not_recorded` rows waived
+  by an event and event words with borrowed kinds; who conducted or recognised the event is a
+  `with:` qualifier and an interpretation.
+- **`ifr_time`** counts IFR minutes (`minutes.ifr`) for aeroplane and helicopter
+  instrument experience; `cloud_flying_time` stays the sailplane word.
+- **Minimum mass on `ul_credit`.** `{ CLASS: { ul_kinds: [...], min_mtom_kg: n } }` credits an
+  ultralight only from a recorded mass of n kg (FCL.035(a)(5): gyroplanes of at least
+  450 kg). A flight without a recorded mass or kind is never credited on a guess: it is
+  unknown input and left out of the count, which rests on the flights with known input
+  (decision 4 of section 11: a row is untracked only when no flight in its window has known
+  input).
+- **Licence kinds.** `PPL_H`, `CPL_H` and `ATPL_H` replace the shared `HELICOPTER` kind, and
+  `PPL_AS`, `CPL_AS` are added, so that each helicopter and airship licence is a credential
+  with its own medical and ratings name the licence they are held on.
+

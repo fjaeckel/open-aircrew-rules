@@ -1,0 +1,405 @@
+credential: easa.licence.gpl
+examples:
+  - name: recency-experience-current
+    evaluation: recency
+    says: Twelve hours as PIC, dual or supervised solo with 12 take-offs and landings and 1 hour of refresher training on gyroplanes in the last 2 years keep the GPL current; a flight on the window's first day counts; time with no PIC, dual or supervised solo role does not.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-gpl, authority: EASA, type: GPL }
+      ratings:
+        - { id: r-gyro, licenceId: l-gpl, class: GYROPLANE }
+      flights:
+        - { date: 2024-09-15, class: GYROPLANE, minutes: { total: 60, dual: 60 }, takeoffs: { day: 2 }, landings: { day: 2 } }
+        - { date: 2026-03-01, class: GYROPLANE, minutes: { total: 600, pic: 600 }, takeoffs: { day: 10 }, landings: { day: 10 } }
+        - { date: 2026-03-02, class: GYROPLANE, minutes: { total: 60, spic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-03-03, class: GYROPLANE, minutes: { total: 120 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect: {subject: {kind: rating, id: r-gyro, class: GYROPLANE}, message: rating.recency_current, requirements: {total_time: {current: 720, met: true}, takeoffs_landings: {current: 14, met: true}, refresher: {current: 60, met: true}}}
+  - name: recency-proficiency-check
+    evaluation: recency
+    says: A GPL proficiency check in the last 2 years keeps the GPL current; a check in an ultralight gyroplane does not count.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-gpl, authority: EASA, type: GPL }
+      ratings:
+        - { id: r-gyro, licenceId: l-gpl, class: GYROPLANE }
+      flights:
+        - { date: 2025-05-05, class: GYROPLANE, minutes: { total: 60, pic: 60 }, takeoffs: { day: 3 }, landings: { day: 3 }, flags: { proficiencyCheck: true } }
+        - { date: 2026-05-05, class: ULTRALIGHT, ulKind: GYROPLANE, mtomKg: 560, minutes: { total: 60, pic: 60 }, takeoffs: { day: 3 }, landings: { day: 3 }, flags: { proficiencyCheck: true } }
+    outcome: current
+    expect: {subject: {kind: rating, id: r-gyro}, message: rating.recency_current, validUntil: 2027-05-05, requirements: {proficiency_check: {current: 1, met: true, lastDate: 2025-05-05}}}
+  - name: recency-ultralight-credit
+    evaluation: recency
+    shows: [ultralight-credit-mass]
+    says: Ultralight gyroplanes of at least 450 kg count toward the 12 hours and the take-offs and landings but not toward the refresher training; the 449 kg flight is not credited and the one without a recorded mass is not credited on a guess (750 minutes, 13 take-offs and landings).
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-gpl, authority: EASA, type: GPL }
+      ratings:
+        - { id: r-gyro, licenceId: l-gpl, class: GYROPLANE }
+      flights:
+        - { date: 2026-01-10, class: GYROPLANE, minutes: { total: 60, dual: 60 }, takeoffs: { day: 2 }, landings: { day: 2 } }
+        - { date: 2026-02-10, class: ULTRALIGHT, ulKind: GYROPLANE, mtomKg: 560, minutes: { total: 660, pic: 600, dual: 60 }, takeoffs: { day: 10 }, landings: { day: 10 } }
+        - { date: 2026-03-10, class: ULTRALIGHT, ulKind: GYROPLANE, mtomKg: 450, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-04-10, class: ULTRALIGHT, ulKind: GYROPLANE, mtomKg: 449, minutes: { total: 120, pic: 120 }, takeoffs: { day: 4 }, landings: { day: 4 } }
+        - { date: 2026-05-10, class: ULTRALIGHT, ulKind: GYROPLANE, minutes: { total: 45, pic: 45 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect: {subject: {kind: rating, id: r-gyro}, message: rating.recency_current, requirements: {total_time: {current: 750, met: true}, takeoffs_landings: {current: 13, met: true}, refresher: {current: 60, met: true}}}
+  - name: recency-light-ultralight-not-credited
+    evaluation: recency
+    shows: [ultralight-credit-mass]
+    says: Ultralight gyroplanes below 450 kg maximum take-off mass are not credited, so 11 hours on a 449 kg gyroplane leave the GPL recency lapsed.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-gpl, authority: EASA, type: GPL }
+      ratings:
+        - { id: r-gyro, licenceId: l-gpl, class: GYROPLANE }
+      flights:
+        - { date: 2026-01-10, class: GYROPLANE, minutes: { total: 60, dual: 60 }, takeoffs: { day: 2 }, landings: { day: 2 } }
+        - { date: 2026-04-10, class: ULTRALIGHT, ulKind: GYROPLANE, mtomKg: 449, minutes: { total: 660, pic: 660 }, takeoffs: { day: 10 }, landings: { day: 10 } }
+    outcome: lapsed
+    expect: {subject: {kind: rating, id: r-gyro}, message: rating.recency_not_met, requirements: {total_time: {current: 60, met: false}, takeoffs_landings: {current: 2, met: false}}}
+  - name: recency-ultralight-mass-unknown
+    evaluation: recency
+    shows: [ultralight-credit-mass]
+    says: The 11 hours on an ultralight gyroplane with no recorded mass are not credited on a guess; with 1 hour of known gyroplane time the recency is lapsed until the mass is recorded.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-gpl, authority: EASA, type: GPL }
+      ratings:
+        - { id: r-gyro, licenceId: l-gpl, class: GYROPLANE }
+      flights:
+        - { date: 2026-01-10, class: GYROPLANE, minutes: { total: 60, dual: 60 }, takeoffs: { day: 2 }, landings: { day: 2 } }
+        - { date: 2026-04-10, class: ULTRALIGHT, ulKind: GYROPLANE, minutes: { total: 660, pic: 660 }, takeoffs: { day: 10 }, landings: { day: 10 } }
+    outcome: lapsed
+    expect: {subject: {kind: rating, id: r-gyro}, message: rating.recency_not_met, requirements: {total_time: {current: 60, met: false}, takeoffs_landings: {current: 2, met: false}}}
+  - name: recency-lapsed
+    evaluation: recency
+    says: Twelve landings but 11 take-offs are not 12 take-offs and landings; the flight the day before the 2-year window no longer counts; without refresher training or a check the GPL privileges are lapsed.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-gpl, authority: LBA, type: GPL }
+      ratings:
+        - { id: r-gyro, licenceId: l-gpl, class: GYROPLANE }
+      flights:
+        - { date: 2024-09-14, class: GYROPLANE, minutes: { total: 600, pic: 540, dual: 60 }, takeoffs: { day: 12 }, landings: { day: 12 } }
+        - { date: 2026-03-01, class: GYROPLANE, minutes: { total: 300, pic: 300 }, takeoffs: { day: 11 }, landings: { day: 12 } }
+    outcome: lapsed
+    expect: {subject: {kind: rating, id: r-gyro}, message: rating.recency_not_met, requirements: {total_time: {current: 300, met: false, remedyKey: remedy.fly_more, remedyParams: {missing: 420, unit: minutes}}, takeoffs_landings: {current: 11, met: false, remedyParams: {missing: 1, unit: landings}}, refresher: {current: 0, met: false}, proficiency_check: {current: 0, met: false, remedyKey: remedy.proficiency_check}}}
+  - name: recency-takeoffs-short
+    evaluation: recency
+    says: Twelve hours with twelve landings but only eight take-offs on gyroplanes do not keep the GPL current.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-gpl, authority: EASA, type: GPL }
+      ratings:
+        - { id: r-gyro, licenceId: l-gpl, class: GYROPLANE }
+      flights:
+        - { date: 2026-03-01, class: GYROPLANE, minutes: { total: 60, dual: 60 }, takeoffs: { day: 2 }, landings: { day: 2 } }
+        - { date: 2026-04-01, class: GYROPLANE, minutes: { total: 660, pic: 660 }, takeoffs: { day: 6 }, landings: { day: 10 } }
+    outcome: lapsed
+    expect: {subject: {kind: rating, class: GYROPLANE, id: r-gyro}, message: rating.recency_not_met, requirements: {total_time: {current: 720, met: true}, takeoffs_landings: {current: 8, met: false}, refresher: {current: 60, met: true}, proficiency_check: {current: 0, met: false}}}
+  - name: variants-flown-first-day
+    evaluation: variants
+    says: A flight in the variant on the first day of the 2-year window keeps it current.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-gpl, authority: EASA, type: GPL }
+      ratings:
+        - { id: r-gyro, licenceId: l-gpl, class: GYROPLANE }
+      variants:
+        - { id: v-electric, ratingId: r-gyro, name: SPG-ELECTRIC }
+        - { id: v-piston, ratingId: r-gyro, name: SPG-PISTON }
+      flights:
+        - { date: 2024-09-15, class: GYROPLANE, variant: SPG-ELECTRIC, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-06-01, class: GYROPLANE, variant: SPG-PISTON, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect: {subject: {kind: type, id: v-electric, detail: SPG-ELECTRIC}, message: type.current, validUntil: 2026-09-15, requirements: {variant_flown: {current: 1, met: true}}}
+  - name: variants-flown-other-variant
+    evaluation: variants
+    says: Each recorded variant has its own result; a flight in another variant does not count for it.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-gpl, authority: EASA, type: GPL }
+      ratings:
+        - { id: r-gyro, licenceId: l-gpl, class: GYROPLANE }
+      variants:
+        - { id: v-electric, ratingId: r-gyro, name: SPG-ELECTRIC }
+        - { id: v-piston, ratingId: r-gyro, name: SPG-PISTON }
+      flights:
+        - { date: 2024-09-15, class: GYROPLANE, variant: SPG-ELECTRIC, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-06-01, class: GYROPLANE, variant: SPG-PISTON, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect: {subject: {kind: type, id: v-piston, detail: SPG-PISTON}, message: type.current}
+  - name: variants-differences-training
+    evaluation: variants
+    says: Differences training recorded for the variant restores it without a logged flight in it.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-gpl, authority: EASA, type: GPL }
+      ratings:
+        - { id: r-gyro, licenceId: l-gpl, class: GYROPLANE }
+      variants:
+        - { id: v-electric, ratingId: r-gyro, name: SPG-ELECTRIC }
+      events:
+        - { date: 2026-08-01, kind: differences_training, class: GYROPLANE, variant: SPG-ELECTRIC }
+    outcome: current
+    expect: {subject: {kind: type, id: v-electric}, message: type.current, requirements: {differences_training: {current: 1, met: true}}}
+  - name: variants-proficiency-check
+    evaluation: variants
+    says: A proficiency check recorded for the variant restores it.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-gpl, authority: EASA, type: GPL }
+      ratings:
+        - { id: r-gyro, licenceId: l-gpl, class: GYROPLANE }
+      variants:
+        - { id: v-electric, ratingId: r-gyro, name: SPG-ELECTRIC }
+      events:
+        - { date: 2026-08-01, kind: proficiency_check, class: GYROPLANE, variant: SPG-ELECTRIC }
+    outcome: current
+    expect: {subject: {kind: type, id: v-electric}, message: type.current}
+  - name: variants-not-flown
+    evaluation: variants
+    says: The variant was last flown the day before the 2-year window; before flying it again the pilot needs differences training, a proficiency check or refresher training in it.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-gpl, authority: EASA, type: GPL }
+      ratings:
+        - { id: r-gyro, licenceId: l-gpl, class: GYROPLANE }
+      variants:
+        - { id: v-electric, ratingId: r-gyro, name: SPG-ELECTRIC }
+      flights:
+        - { date: 2024-09-14, class: GYROPLANE, variant: SPG-ELECTRIC, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: lapsed
+    expect: {subject: {kind: type, id: v-electric}, message: type.not_flown, requirements: {variant_flown: {current: 0, met: false, remedyKey: remedy.differences_training}}}
+  - name: variants-variant-not-recorded
+    evaluation: variants
+    says: Gyroplane flights without a recorded variant cannot be attributed; the variant's status is unknown.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-gpl, authority: EASA, type: GPL }
+      ratings:
+        - { id: r-gyro, licenceId: l-gpl, class: GYROPLANE }
+      variants:
+        - { id: v-electric, ratingId: r-gyro, name: SPG-ELECTRIC }
+      flights:
+        - { date: 2026-06-01, class: GYROPLANE, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: unknown
+    expect: {subject: {kind: type, id: v-electric}, message: type.unknown, requirements: {variant_flown: {tracked: false, met: false}}}
+  - name: passenger-prerequisite-met
+    evaluation: passenger_prerequisite
+    says: Ten hours as PIC on gyroplanes since the GPL was issued, starting on the issue day, allow passengers; dual time and ultralight gyroplane time do not count.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-gpl, authority: EASA, type: GPL, issued: 2026-02-01 }
+      ratings:
+        - { id: r-gyro, licenceId: l-gpl, class: GYROPLANE }
+      flights:
+        - { date: 2026-02-01, class: GYROPLANE, minutes: { total: 240, pic: 240 }, takeoffs: { day: 4 }, landings: { day: 4 } }
+        - { date: 2026-04-01, class: GYROPLANE, minutes: { total: 420, pic: 360, dual: 60 }, takeoffs: { day: 6 }, landings: { day: 6 } }
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: GYROPLANE, mtomKg: 560, minutes: { total: 300, pic: 300 }, takeoffs: { day: 5 }, landings: { day: 5 } }
+    outcome: current
+    expect: {subject: {kind: passengers, id: l-gpl, class: GYROPLANE}, message: pax.prerequisite_met, requirements: {gpl_pic: {current: 600, required: 600, met: true}}}
+  - name: passenger-prerequisite-not-met
+    evaluation: passenger_prerequisite
+    says: PIC time flown the day before the GPL was issued does not count; 4 hours since issue leave 6 hours to fly.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-gpl, authority: EASA, type: GPL, issued: 2026-02-01 }
+      ratings:
+        - { id: r-gyro, licenceId: l-gpl, class: GYROPLANE }
+      flights:
+        - { date: 2026-01-31, class: GYROPLANE, minutes: { total: 600, pic: 600 }, takeoffs: { day: 5 }, landings: { day: 5 } }
+        - { date: 2026-06-01, class: GYROPLANE, minutes: { total: 240, pic: 240 }, takeoffs: { day: 4 }, landings: { day: 4 } }
+    outcome: expired
+    expect: {subject: {kind: passengers, id: l-gpl, class: GYROPLANE}, message: pax.gpl_experience_not_met, params: {needed: 360}, requirements: {gpl_pic: {current: 240, met: false, remedyKey: remedy.fly_more, remedyParams: {missing: 360, unit: minutes}}}}
+  - name: passenger-prerequisite-issue-date-unknown
+    evaluation: passenger_prerequisite
+    says: Without a recorded GPL issue date the time since issue cannot be counted.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-gpl, authority: EASA, type: GPL }
+      ratings:
+        - { id: r-gyro, licenceId: l-gpl, class: GYROPLANE }
+      flights:
+        - { date: 2026-06-01, class: GYROPLANE, minutes: { total: 900, pic: 900 }, takeoffs: { day: 9 }, landings: { day: 9 } }
+    outcome: unknown
+    expect: {subject: {kind: passengers, id: l-gpl, class: GYROPLANE}, message: pax.prerequisite_unknown, requirements: {gpl_pic: {tracked: false}}}
+  - name: recency-gpl-ratings-only
+    evaluation: recency
+    shows: [gyroplane-privileges-on-gpl]
+    says: A GYROPLANE rating on an FAA certificate or a DULV licence, and an SEP rating on the GPL, are not GPL privileges; only the GYROPLANE rating on the GPL is evaluated, lapsed without recent flights.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: PRIVATE }
+        - { id: l-dulv, authority: DULV, type: UL }
+        - { id: l-gpl, authority: EASA, type: GPL }
+      ratings:
+        - { id: r-faa, licenceId: l-faa, class: GYROPLANE }
+        - { id: r-dulv, licenceId: l-dulv, class: GYROPLANE }
+        - { id: r-sep, licenceId: l-gpl, class: SEP_LAND }
+        - { id: r-gyro, licenceId: l-gpl, class: GYROPLANE }
+    outcome: lapsed
+    expect: { message: rating.recency_not_met }
+  - name: variants-recorded-on-gpl-only
+    evaluation: variants
+    says: A variant of an SEP rating is not a GPL variant; only the variant recorded on the GYROPLANE rating of the GPL is evaluated, and it is lapsed without a flight in it.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-gpl, authority: EASA, type: GPL }
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-gyro, licenceId: l-gpl, class: GYROPLANE }
+        - { id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-01-31 }
+      variants:
+        - { id: v-tw, ratingId: r-sep, name: TAILWHEEL }
+        - { id: v-electric, ratingId: r-gyro, name: SPG-ELECTRIC }
+    outcome: lapsed
+    expect: { message: type.not_flown }
+  - name: passenger-prerequisite-gpl-only
+    evaluation: passenger_prerequisite
+    shows: [gyroplane-privileges-on-gpl]
+    says: A gyroplane rating recorded on a PPL(A) or an FAA certificate is not a GPL; only the GPL's gyroplane passengers are evaluated, with 10 hours as PIC since its issue.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A), issued: 2020-01-01 }
+        - { id: l-faa, authority: FAA, type: PRIVATE, issued: 2020-01-01 }
+        - { id: l-gpl, authority: EASA, type: GPL, issued: 2025-01-01 }
+      ratings:
+        - { id: r-ppl, licenceId: l-ppl, class: GYROPLANE }
+        - { id: r-faa, licenceId: l-faa, class: GYROPLANE }
+        - { id: r-gyro, licenceId: l-gpl, class: GYROPLANE }
+      flights:
+        - { date: 2025-06-01, class: GYROPLANE, minutes: { total: 600, pic: 600 }, takeoffs: { day: 6 }, landings: { day: 6 } }
+    outcome: current
+    expect: { message: pax.prerequisite_met }
+  - name: passengers-day-current
+    evaluation: passengers_day
+    says: Three take-offs and landings as pilot flying in a gyroplane in the last 90 days allow passengers.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-gpl, authority: EASA, type: GPL }
+      ratings:
+        - { id: r-gyro, licenceId: l-gpl, class: GYROPLANE }
+      flights:
+        - { date: 2026-08-01, class: GYROPLANE, pilotFlying: true, minutes: { total: 60, pic: 60 }, takeoffs: { day: 3 }, landings: { day: 3 } }
+    outcome: current
+    expect: { message: pax.day_current }
+  - name: passengers-day-not-current
+    evaluation: passengers_day
+    says: Two take-offs and landings in the last 90 days are one short; the last flights before the window do not count.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-gpl, authority: LBA, type: GPL }
+      ratings:
+        - { id: r-gyro, licenceId: l-gpl, class: GYROPLANE }
+      flights:
+        - { date: 2026-06-16, class: GYROPLANE, pilotFlying: true, minutes: { total: 60, pic: 60 }, takeoffs: { day: 5 }, landings: { day: 5 } }
+        - { date: 2026-08-01, class: GYROPLANE, pilotFlying: true, minutes: { total: 40, pic: 40 }, takeoffs: { day: 2 }, landings: { day: 2 } }
+    outcome: expired
+    expect: { message: pax.not_current, params: { needed: 1 } }
+  - name: passengers-night-current
+    evaluation: passengers_night
+    says: A take-off and a landing at night as pilot flying in a gyroplane in the last 90 days meet the night passenger recency.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-gpl, authority: EASA, type: GPL }
+      ratings:
+        - { id: r-gyro, licenceId: l-gpl, class: GYROPLANE }
+      flights:
+        - { date: 2026-08-01, class: GYROPLANE, pilotFlying: true, minutes: { total: 60, pic: 60, night: 30 }, takeoffs: { day: 1, night: 1 }, landings: { day: 1, night: 1 } }
+    outcome: current
+    expect: { message: pax.night_current }
+  - name: passengers-night-not-current
+    evaluation: passengers_night
+    says: Without a night take-off and landing in the last 90 days the night passenger recency is not met.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-gpl, authority: EASA, type: GPL }
+      ratings:
+        - { id: r-gyro, licenceId: l-gpl, class: GYROPLANE }
+      flights:
+        - { date: 2026-08-01, class: GYROPLANE, pilotFlying: true, minutes: { total: 60, pic: 60 }, takeoffs: { day: 3 }, landings: { day: 3 } }
+    outcome: expired
+    expect: { message: pax.night_not_current }
+  - name: medical-class-2-valid
+    evaluation: medical
+    says: A valid class 2 medical certificate allows exercising the GPL.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-gpl, authority: EASA, type: GPL }
+      credentials:
+        - { id: c-1, type: EASA_CLASS2_MEDICAL, issued: 2026-01-10, expires: 2027-01-10 }
+    outcome: current
+    expect: { message: licence.valid }
+  - name: medical-lower-class
+    evaluation: medical
+    says: A LAPL medical certificate is not enough for a GPL, which needs at least class 2.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-gpl, authority: EASA, type: GPL }
+      credentials:
+        - { id: c-1, type: EASA_LAPL_MEDICAL, expires: 2027-09-14 }
+    outcome: expired
+    expect: { message: licence.medical_required }
+  - name: medical-none-recorded
+    evaluation: medical
+    says: With no EASA medical recorded whether the GPL may be exercised cannot be decided.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-gpl, authority: EASA, type: GPL }
+    outcome: unknown
+    expect: { message: licence.medical_not_recorded }
+  - name: composite-may-be-exercised
+    composite: true
+    says: With a valid class 2 medical and language endorsement the GPL may be exercised; the lapsed gyroplane recency and passenger results are listed as limitations or decide on the rating.
+    asOf: 2026-09-15
+    record:
+      holder: { dateOfBirth: 1980-05-01 }
+      licences:
+        - { id: l-gpl, authority: EASA, type: GPL }
+      credentials:
+        - { id: c-med, type: EASA_CLASS2_MEDICAL, issued: 2026-01-10, expires: 2027-01-31 }
+        - { id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2024-06-01 }
+    outcome: current
+    expect: { subject: { kind: licence, id: l-gpl } }
+  - name: composite-medical-expired
+    composite: true
+    says: With the class 2 medical expired the GPL may not be exercised.
+    asOf: 2026-09-15
+    record:
+      holder: { dateOfBirth: 1980-05-01 }
+      licences:
+        - { id: l-gpl, authority: EASA, type: GPL }
+      credentials:
+        - { id: c-med, type: EASA_CLASS2_MEDICAL, issued: 2024-01-10, expires: 2025-01-31 }
+        - { id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2024-06-01 }
+    outcome: expired
+    expect: { subject: { kind: licence, id: l-gpl }, decidedBy: { evaluation: medical } }

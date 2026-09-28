@@ -1,0 +1,254 @@
+credential: easa.rating.airship-type
+examples:
+  - name: revalidation-check-window-edges
+    evaluation: revalidation
+    says: A check on 31 July, 3 months before the 31 October expiry, counts; one on 30 July does not.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      ratings:
+        - { id: r-type, licenceId: l-1, class: AIRSHIP, typeDesignator: LZ-N07, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-03-10, class: AIRSHIP, typeDesignator: LZ-N07, minutes: { total: 120, pic: 120 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-07-30, class: AIRSHIP, typeDesignator: LZ-N07, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+        - { date: 2026-07-31, class: AIRSHIP, typeDesignator: LZ-N07, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-type, class: AIRSHIP }, message: rating.revalidation_expiring_met, requirements: {proficiency_check: {current: 1, lastDate: 2026-07-31}} }
+  - name: revalidation-expired-day-after
+    evaluation: revalidation
+    says: The day after its expiry date the rating is expired.
+    asOf: 2026-11-01
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      ratings:
+        - { id: r-type, licenceId: l-1, class: AIRSHIP, typeDesignator: LZ-N07, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-08-20, class: AIRSHIP, typeDesignator: LZ-N07, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: expired
+    expect: { subject: { kind: rating, id: r-type, class: AIRSHIP }, message: rating.expired }
+  - name: revalidation-met-current
+    evaluation: revalidation
+    says: With 92 days to expiry, on the first day of the check window, a met rating is current.
+    asOf: 2026-09-30
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      ratings:
+        - { id: r-type, licenceId: l-1, class: AIRSHIP, typeDesignator: LZ-N07, expires: 2026-12-31 }
+      flights:
+        - { date: 2026-03-10, class: AIRSHIP, typeDesignator: LZ-N07, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-09-30, class: AIRSHIP, typeDesignator: LZ-N07, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: current
+    expect: { subject: { kind: rating, id: r-type, class: AIRSHIP }, message: rating.revalidation_current }
+  - name: revalidation-met-expiring
+    evaluation: revalidation
+    says: The proficiency check in the 3 months before expiry and the flying on the type within the validity period revalidate the rating.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      ratings:
+        - { id: r-type, licenceId: l-1, class: AIRSHIP, typeDesignator: LZ-N07, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-03-10, class: AIRSHIP, typeDesignator: LZ-N07, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-08-20, class: AIRSHIP, typeDesignator: LZ-N07, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-type, class: AIRSHIP }, message: rating.revalidation_expiring_met, params: {days: 46}, requirements: {proficiency_check: {current: 1, met: true, lastDate: 2026-08-20}, type_time: {current: 120, required: 120, met: true}} }
+  - name: revalidation-no-expiry-date
+    evaluation: revalidation
+    says: Without an expiry date the windows cannot be placed.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      ratings:
+        - { id: r-type, licenceId: l-1, class: AIRSHIP, typeDesignator: LZ-N07 }
+      flights:
+        - { date: 2026-08-20, class: AIRSHIP, typeDesignator: LZ-N07, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: unknown
+    expect: { subject: { kind: rating, id: r-type, class: AIRSHIP }, message: rating.no_expiry_date }
+  - name: revalidation-not-met
+    evaluation: revalidation
+    says: Without a proficiency check, and with too little flying on the type, the rating is not revalidated.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      ratings:
+        - { id: r-type, licenceId: l-1, class: AIRSHIP, typeDesignator: LZ-N07, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-05-10, class: AIRSHIP, typeDesignator: LZ-N07, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-type, class: AIRSHIP }, message: rating.revalidation_not_met_prof_check, requirements: {proficiency_check: {current: 0, met: false, remedyKey: remedy.proficiency_check}, type_time: {current: 60, met: false, remedyKey: remedy.fly_more, remedyParams: {missing: 60, unit: minutes}}} }
+  - name: revalidation-other-type
+    evaluation: revalidation
+    says: Flights and a check on another type of the same class do not count.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      ratings:
+        - { id: r-type, licenceId: l-1, class: AIRSHIP, typeDesignator: LZ-N07, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-03-10, class: AIRSHIP, typeDesignator: XX99, minutes: { total: 120, pic: 120 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-08-20, class: AIRSHIP, typeDesignator: XX99, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-type, class: AIRSHIP }, message: rating.revalidation_not_met_prof_check, requirements: {proficiency_check: {current: 0, met: false}} }
+  - name: revalidation-type-not-recorded
+    evaluation: revalidation
+    says: Without a type designator on the rating no flight can be matched to the type; the result is unknown.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      ratings:
+        - { id: r-type, licenceId: l-1, class: AIRSHIP, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-03-10, class: AIRSHIP, minutes: { total: 120, pic: 120 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-08-20, class: AIRSHIP, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: unknown
+    expect: { subject: { kind: rating, id: r-type, class: AIRSHIP }, message: rating.type_not_identifiable }
+  - name: revalidation-valid-on-expiry-day
+    evaluation: revalidation
+    says: On its expiry date the rating is still valid.
+    asOf: 2026-10-31
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      ratings:
+        - { id: r-type, licenceId: l-1, class: AIRSHIP, typeDesignator: LZ-N07, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-03-10, class: AIRSHIP, typeDesignator: LZ-N07, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-08-20, class: AIRSHIP, typeDesignator: LZ-N07, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-type, class: AIRSHIP }, message: rating.revalidation_expiring_met, params: {days: 0} }
+  - name: revalidation-validity-window-edges
+    evaluation: revalidation
+    says: Flying on 31 October 2025, 12 months before expiry, counts; flying on 30 October 2025 does not.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      ratings:
+        - { id: r-type, licenceId: l-1, class: AIRSHIP, typeDesignator: LZ-N07, expires: 2026-10-31 }
+      flights:
+        - { date: 2025-10-30, class: AIRSHIP, typeDesignator: LZ-N07, minutes: { total: 600, pic: 600 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-10-31, class: AIRSHIP, typeDesignator: LZ-N07, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-08-20, class: AIRSHIP, typeDesignator: LZ-N07, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-type, class: AIRSHIP }, message: rating.revalidation_expiring_met, requirements: {type_time: {current: 120, met: true}} }
+  - name: revalidation-window-not-open
+    evaluation: revalidation
+    says: More than 12 months before expiry the window is not open.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      ratings:
+        - { id: r-type, licenceId: l-1, class: AIRSHIP, typeDesignator: LZ-N07, expires: 2027-12-31 }
+      flights: []
+    outcome: current
+    expect: { subject: { kind: rating, id: r-type, class: AIRSHIP }, message: rating.window_not_open, params: {date: 2026-12-31} }
+  - name: revalidation-not-applicable-other-items
+    evaluation: revalidation
+    shows: [part-fcl-type-ratings]
+    says: Other classes and AIRSHIP ratings on FAA or DULV licences are not evaluated here; only the type rating on the EASA licence is (legacy not-applicable case with that rating added).
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+        - { id: l-faa, authority: FAA, type: COMMERCIAL }
+        - { id: l-dulv, authority: DULV, type: UL }
+      ratings:
+        - { id: r-other, licenceId: l-1, class: OTHER, expires: 2026-10-31 }
+        - { id: r-faa, licenceId: l-faa, class: AIRSHIP, typeDesignator: LZ-N07 }
+        - { id: r-dulv, licenceId: l-dulv, class: AIRSHIP, expires: 2026-10-31 }
+        - { id: r-type, licenceId: l-1, class: AIRSHIP, typeDesignator: LZ-N07, expires: 2027-12-31 }
+    outcome: current
+    expect: { message: rating.window_not_open }
+  - name: passengers-day-current
+    evaluation: passengers_day
+    says: Three take-offs and landings as pilot flying in an airship within 90 days allow carrying passengers.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      ratings:
+        - { id: r-1, licenceId: l-1, class: AIRSHIP, typeDesignator: LZ-N07, expires: 2027-06-30 }
+      flights:
+        - { date: 2026-08-20, class: AIRSHIP, minutes: { total: 60, pic: 60 }, takeoffs: { day: 3 }, landings: { day: 3 }, pilotFlying: true, typeDesignator: LZ-N07 }
+    outcome: current
+    expect: { subject: { kind: passengers, id: l-1, class: AIRSHIP }, message: pax.day_current }
+  - name: passengers-day-one-short
+    evaluation: passengers_day
+    says: Two take-offs and landings are one short.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      ratings:
+        - { id: r-1, licenceId: l-1, class: AIRSHIP, typeDesignator: LZ-N07, expires: 2027-06-30 }
+      flights:
+        - { date: 2026-08-20, class: AIRSHIP, minutes: { total: 60, pic: 60 }, takeoffs: { day: 2 }, landings: { day: 2 }, pilotFlying: true, typeDesignator: LZ-N07 }
+    outcome: expired
+    expect: { subject: { kind: passengers, id: l-1, class: AIRSHIP }, message: pax.not_current, params: { needed: 1 } }
+  - name: passengers-night-current
+    evaluation: passengers_night
+    says: One night take-off and landing as pilot flying in an airship within 90 days allow carrying passengers at night.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      ratings:
+        - { id: r-1, licenceId: l-1, class: AIRSHIP, typeDesignator: LZ-N07, expires: 2027-06-30 }
+      flights:
+        - { date: 2026-08-20, class: AIRSHIP, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 1 }, landings: { night: 1 }, pilotFlying: true, typeDesignator: LZ-N07 }
+    outcome: current
+    expect: { subject: { kind: passengers, id: l-1, class: AIRSHIP }, message: pax.night_current }
+  - name: passengers-night-day-only
+    evaluation: passengers_night
+    says: Day take-offs and landings do not count for night passengers.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      ratings:
+        - { id: r-1, licenceId: l-1, class: AIRSHIP, typeDesignator: LZ-N07, expires: 2027-06-30 }
+      flights:
+        - { date: 2026-08-20, class: AIRSHIP, minutes: { total: 60, pic: 60 }, takeoffs: { day: 3 }, landings: { day: 3 }, pilotFlying: true, typeDesignator: LZ-N07 }
+    outcome: expired
+    expect: { subject: { kind: passengers, id: l-1, class: AIRSHIP }, message: pax.night_not_current }
+  - name: variants-flown
+    evaluation: variants
+    shows: [variant-is-recorded-variant]
+    says: A flight in the variant within 2 years keeps its privileges.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      ratings:
+        - { id: r-1, licenceId: l-1, class: AIRSHIP, typeDesignator: LZ-N07, expires: 2027-06-30 }
+      variants:
+        - { id: v-1, ratingId: r-1, name: GLASS_COCKPIT, issued: 2023-05-01 }
+      flights:
+        - { date: 2026-03-10, class: AIRSHIP, variant: GLASS_COCKPIT, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, typeDesignator: LZ-N07 }
+    outcome: current
+    expect: { subject: { kind: type, id: v-1 }, message: type.current, validUntil: 2028-03-10 }
+  - name: variants-not-flown
+    evaluation: variants
+    says: The variant was last flown more than 2 years ago; flights without it do not count, so it may not be flown before differences training or a proficiency check in it.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      ratings:
+        - { id: r-1, licenceId: l-1, class: AIRSHIP, typeDesignator: LZ-N07, expires: 2027-06-30 }
+      variants:
+        - { id: v-1, ratingId: r-1, name: GLASS_COCKPIT, issued: 2023-05-01 }
+      flights:
+        - { date: 2024-08-01, class: AIRSHIP, variant: GLASS_COCKPIT, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, typeDesignator: LZ-N07 }
+        - { date: 2026-04-10, class: AIRSHIP, variant: STANDARD, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, typeDesignator: LZ-N07 }
+    outcome: lapsed
+    expect: { subject: { kind: type, id: v-1 }, message: type.not_flown, requirements: { variant_flown: { current: 0, met: false, remedyKey: remedy.differences_training } } }

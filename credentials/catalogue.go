@@ -31,8 +31,10 @@ type Catalogue struct {
 	Resolver *Resolver
 	// Policies are the declared policies (policies.yaml, plus fragments with Options.Fragments).
 	Policies map[string]*Policy
-	Options  Options
-	byID     map[string]*Credential
+	// Associations are the association documents of associations.yaml.
+	Associations map[string]*Association
+	Options      Options
+	byID         map[string]*Credential
 	// held is what each credential selects in a record (its own part).
 	held map[string]engine.AppliesTo
 }
@@ -98,7 +100,13 @@ func LoadWith(root string, o Options) (*Catalogue, error) {
 		return nil, err
 	}
 	cat := &Catalogue{Root: root, Vocab: v, Policies: pol, Options: o, Shared: map[string]*Shared{}, Compiled: map[string]*Compiled{}, ByEvaluation: map[string]string{}, byID: map[string]*Credential{}, held: map[string]engine.AppliesTo{}}
+	assoc, err := LoadAssociations(root)
+	if err != nil {
+		return nil, err
+	}
+	cat.Associations = assoc
 	cat.Resolver = NewResolver(root, v, pol)
+	cat.Resolver.associations = assoc
 	files, err := engine.YAMLFiles(filepath.Join(root, "credentials"))
 	if err != nil {
 		return nil, err

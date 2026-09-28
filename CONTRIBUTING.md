@@ -100,7 +100,8 @@ merge; the gate lists them so they stay visible.
   https://eur-lex.europa.eu").
 - **Never**: EASA AMC, GM or Easy Access Rules, ICAO documents, association rules (DULV,
   DAeC) or anything else under copyright. Summarise AMC/GM in your own words in
-  `docs/amc-gm-notes.md` and name the item; cite association rules by title only.
+  `docs/amc-gm-notes.md` and name the item; declare an association rule in
+  `associations.yaml` and cite it as `assoc:<id>` next to the statute delegating it.
 - Store Markdown only, copied from the official source without retyping or paraphrasing,
   with the header lines of the existing files (`Origin`, `Attribution`, URL, retrieval date,
   consolidation). See [sources/README.md](sources/README.md).

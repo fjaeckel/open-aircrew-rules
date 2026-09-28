@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/fjaeckel/open-aircrew-rules/schema/associations.schema.json",
+  "title": "Association documents cited by title only (associations.yaml); no text is stored",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["associations"],
+  "properties": {
+    "associations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "publisher", "title", "delegated_by", "verified"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z]+:[a-z0-9-]+$" },
+          "publisher": { "type": "string", "minLength": 1 },
+          "title": { "type": "string", "minLength": 1 },
+          "delegated_by": { "type": "string", "minLength": 1 },
+          "verified": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}

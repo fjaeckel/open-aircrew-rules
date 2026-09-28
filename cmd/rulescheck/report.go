@@ -54,7 +54,7 @@ func (r *report) print(w io.Writer, o options) {
 	section(w, "Load and compile", len(f.Load)+len(f.Files))
 	list(w, f.Load)
 	list(w, f.Files)
-	section(w, "References resolve to a paragraph of sources/ or a declared policy", len(f.Refs))
+	section(w, "References resolve to a paragraph of sources/, a declared policy or a declared association document", len(f.Refs))
 	list(w, f.Refs)
 	section(w, "Message keys and statuses", len(f.Keys))
 	list(w, f.Keys)

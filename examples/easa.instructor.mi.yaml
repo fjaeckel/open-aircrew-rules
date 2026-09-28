@@ -1,0 +1,51 @@
+credential: easa.instructor.mi
+examples:
+  - name: validity-fi-valid
+    evaluation: validity
+    says: With a valid FI certificate on the licence the MI is valid; a date entered on the MI is not used.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-mi, licenceId: l-1, kind: MI, expires: 2020-01-01 }
+        - { id: p-fi, licenceId: l-1, kind: FI, expires: 2027-01-15 }
+    outcome: current
+    expect: {subject: {kind: privilege, id: p-mi}, message: privilege.valid}
+  - name: validity-cri-on-expiry-day
+    evaluation: validity
+    says: A CRI certificate on its expiry date still carries the MI.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-mi, licenceId: l-1, kind: MI, expires: 2020-01-01 }
+        - { id: p-cri, licenceId: l-1, kind: CRI, expires: 2026-09-15 }
+    outcome: current
+    expect: {subject: {kind: privilege, id: p-mi}}
+  - name: validity-fi-expired
+    evaluation: validity
+    says: When the FI certificate has expired, the MI is no longer valid.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-mi, licenceId: l-1, kind: MI, expires: 2020-01-01 }
+        - { id: p-fi, licenceId: l-1, kind: FI, expires: 2026-09-14 }
+    outcome: expired
+    expect: {subject: {kind: privilege, id: p-mi}, message: privilege.underlying_certificate_invalid}
+  - name: validity-other-licence
+    evaluation: validity
+    says: An FI certificate on another licence does not carry the MI.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+        - { id: l-2, authority: EASA, type: PPL(H) }
+      privileges:
+        - { id: p-mi, licenceId: l-1, kind: MI, expires: 2020-01-01 }
+        - { id: p-fi, licenceId: l-2, kind: FI, expires: 2027-01-15 }
+    outcome: expired
+    expect: {subject: {kind: privilege, id: p-mi}}

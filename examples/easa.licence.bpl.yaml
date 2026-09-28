@@ -1,0 +1,51 @@
+credential: easa.licence.bpl
+examples:
+  - name: recency-not-evaluable
+    evaluation: recency
+    shows: [balloons-not-modelled]
+    says: However much balloon time is recorded, the record holds no balloon class or group, so the BPL recency cannot be evaluated and is unknown.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-bpl, authority: EASA, type: BPL }
+      ratings:
+        - { id: r-b, licenceId: l-bpl, class: BALLOON }
+      flights:
+        - { date: 2026-06-01, class: BALLOON, minutes: { total: 600, pic: 600 }, takeoffs: { day: 12 }, landings: { day: 12 } }
+    outcome: unknown
+    expect: { subject: { kind: licence, id: l-bpl }, message: licence.recency_not_evaluable }
+  - name: medical-lapl-valid
+    evaluation: medical
+    says: A valid LAPL medical certificate is enough for a BPL (non-commercial flying).
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-bpl, authority: EASA, type: BPL }
+      credentials:
+        - { id: c-1, type: EASA_LAPL_MEDICAL, issued: 2026-01-10, expires: 2027-01-10 }
+    outcome: current
+    expect: { message: licence.valid }
+  - name: medical-expired
+    evaluation: medical
+    says: An expired medical certificate does not allow exercising the BPL; an LAPL(B) is read as a BPL.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-bpl, authority: LBA, type: LAPL(B) }
+      credentials:
+        - { id: c-1, type: EASA_LAPL_MEDICAL, expires: 2026-09-14 }
+    outcome: expired
+    expect: { message: licence.medical_required }
+  - name: composite-recency-unknown
+    composite: true
+    shows: [balloons-not-modelled]
+    says: With a valid medical the BPL still cannot be reported usable, because its recency cannot be evaluated.
+    asOf: 2026-09-15
+    record:
+      holder: { dateOfBirth: 1980-05-01 }
+      licences:
+        - { id: l-bpl, authority: EASA, type: BPL }
+      credentials:
+        - { id: c-1, type: EASA_LAPL_MEDICAL, issued: 2026-01-10, expires: 2027-01-10 }
+    outcome: unknown
+    expect: { subject: { kind: licence, id: l-bpl }, decidedBy: { evaluation: recency } }

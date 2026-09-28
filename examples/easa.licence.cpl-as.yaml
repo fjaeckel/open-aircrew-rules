@@ -1,0 +1,74 @@
+credential: easa.licence.cpl-as
+examples:
+  - name: medical-valid
+    evaluation: medical
+    says: A valid class 1 medical certificate allows exercising the CPL(As).
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(As) }
+      credentials:
+        - { id: c-1, type: EASA_CLASS1_MEDICAL, issued: 2026-01-10, expires: 2027-01-10 }
+    outcome: current
+    expect: { subject: { kind: licence, id: l-1 }, message: licence.valid }
+  - name: medical-lower-class
+    evaluation: medical
+    shows: [class-1-only]
+    says: A class 2 medical certificate is not enough for the CPL(As).
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(As) }
+      credentials:
+        - { id: c-1, type: EASA_CLASS2_MEDICAL, expires: 2027-09-14 }
+    outcome: expired
+    expect: { subject: { kind: licence, id: l-1 }, message: licence.medical_required }
+  - name: medical-none-recorded
+    evaluation: medical
+    says: With no EASA medical recorded whether the CPL(As) may be exercised cannot be decided.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(As) }
+    outcome: unknown
+    expect: { subject: { kind: licence, id: l-1 }, message: licence.medical_not_recorded }
+  - name: medical-other-licences-not-evaluated
+    evaluation: medical
+    shows: [licence-authorities]
+    says: An FAA certificate and a licence of another kind are not evaluated here; only the CPL(As) is.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: PRIVATE }
+        - { id: l-o, authority: EASA, type: PPL(As) }
+        - { id: l-1, authority: LBA, type: CPL(As) }
+      credentials:
+        - { id: c-1, type: EASA_CLASS1_MEDICAL, expires: 2027-01-10 }
+    outcome: current
+    expect: { message: licence.valid }
+  - name: composite-medical-and-language-valid
+    composite: true
+    says: With a valid class 1 medical certificate and a valid language endorsement the CPL(As) may be exercised.
+    asOf: 2026-09-15
+    record:
+      holder: { dateOfBirth: 1976-01-01 }
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(As) }
+      credentials:
+        - { id: c-med, type: EASA_CLASS1_MEDICAL, issued: 2026-06-01 }
+        - { id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2023-04-15 }
+    outcome: current
+    expect: { subject: { kind: licence, id: l-1 } }
+  - name: composite-language-expired
+    composite: true
+    says: With the language endorsement expired the CPL(As) may not be exercised, although the medical is valid.
+    asOf: 2026-09-15
+    record:
+      holder: { dateOfBirth: 1976-01-01 }
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(As) }
+      credentials:
+        - { id: c-med, type: EASA_CLASS1_MEDICAL, issued: 2026-06-01 }
+        - { id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2020-04-15, expires: 2024-04-15 }
+    outcome: expired
+    expect: { subject: { kind: licence, id: l-1 }, decidedBy: { evaluation: language, credential: easa.endorsement.language-proficiency } }

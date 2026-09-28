@@ -22,6 +22,7 @@ credentials/<authority>/medicals/<name>.yaml        kind: medical
 credentials/<authority>/shared/<name>.yaml          parameterised evaluations used by several credentials
 examples/<credential id>.yaml                       worked examples of one credential
 policies.yaml                                       every policy (convention with no legal text) cited as policy:<id>
+associations.yaml                                   association documents cited as assoc:<id> (title only, no text)
 coverage/articles.yaml                              every article in scope -> evaluations, pending files, or why not
 scope/articles-<authority>.yaml                     the articles in scope, with a one-line summary each
 sources/<authority>/<article>.md                    verbatim texts (unchanged; see sources/README.md)
@@ -113,7 +114,7 @@ sea (`easa.rating.sep-sea`) reuse this evaluation with `uses: easa.rating.sep-la
 | `credential` | Name a pilot recognises. |
 | `id`, `kind`, `authority` | As above; `kind` is one of `credential_vocabulary.kinds`. |
 | `held_on` | Licences the credential is held on, for readers (not evaluated). |
-| `selects` | How the credential appears in a record: `licence` (`kinds`: licence kinds), `ratings` (`classes`), `privilege` (`kinds`: privilege kinds), `credential` (`kinds`: certificate types), each with optional `authorities`, `not_authorities`, `licence_kinds`, `not_licence_kinds`. No two credential files may select the same record item (gate). |
+| `selects` | How the credential appears in a record: `licence` (`kinds`: licence kinds), `ratings` (`classes`, optional `ul_kinds`: ultralight kinds, `none` for a rating recorded without one), `privilege` (`kinds`: privilege kinds), `credential` (`kinds`: certificate types), each with optional `authorities`, `not_authorities`, `licence_kinds`, `not_licence_kinds`. No two credential files may select the same record item (gate); ratings parts with disjoint `ul_kinds` do not overlap. |
 | `validity` | The credential's validity period for readers (`period_months`, `ref`); an evaluation's `valid_for` or `outcomes` is what is evaluated. |
 | `evaluations` | Every evaluation the credential needs, in reading order. |
 | `interpretations` | Every reading of the text the evaluations depend on (below). |
@@ -163,7 +164,7 @@ evaluations), not only the part the requiring credential needs.
 | Key | Meaning |
 | --- | --- |
 | `about` | The subject: `self` (default; the credential's own record part, the licence for kind licence), `rating`, `passengers` (one result per class and authority), `launch_methods` (one per launch method used), `licence`, `training` (a programme), `pilot` (one result per pilot), `variants` (one per variant recorded on a selected rating). |
-| `only_for` | Narrows the subjects: `authorities`, `not_authorities`, `licence_kinds`, `not_licence_kinds`, `classes`, `not_classes`, `credential_types`, `privilege_kinds`, `launch_methods`, `type_rated`, `programme`, `when_holding` (engine `holds`), `ref`. |
+| `only_for` | Narrows the subjects: `authorities`, `not_authorities`, `licence_kinds`, `not_licence_kinds`, `classes`, `not_classes`, `ul_kinds`, `credential_types`, `privilege_kinds`, `launch_methods`, `type_rated`, `programme`, `when_holding` (engine `holds`), `ref`. |
 | `scope` | Replaces `selects` for this evaluation (same keys as `only_for`). |
 | `relevant_class` | `pooled_with_held: [classes]` with `ref`: `in_class` then also counts the pool's classes the holder rates on the same licence. |
 | `counting` | Qualifiers for every count of the evaluation (window and filters); the window here is also the period the outcomes speak of. |
@@ -192,15 +193,19 @@ all_of: [ ... ]           # or any_of: [ ... ], or n_of: { n: 2, of: [ ... ] }
 
 **Counts** (`credential_vocabulary.counts`): `flight_time`, `pic_time`, `dual_time`,
 `supervised_solo_time`, `instruction_time` (dual + supervised solo), `pic_dual_or_solo_time`,
-`refresher` (dual in the class), `cloud_flying_time`, `cloud_flights`,
+`refresher` (dual in the class), `cloud_flying_time` (sailplane cloud flying), `ifr_time`
+(IFR minutes), `cloud_flights`,
 `longest_training_flight`, `flights`, `training_flights`, `takeoffs`, `landings`,
 `takeoffs_and_landings` (the smaller of the two), `night_takeoffs`, `night_landings`,
 `full_stop_landings`, `full_stop_night_landings`, `launches`, `approaches`, `holds`,
 `intercept_and_track`, `tows`, `route_sectors` (flights with a cruise of at least 15
 minutes), `solo_time` (PIC + supervised solo), `instruction_given_time`,
 `instruction_or_examining_time`, `mountain_landings`, `not_recorded` (something no record
-holds: always untracked), and the events `proficiency_check`, `skill_test`, `flight_review`,
-`proficiency_program_phase`, `basicmed_course`, `basicmed_exam`. Each has a default row id,
+holds: always untracked), and the events `proficiency_check`, `skill_test`, `practical_test`,
+`assessment_of_competence`, `instructor_refresher`, `examiner_refresher`,
+`supervised_instruction`, `differences_training`, `solo_endorsement`,
+`instructor_endorsement`, `flight_review`, `proficiency_program_phase`, `basicmed_course`,
+`basicmed_exam` (each counts events of its own kind; `also:` adds kinds). Each has a default row id,
 name key, unit and remedy key (the requirement rows consumers already display); override
 with `id`, `name`, `unit`, `remedy` (`remedy: none` drops it).
 
@@ -215,7 +220,7 @@ Amounts: `min` for counts (default 1), `min_hours` or `min_minutes` for times.
 | `within_months_before_expiry: n`, `within_validity_period: true` | periods anchored on the credential's expiry |
 | `since_licence_issue: true`, `since_issue: true`, `ever: true` | since an issue date, or everything |
 | `in_class: true`, `classes`, `excluding_classes`, `categories`, `ul_kinds` | where it was flown |
-| `ul_credit: { CLASS: [ultralight kinds], ref }` | ultralight time credited to a class |
+| `ul_credit: { CLASS: [ultralight kinds], ref }`, `{ CLASS: { ul_kinds: [...], min_mtom_kg: n }, ref }` | ultralight time credited to a class; with `min_mtom_kg` only from a recorded mass of n kg (a flight without one is unknown input, never credited) |
 | `in_type: true` | in the type of the rating evaluated |
 | `launch_methods`, `by_this_launch_method: true` | how a sailplane was launched |
 | `as: pilot_flying`, `as: sole_manipulator`, `as: [pic, dual, spic, ...]` | the pilot's role |
@@ -282,7 +287,15 @@ names the paragraph it interprets. A ref is `<prefix>:<article><paragraph labels
   `faa:61.57(c)(1)(iii)` to `sources/faa/61.57.md`; `de:LuftPersV.45a` to
   `sources/de/luftpersv-45a.md` (`credential_vocabulary.ref_authorities`).
 - The gate parses the paragraph outline of the source text ((a), (1), (i), (A), nested in
-  whatever order the text uses) and requires the exact label path to exist.
+  whatever order the text uses) and requires the exact label path to exist. A label
+  inserted by amendment (`(2a)`, `(da)`) is the sibling of the label it follows:
+  `de:LuftPersV.45(2a)`, `easa:FCL.710(da)`.
+- `assoc:<publisher>:<document>` cites a rule an association sets under a statutory
+  delegation (DULV, DAeC). The document is declared in `associations.yaml` (`id`,
+  `publisher`, `title`, `delegated_by`, `verified`); its text is never stored and the ref has
+  no paragraph labels. It is always cited next to its `delegated_by` paragraph:
+  `ref: [de:LuftPersV.45(4), assoc:dulv:ul-recency-gyroplane]`. An unverified document needs
+  an interpretation saying so.
 - `policy:<id>` marks a condition with no legal text behind it (a presentation or
   implementation choice such as the 90-day expiring notice, or the status an unmet
   recency is reported with); the id must be declared in `policies.yaml` (`id`,

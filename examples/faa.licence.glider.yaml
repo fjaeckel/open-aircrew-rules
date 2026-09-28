@@ -1,0 +1,166 @@
+credential: faa.licence.glider
+examples:
+  - name: passengers-current
+    evaluation: passengers
+    says: Three winch launches and three landings flown solo in a glider allow passengers; the instructor-flown dual flight does not add to them.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: PRIVATE }
+      ratings:
+        - { id: r-glider, licenceId: l-faa, class: GLIDER }
+      flights:
+        - { date: 2026-07-04, class: GLIDER, launchMethod: winch, minutes: { total: 20, pic: 20 }, launches: 1, landings: { day: 1 }, soleManipulator: true }
+        - { date: 2026-07-04, class: GLIDER, launchMethod: winch, minutes: { total: 25, pic: 25 }, launches: 1, landings: { day: 1 }, soleManipulator: true }
+        - { date: 2026-07-05, class: GLIDER, launchMethod: aerotow, minutes: { total: 90, pic: 90 }, launches: 1, landings: { day: 1 }, soleManipulator: true }
+        - { date: 2026-07-06, class: GLIDER, launchMethod: aerotow, minutes: { total: 40, dual: 40 }, launches: 1, landings: { day: 1 }, soleManipulator: false }
+    outcome: current
+    expect:
+      subject: { kind: passengers, id: l-faa, class: GLIDER }
+      message: pax.day_current
+      validUntil: 2026-10-02
+      requirements:
+        launches: { current: 3, required: 3, met: true }
+        landings: { current: 3, required: 3, met: true }
+  - name: passengers-landings-short
+    evaluation: passengers
+    says: Three launches but two landings in the glider (one flight ended in a landing out the pilot did not log) leave the pilot one landing short.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: GLIDER }
+      ratings:
+        - { id: r-glider, licenceId: l-faa, class: GLIDER }
+      flights:
+        - { date: 2026-06-01, class: GLIDER, launchMethod: aerotow, minutes: { total: 180, pic: 180 }, launches: 3, landings: { day: 2 }, soleManipulator: true }
+    outcome: lapsed
+    expect:
+      subject: { kind: passengers, id: l-faa, class: GLIDER }
+      message: pax.not_current
+      params: { needed: 1 }
+      requirements:
+        landings: { current: 2, met: false, remedyKey: remedy.fly_more, remedyParams: { missing: 1, unit: landings } }
+  - name: passengers-launches-short
+    evaluation: passengers
+    says: Landings alone no longer suffice; with three landings but only two launches logged the pilot needs one more launch.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: COMMERCIAL }
+      ratings:
+        - { id: r-glider, licenceId: l-faa, class: GLIDER }
+      flights:
+        - { date: 2026-06-01, class: GLIDER, launchMethod: winch, minutes: { total: 30, pic: 30 }, launches: 2, landings: { day: 2 }, soleManipulator: true }
+        - { date: 2026-06-02, class: GLIDER, minutes: { total: 30, pic: 30 }, landings: { day: 1 }, soleManipulator: true }
+    outcome: lapsed
+    expect:
+      subject: { kind: passengers, id: l-faa, class: GLIDER }
+      message: pax.not_current
+      params: { needed: 1 }
+      requirements:
+        launches: { current: 2, met: false, remedyKey: remedy.fly_more, remedyParams: { missing: 1, unit: launches } }
+        landings: { current: 3, met: true }
+  - name: passengers-sole-manipulator-not-logged
+    evaluation: passengers
+    says: PIC time alone does not show the pilot was sole manipulator; without that field the status is unknown.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: PRIVATE }
+      ratings:
+        - { id: r-glider, licenceId: l-faa, class: GLIDER }
+      flights:
+        - { date: 2026-06-01, class: GLIDER, launchMethod: aerotow, minutes: { total: 200, pic: 200 }, launches: 4, landings: { day: 4 } }
+    outcome: unknown
+    expect:
+      subject: { kind: passengers, id: l-faa, class: GLIDER }
+      message: pax.experience_not_logged
+      requirements:
+        launches: { tracked: false, met: false }
+        landings: { tracked: false, met: false }
+  - name: passengers-window-edges
+    evaluation: passengers
+    says: The flight on 18 May (the 90th day before 16 August) counts; the two on 17 May do not.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: PRIVATE }
+      ratings:
+        - { id: r-glider, licenceId: l-faa, class: GLIDER }
+      flights:
+        - { date: 2026-05-17, class: GLIDER, launchMethod: winch, minutes: { total: 20, pic: 20 }, launches: 2, landings: { day: 2 }, soleManipulator: true }
+        - { date: 2026-05-18, class: GLIDER, launchMethod: winch, minutes: { total: 20, pic: 20 }, launches: 1, landings: { day: 1 }, soleManipulator: true }
+    outcome: lapsed
+    expect:
+      subject: { kind: passengers, id: l-faa, class: GLIDER }
+      message: pax.not_current
+      params: { needed: 2 }
+      requirements:
+        launches: { current: 1 }
+        landings: { current: 1 }
+  - name: passengers-only-glider-ratings
+    evaluation: passengers
+    shows: [powered-classes-elsewhere]
+    says: "Only glider ratings on FAA certificates are evaluated here: a powered class on a glider pilot certificate follows the rules of powered aircraft, a student glider pilot may not carry passengers, and an EASA glider rating follows Part-SFCL. The one glider rating evaluated is current."
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-glider, authority: FAA, type: GLIDER}
+        - {id: l-student, authority: FAA, type: STUDENT}
+        - {id: l-easa, authority: EASA, type: SPL}
+      ratings:
+        - {id: r-glider, licenceId: l-glider, class: GLIDER}
+        - {id: r-tmg, licenceId: l-glider, class: SEP_LAND}
+        - {id: r-student-glider, licenceId: l-student, class: GLIDER}
+        - {id: r-easa-glider, licenceId: l-easa, class: GLIDER}
+      flights:
+        - {date: 2026-07-04, class: GLIDER, launchMethod: winch, minutes: {total: 60, pic: 60}, launches: 3, landings: {day: 3}, soleManipulator: true}
+    outcome: current
+    expect: { message: pax.day_current }
+  - name: flight-review-current
+    evaluation: flight_review
+    says: A glider pilot certificate holder with a flight review on 1 September 2025 may act as pilot in command through 30 September 2027.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: GLIDER}
+      events:
+        - {date: 2025-09-01, kind: flight_review}
+    outcome: current
+    expect: { message: flight_review.current }
+  - name: flight-review-none
+    evaluation: flight_review
+    says: A glider pilot certificate holder with no flight review, proficiency check or practical test on record may not act as pilot in command.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: GLIDER}
+    outcome: expired
+    expect: { message: flight_review.none_on_record }
+  - name: composite-review-current
+    composite: true
+    shows: [no-medical]
+    says: A glider pilot certificate needs no medical certificate; with a current flight review it may be exercised.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-glider, authority: FAA, type: GLIDER}
+      ratings:
+        - {id: r-glider, licenceId: l-glider, class: GLIDER}
+      events:
+        - {date: 2025-09-01, kind: flight_review}
+    outcome: current
+    expect: { subject: { kind: licence, id: l-glider } }
+  - name: composite-review-expired
+    composite: true
+    says: The last flight review was in July 2024; the glider pilot may not act as pilot in command.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-glider, authority: FAA, type: GLIDER}
+      ratings:
+        - {id: r-glider, licenceId: l-glider, class: GLIDER}
+      events:
+        - {date: 2024-07-01, kind: flight_review}
+    outcome: expired
+    expect: { subject: { kind: licence, id: l-glider }, decidedBy: { evaluation: flight_review } }

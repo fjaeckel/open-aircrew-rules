@@ -1,0 +1,28 @@
+credential: easa.instructor.iri
+examples:
+  - name: revalidation-like-fi
+    evaluation: revalidation
+    says: An IRI is revalidated like an FI.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: IRI, issued: 2024-01-15 }
+      events:
+        - { date: 2026-02-01, kind: instructor_refresher }
+        - { date: 2026-03-01, kind: assessment_of_competence }
+      flights: []
+    outcome: current
+    expect: {subject: {kind: privilege, id: p-1}, message: privilege.revalidation_current}
+  - name: revalidation-no-dates
+    evaluation: revalidation
+    says: Without an issue date or an expiry date the IRI certificate's validity cannot be placed.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: ATPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: IRI }
+    outcome: unknown
+    expect: { subject: { kind: privilege, id: p-1 }, message: privilege.no_expiry_date }

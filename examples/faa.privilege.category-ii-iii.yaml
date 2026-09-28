@@ -1,0 +1,94 @@
+credential: faa.privilege.category-ii-iii
+examples:
+  - name: expiry-last-day
+    evaluation: validity
+    shows: [renewal-date]
+    says: On 30 September the authorization renewed in March is still valid; the one renewed in February ended on 31 August; one without an issue date has no derivable expiry.
+    asOf: 2026-09-30
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: ATP }
+      privileges:
+        - { id: p-on, licenceId: l-faa, kind: CAT_II, validFrom: 2026-03-31 }
+        - { id: p-after, licenceId: l-faa, kind: CAT_II, issued: 2026-02-01 }
+        - { id: p-none, licenceId: l-faa, kind: CAT_III }
+    outcome: expiring
+    expect:
+      subject: { kind: privilege, id: p-on }
+      params: { days: 0, date: 2026-09-30 }
+  - name: expiry-day-after
+    evaluation: validity
+    says: On 30 September the authorization renewed in March is still valid; the one renewed in February ended on 31 August; one without an issue date has no derivable expiry.
+    asOf: 2026-09-30
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: ATP }
+      privileges:
+        - { id: p-on, licenceId: l-faa, kind: CAT_II, validFrom: 2026-03-31 }
+        - { id: p-after, licenceId: l-faa, kind: CAT_II, issued: 2026-02-01 }
+        - { id: p-none, licenceId: l-faa, kind: CAT_III }
+    outcome: expired
+    expect:
+      subject: { kind: privilege, id: p-after }
+      message: privilege.expired
+      params: { date: 2026-08-31 }
+  - name: expiry-no-issue-date
+    evaluation: validity
+    says: On 30 September the authorization renewed in March is still valid; the one renewed in February ended on 31 August; one without an issue date has no derivable expiry.
+    asOf: 2026-09-30
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: ATP }
+      privileges:
+        - { id: p-on, licenceId: l-faa, kind: CAT_II, validFrom: 2026-03-31 }
+        - { id: p-after, licenceId: l-faa, kind: CAT_II, issued: 2026-02-01 }
+        - { id: p-none, licenceId: l-faa, kind: CAT_III }
+    outcome: unknown
+    expect:
+      subject: { kind: privilege, id: p-none }
+      message: privilege.no_expiry_date
+  - name: six-months-valid
+    evaluation: validity
+    says: A Category II authorization issued on 20 May 2026 expires at the end of November 2026; a Category III authorization renewed on 5 March 2026 expires at the end of September, 20 days away on 10 September.
+    asOf: 2026-09-10
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: ATP }
+      privileges:
+        - { id: p-cat2, licenceId: l-faa, kind: CAT_II, issued: 2026-05-20 }
+        - { id: p-cat3, licenceId: l-faa, kind: CAT_III, issued: 2024-01-01, validFrom: 2026-03-05 }
+    outcome: current
+    expect:
+      subject: { kind: privilege, id: p-cat2 }
+      message: privilege.valid
+      params: { date: 2026-11-30 }
+      expiresOn: 2026-11-30
+  - name: six-months-expiring
+    evaluation: validity
+    says: A Category II authorization issued on 20 May 2026 expires at the end of November 2026; a Category III authorization renewed on 5 March 2026 expires at the end of September, 20 days away on 10 September.
+    asOf: 2026-09-10
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: ATP }
+      privileges:
+        - { id: p-cat2, licenceId: l-faa, kind: CAT_II, issued: 2026-05-20 }
+        - { id: p-cat3, licenceId: l-faa, kind: CAT_III, issued: 2024-01-01, validFrom: 2026-03-05 }
+    outcome: expiring
+    expect:
+      subject: { kind: privilege, id: p-cat3 }
+      message: privilege.expiring
+      params: { days: 20, date: 2026-09-30 }
+  - name: only-faa-category-ii-iii
+    evaluation: validity
+    says: Category II and III privileges on an EASA licence and other FAA privileges (EFVS) are not evaluated; the one FAA Category II authorization issued on 20 May 2026 is valid through 30 November.
+    asOf: 2026-09-30
+    record:
+      licences:
+        - {id: l-easa, authority: EASA, type: ATPL(A)}
+        - {id: l-faa, authority: FAA, type: ATP}
+      privileges:
+        - {id: p-easa, licenceId: l-easa, kind: CAT_II, issued: 2026-05-20}
+        - {id: p-efvs, licenceId: l-faa, kind: EFVS, issued: 2026-05-20}
+        - {id: p-cat2, licenceId: l-faa, kind: CAT_II, issued: 2026-05-20}
+    outcome: current
+    expect: { message: privilege.valid, params: { date: 2026-11-30 } }

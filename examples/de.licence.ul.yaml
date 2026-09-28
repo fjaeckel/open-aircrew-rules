@@ -1,0 +1,131 @@
+credential: de.licence.ul
+examples:
+  - name: three-axis-training-complete
+    evaluation: training_three_axis
+    shows: [training-time-counted]
+    says: Thirty hours of dual, supervised solo and PIC time on three-axis ultralights and UL motorgliders, 5 hours of it solo, complete the programme; SEP and trike time does not count.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      flights:
+        - { date: 2025-04-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 1200, dual: 1200 } }
+        - { date: 2025-06-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 240, spic: 240 } }
+        - { date: 2025-07-01, class: ULTRALIGHT, ulKind: THREE_AXIS_MOTORGLIDER, minutes: { total: 360, dual: 300, spic: 60 } }
+        - { date: 2025-08-01, class: SEP_LAND, minutes: { total: 600, pic: 600 } }
+        - { date: 2025-08-02, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 600, pic: 600 } }
+    outcome: current
+    expect:
+      subject: { kind: training, id: l-ul, detail: UL_THREE_AXIS }
+      message: training.all_met
+      requirements:
+        total_time: { current: 1800, met: true }
+        solo_time: { current: 300, met: true }
+
+  - name: three-axis-training-in-progress
+    evaluation: training_three_axis
+    shows: [kindless-flights-unknown]
+    says: Twenty hours dual and one hour solo so far; a flight in an ultralight with no kind cannot be counted and is reported as unknown input.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      flights:
+        - { date: 2025-04-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 1200, dual: 1200 } }
+        - { date: 2025-06-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 60, spic: 60 } }
+        - { date: 2025-06-02, class: ULTRALIGHT, minutes: { total: 600, spic: 600 } }
+    outcome: lapsed
+    expect:
+      subject: { kind: training, id: l-ul, detail: UL_THREE_AXIS }
+      message: training.in_progress
+      requirements:
+        total_time: { current: 1260, met: false, tracked: true, remedyParams: { missing: 540, unit: minutes } }
+        solo_time: { current: 60, met: false }
+
+  - name: three-axis-training-not-applicable
+    evaluation: training_three_axis
+    shows: [ultralight-licences]
+    says: 'The programme is evaluated for the ultralight licence only: an EASA PPL(A) held alongside it gets no ultralight training result (a second result would fail the example).'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+        - { id: l-ul, authority: DULV, type: UL }
+      flights:
+        - { date: 2025-04-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 1200, dual: 1200 } }
+    outcome: lapsed
+    expect: { message: training.in_progress }
+
+  - name: weight-shift-training-complete
+    evaluation: training_weight_shift
+    says: Twenty-five hours on weight-shift ultralights with 10 hours dual and 5 hours solo complete the programme; three-axis time does not count.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      flights:
+        - { date: 2025-04-01, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 600, dual: 600 } }
+        - { date: 2025-06-01, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 900, spic: 300, dual: 600 } }
+        - { date: 2025-07-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 600, dual: 600 } }
+    outcome: current
+    expect:
+      subject: { kind: training, id: l-ul, detail: UL_WEIGHT_SHIFT }
+      message: training.all_met
+      requirements:
+        total_time: { current: 1500, met: true }
+        dual_time: { current: 1200, met: true }
+        solo_time: { current: 300, met: true }
+
+  - name: weight-shift-training-in-progress
+    evaluation: training_weight_shift
+    shows: [kindless-flights-unknown]
+    says: Nine hours dual and no solo yet; the ultralight flight with no kind is unknown input and never counted.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      flights:
+        - { date: 2025-04-01, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 540, dual: 540 } }
+        - { date: 2025-04-02, class: ULTRALIGHT, minutes: { total: 60, dual: 60 } }
+    outcome: lapsed
+    expect:
+      subject: { kind: training, id: l-ul, detail: UL_WEIGHT_SHIFT }
+      message: training.in_progress
+      requirements:
+        total_time: { current: 540, met: false }
+        dual_time: { current: 540, met: false, remedyParams: { missing: 60, unit: minutes } }
+        solo_time: { current: 0, met: false }
+
+  - name: kind-missing
+    evaluation: kind_required
+    shows: [kind-decides-the-rule]
+    says: An ultralight rating on a DULV licence without an ultralight kind cannot be evaluated; the pilot is asked to set the kind.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-ul, licenceId: l-ul, class: ULTRALIGHT }
+      flights:
+        - { date: 2026-04-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 720, pic: 660, dual: 60 }, takeoffs: { day: 12 }, landings: { day: 12 } }
+    outcome: unknown
+    expect:
+      subject: { kind: rating, id: r-ul, class: ULTRALIGHT }
+      message: rating.ul_kind_required
+
+  - name: kind-missing-not-applicable
+    evaluation: kind_required
+    says: 'Ratings with a kind, and kindless ultralight ratings on EASA or FAA licences, are not reported here; only the kindless rating on the ultralight licence is (a second result would fail the example).'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: LBA, type: UL }
+        - { id: l-easa, authority: EASA, type: PPL(A) }
+        - { id: l-faa, authority: FAA, type: SPORT }
+      ratings:
+        - { id: r-ul, licenceId: l-ul, class: ULTRALIGHT }
+        - { id: r-3ax, licenceId: l-ul, class: ULTRALIGHT, ulKind: THREE_AXIS }
+        - { id: r-easa-ul, licenceId: l-easa, class: ULTRALIGHT }
+        - { id: r-faa-ul, licenceId: l-faa, class: ULTRALIGHT }
+    outcome: unknown
+    expect: { message: rating.ul_kind_required }

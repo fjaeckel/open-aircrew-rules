@@ -26,8 +26,9 @@ type sourcesResult struct {
 // (vocabulary.yaml source_origins; DESIGN.md section 6): every file is Markdown, declares an
 // allowed origin in its header, lives in that origin's directory, carries the origin's
 // attribution, cites only the origin's hosts, and names no forbidden material in its header
-// or headings.
-func checkSources(root string, v *engine.Vocabulary) (sourcesResult, error) {
+// or headings. A file named after an association document (associations.yaml) fails too:
+// those are cited as assoc:<id> and never stored.
+func checkSources(root string, v *engine.Vocabulary, associations []string) (sourcesResult, error) {
 	res := sourcesResult{origins: map[string]int{}}
 	dir := filepath.Join(root, "sources")
 	markers := make([]*regexp.Regexp, 0, len(v.SourceForbidden))
@@ -47,6 +48,11 @@ func checkSources(root string, v *engine.Vocabulary) (sourcesResult, error) {
 		rel, _ := filepath.Rel(root, path)
 		if rel == filepath.Join("sources", "README.md") {
 			return nil
+		}
+		for _, id := range associations {
+			if _, doc, _ := strings.Cut(id, ":"); doc != "" && strings.Contains(strings.ToLower(filepath.Base(path)), doc) {
+				res.problems = append(res.problems, fmt.Sprintf("%s: association document %s is never stored under sources/; cite it as assoc:%s", rel, id, id))
+			}
 		}
 		if filepath.Ext(path) != ".md" {
 			res.problems = append(res.problems, rel+": only Markdown texts are stored under sources/ (no raw downloads)")

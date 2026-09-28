@@ -1,0 +1,194 @@
+credential: faa.licence.atp-airplane
+examples:
+  - name: passengers-day-current
+    evaluation: passengers_day
+    says: Three takeoffs and landings as sole manipulator in the MEP_LAND class on 1 July allow a airline transport pilot holder to carry passengers there on 16 August.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: ATP}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: MEP_LAND}
+      flights:
+        - {date: 2026-07-01, class: MEP_LAND, minutes: {total: 90, pic: 90}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    outcome: current
+    expect: { message: pax.day_current }
+  - name: passengers-day-lapsed
+    evaluation: passengers_day
+    says: The last three takeoffs and landings in the MEP_LAND class were on 1 May, more than 90 days before 16 August; passenger recency has lapsed, the certificate stays valid.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: ATP}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: MEP_LAND}
+      flights:
+        - {date: 2026-05-01, class: MEP_LAND, minutes: {total: 90, pic: 90}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    outcome: lapsed
+    expect: { message: pax.not_current, params: { needed: 3 } }
+  - name: passengers-day-type-per-type-b350
+    evaluation: passengers_day_type
+    says: "Two type ratings in the same class are two subjects: takeoffs and landings in the B350 make the pilot current for the B350 only; the CE525 type is not current."
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: ATP }
+      ratings:
+        - { id: r-b350, licenceId: l-faa, class: MEP_LAND, typeDesignator: B350 }
+        - { id: r-c525, licenceId: l-faa, class: MEP_LAND, typeDesignator: C525 }
+      flights:
+        - { date: 2026-08-01, class: MEP_LAND, typeDesignator: B350, minutes: { total: 120, pic: 120 }, takeoffs: { day: 3 }, landings: { day: 3 }, soleManipulator: true }
+    outcome: current
+    expect:
+      subject: { kind: passengers, id: l-faa, class: MEP_LAND, detail: B350 }
+      message: pax.day_current
+      requirements:
+        takeoffs_landings: { current: 3, met: true }
+  - name: passengers-day-type-per-type-c525
+    evaluation: passengers_day_type
+    says: "Two type ratings in the same class are two subjects: takeoffs and landings in the B350 make the pilot current for the B350 only; the CE525 type is not current."
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: ATP }
+      ratings:
+        - { id: r-b350, licenceId: l-faa, class: MEP_LAND, typeDesignator: B350 }
+        - { id: r-c525, licenceId: l-faa, class: MEP_LAND, typeDesignator: C525 }
+      flights:
+        - { date: 2026-08-01, class: MEP_LAND, typeDesignator: B350, minutes: { total: 120, pic: 120 }, takeoffs: { day: 3 }, landings: { day: 3 }, soleManipulator: true }
+    outcome: lapsed
+    expect:
+      subject: { kind: passengers, id: l-faa, class: MEP_LAND, detail: C525 }
+      message: pax.not_current
+      params: { needed: 3 }
+  - name: passengers-tailwheel-current
+    evaluation: passengers_tailwheel
+    says: Three full-stop landings as sole manipulator in a tailwheel airplane on 2 August allow a airline transport pilot holder to carry passengers in one.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: ATP}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: SEP_LAND}
+      flights:
+        - {date: 2026-08-02, class: SEP_LAND, tailwheel: true, minutes: {total: 60, pic: 60}, takeoffs: {day: 3}, landings: {day: 3}, fullStopLandings: 3, soleManipulator: true}
+    outcome: current
+    expect: { message: pax.tailwheel_current }
+  - name: passengers-tailwheel-lapsed
+    evaluation: passengers_tailwheel
+    says: The pilot flies a tailwheel airplane, but the last full-stop landings in one were in April; three more are needed before carrying passengers in it.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: ATP}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: SEP_LAND}
+      flights:
+        - {date: 2026-04-02, class: SEP_LAND, tailwheel: true, minutes: {total: 60, pic: 60}, takeoffs: {day: 3}, landings: {day: 3}, fullStopLandings: 3, soleManipulator: true}
+    outcome: lapsed
+    expect: { message: pax.tailwheel_not_current, params: { needed: 3 } }
+  - name: passengers-night-current
+    evaluation: passengers_night
+    says: Three night takeoffs and three full-stop night landings as sole manipulator in the MEP_LAND class on 10 July allow a airline transport pilot holder to carry passengers at night there.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: ATP}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: MEP_LAND}
+      flights:
+        - {date: 2026-07-10, class: MEP_LAND, minutes: {total: 90, pic: 90, night: 60}, takeoffs: {night: 3}, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
+    outcome: current
+    expect: { message: pax.night_current }
+  - name: passengers-night-day-only
+    evaluation: passengers_night
+    says: Only day takeoffs and landings in the MEP_LAND class in the last 90 days; night passenger recency has lapsed.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: ATP}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: MEP_LAND}
+      flights:
+        - {date: 2026-07-10, class: MEP_LAND, minutes: {total: 90, pic: 90}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    outcome: lapsed
+    expect: { message: pax.night_not_current, params: { needed: 3 } }
+  - name: passengers-night-type-current
+    evaluation: passengers_night_type
+    says: Three night takeoffs and three full-stop night landings as sole manipulator in a B350 on 10 July allow a airline transport pilot holder to carry passengers at night there.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: ATP}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: MEP_LAND, typeDesignator: B350}
+      flights:
+        - {date: 2026-07-10, class: MEP_LAND, typeDesignator: B350, minutes: {total: 90, pic: 90, night: 60}, takeoffs: {night: 3}, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
+    outcome: current
+    expect: { message: pax.night_current }
+  - name: passengers-night-type-day-only
+    evaluation: passengers_night_type
+    says: Only day takeoffs and landings in a B350 in the last 90 days; night passenger recency has lapsed.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: ATP}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: MEP_LAND, typeDesignator: B350}
+      flights:
+        - {date: 2026-07-10, class: MEP_LAND, typeDesignator: B350, minutes: {total: 90, pic: 90}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    outcome: lapsed
+    expect: { message: pax.night_not_current, params: { needed: 3 } }
+  - name: flight-review-current
+    evaluation: flight_review
+    says: A airline transport pilot certificate holder with a flight review on 1 September 2025 may act as pilot in command through 30 September 2027.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: ATP}
+      events:
+        - {date: 2025-09-01, kind: flight_review}
+    outcome: current
+    expect: { message: flight_review.current }
+  - name: flight-review-none
+    evaluation: flight_review
+    says: A airline transport pilot certificate holder with no flight review, proficiency check or practical test on record may not act as pilot in command.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: ATP}
+    outcome: expired
+    expect: { message: flight_review.none_on_record }
+  - name: composite-first-class-and-review
+    composite: true
+    says: With a flight review and a first-class medical certificate examined in May 2026 by a pilot under 40 (valid for ATP privileges through May 2027), the airline transport pilot certificate may be exercised.
+    asOf: 2026-08-16
+    record:
+      holder: {dateOfBirth: 1990-01-01}
+      licences:
+        - {id: l-faa, authority: FAA, type: ATP}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: MEP_LAND}
+      credentials:
+        - {id: c-med, type: FAA_CLASS1_MEDICAL, issued: 2026-05-01}
+      events:
+        - {date: 2025-09-01, kind: flight_review}
+    outcome: current
+    expect: { subject: { kind: licence, id: l-faa } }
+  - name: composite-second-class-only
+    composite: true
+    shows: [atp-privileges-medical]
+    says: A second-class medical certificate does not support the pilot-in-command privileges of an airline transport pilot certificate; with no first-class certificate recorded the composite is unknown.
+    asOf: 2026-08-16
+    record:
+      holder: {dateOfBirth: 1990-01-01}
+      licences:
+        - {id: l-faa, authority: FAA, type: ATP}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: MEP_LAND}
+      credentials:
+        - {id: c-med, type: FAA_CLASS2_MEDICAL, issued: 2026-05-01}
+      events:
+        - {date: 2025-09-01, kind: flight_review}
+    outcome: unknown
+    expect: { subject: { kind: licence, id: l-faa }, decidedBy: { evaluation: medical } }

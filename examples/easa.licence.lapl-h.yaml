@@ -1,0 +1,227 @@
+credential: easa.licence.lapl-h
+examples:
+  - name: recency-experience
+    evaluation: recency
+    says: Six hours in the R44 with six take-offs and landings, including 1 hour of refresher training with an instructor split between an FSTD and the helicopter, in the last 12 months keep the LAPL(H) current on the R44; the first flight is on the first day of the window and one the day before no longer counts.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-laplh, authority: EASA, type: LAPL(H) }
+      ratings:
+        - { id: r-r44, licenceId: l-laplh, class: HELICOPTER, typeDesignator: R44 }
+      flights:
+        - { date: 2025-09-14, class: HELICOPTER, typeDesignator: R44, minutes: { total: 300, pic: 300 }, takeoffs: { day: 10 }, landings: { day: 10 } }
+        - { date: 2025-09-15, class: HELICOPTER, typeDesignator: R44, minutes: { total: 270, pic: 270 }, takeoffs: { day: 3 }, landings: { day: 3 } }
+        - { date: 2026-04-10, class: HELICOPTER, typeDesignator: R44, isSimulator: true, fstdType: FNPT, minutes: { total: 30, dual: 30 } }
+        - { date: 2026-05-02, class: HELICOPTER, typeDesignator: R44, minutes: { total: 90, pic: 60, dual: 30 }, takeoffs: { day: 3 }, landings: { day: 3 } }
+    outcome: current
+    expect: { subject: { kind: rating, id: r-r44 }, message: rating.recency_current, requirements: {type_time: {current: 360, met: true}, takeoffs_landings: {current: 6, met: true}, refresher: {current: 60, met: true}, proficiency_check: {current: 0, met: false}} }
+  - name: recency-lapsed
+    evaluation: recency
+    says: 'Seven hours but only four take-offs and landings in the R44, and time in a Cabri G2 does not count for the R44: the LAPL(H) may not be used on the R44.'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-laplh, authority: EASA, type: LAPL(H) }
+      ratings:
+        - { id: r-r44, licenceId: l-laplh, class: HELICOPTER, typeDesignator: R44 }
+      flights:
+        - { date: 2026-03-01, class: HELICOPTER, typeDesignator: R44, minutes: { total: 420, pic: 360, dual: 60 }, takeoffs: { day: 4 }, landings: { day: 4 } }
+        - { date: 2026-03-02, class: HELICOPTER, typeDesignator: G2CA, minutes: { total: 120, pic: 120 }, takeoffs: { day: 6 }, landings: { day: 6 } }
+    outcome: lapsed
+    expect: { subject: { kind: rating, id: r-r44 }, message: rating.recency_not_met, requirements: {type_time: {current: 420, met: true}, takeoffs_landings: {current: 4, met: false, remedyKey: remedy.fly_more, remedyParams: {missing: 2, unit: landings}}, refresher: {current: 60, met: true}} }
+  - name: recency-proficiency-check
+    evaluation: recency
+    says: A proficiency check with an examiner on the R44 in the last 12 months keeps the LAPL(H) current without the hours.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-laplh, authority: EASA, type: LAPL(H) }
+      ratings:
+        - { id: r-r44, licenceId: l-laplh, class: HELICOPTER, typeDesignator: R44 }
+      flights:
+        - { date: 2026-06-01, class: HELICOPTER, typeDesignator: R44, minutes: { total: 60, pic: 60 }, takeoffs: { day: 2 }, landings: { day: 2 }, flags: { proficiencyCheck: true } }
+    outcome: current
+    expect: { subject: { kind: rating, id: r-r44 }, message: rating.recency_current, requirements: {proficiency_check: {current: 1, met: true}, type_time: {current: 60, met: false}, refresher: {current: 0, met: false}} }
+  - name: recency-type-not-recorded
+    evaluation: recency
+    says: Helicopter flights that record no type designator cannot be attributed to the R44; with nothing else logged the recency is unknown.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-laplh, authority: EASA, type: LAPL(H) }
+      ratings:
+        - { id: r-r44, licenceId: l-laplh, class: HELICOPTER, typeDesignator: R44 }
+      flights:
+        - { date: 2026-03-01, class: HELICOPTER, minutes: { total: 420, pic: 360, dual: 60 }, takeoffs: { day: 8 }, landings: { day: 8 } }
+    outcome: unknown
+    expect: { subject: { kind: rating, id: r-r44 }, message: rating.type_not_identifiable, requirements: {type_time: {tracked: false}} }
+  - name: medical-lapl-h
+    evaluation: medical
+    says: A LAPL(H) needs at least a LAPL medical like the other LAPLs; a PPL(H) is not evaluated here (it needs a class 2 medical).
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-laplh, authority: EASA, type: LAPL(H) }
+        - { id: l-pplh, authority: EASA, type: PPL(H) }
+      credentials:
+        - { id: c-1, type: EASA_LAPL_MEDICAL, expires: 2027-09-14 }
+    outcome: current
+    expect: { subject: { kind: licence, id: l-laplh }, message: licence.valid }
+  - name: recency-not-applicable-other-items
+    evaluation: recency
+    shows: [lapl-h-types]
+    says: Helicopter type ratings on a PPL(H) follow FCL.740.H and an aeroplane class on a LAPL(A) is not a LAPL(H) type; only the type on the LAPL(H) is evaluated (legacy not-applicable case with that type added).
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-pplh, authority: EASA, type: PPL(H) }
+        - { id: l-lapla, authority: EASA, type: LAPL(A) }
+        - { id: l-laplh, authority: EASA, type: LAPL(H) }
+      ratings:
+        - { id: r-r44, licenceId: l-pplh, class: HELICOPTER, typeDesignator: R44, expires: 2027-03-31 }
+        - { id: r-sep, licenceId: l-lapla, class: SEP_LAND }
+        - { id: r-1, licenceId: l-laplh, class: HELICOPTER, typeDesignator: R44 }
+      events:
+        - { date: 2026-03-01, kind: proficiency_check, class: HELICOPTER, typeDesignator: R44 }
+    outcome: current
+    expect: { message: rating.recency_current }
+  - name: medical-class-2-counts
+    evaluation: medical
+    says: A class 2 medical certificate includes the LAPL privileges.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-laplh, authority: EASA, type: LAPL(H) }
+      credentials:
+        - { id: c-1, type: EASA_CLASS2_MEDICAL, expires: 2027-09-14 }
+    outcome: current
+    expect: { message: licence.valid }
+  - name: medical-expired
+    evaluation: medical
+    says: An expired medical certificate does not allow exercising the LAPL(H).
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-laplh, authority: EASA, type: LAPL(H) }
+      credentials:
+        - { id: c-1, type: EASA_LAPL_MEDICAL, expires: 2026-09-14 }
+    outcome: expired
+    expect: { message: licence.medical_required }
+  - name: passengers-day-current
+    evaluation: passengers_day
+    says: Three take-offs and landings as pilot flying in a helicopter within 90 days allow carrying passengers.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-laplh, authority: EASA, type: LAPL(H) }
+      ratings:
+        - { id: r-1, licenceId: l-laplh, class: HELICOPTER, typeDesignator: R44, expires: 2027-06-30 }
+      flights:
+        - { date: 2026-08-20, class: HELICOPTER, minutes: { total: 60, pic: 60 }, takeoffs: { day: 3 }, landings: { day: 3 }, pilotFlying: true, typeDesignator: R44 }
+    outcome: current
+    expect: { subject: { kind: passengers, id: l-laplh, class: HELICOPTER }, message: pax.day_current }
+  - name: passengers-day-one-short
+    evaluation: passengers_day
+    says: Two take-offs and landings are one short.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-laplh, authority: EASA, type: LAPL(H) }
+      ratings:
+        - { id: r-1, licenceId: l-laplh, class: HELICOPTER, typeDesignator: R44, expires: 2027-06-30 }
+      flights:
+        - { date: 2026-08-20, class: HELICOPTER, minutes: { total: 60, pic: 60 }, takeoffs: { day: 2 }, landings: { day: 2 }, pilotFlying: true, typeDesignator: R44 }
+    outcome: expired
+    expect: { subject: { kind: passengers, id: l-laplh, class: HELICOPTER }, message: pax.not_current, params: { needed: 1 } }
+  - name: passengers-night-current
+    evaluation: passengers_night
+    says: One night take-off and landing as pilot flying in a helicopter within 90 days allow carrying passengers at night.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-laplh, authority: EASA, type: LAPL(H) }
+      ratings:
+        - { id: r-1, licenceId: l-laplh, class: HELICOPTER, typeDesignator: R44, expires: 2027-06-30 }
+      flights:
+        - { date: 2026-08-20, class: HELICOPTER, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 1 }, landings: { night: 1 }, pilotFlying: true, typeDesignator: R44 }
+    outcome: current
+    expect: { subject: { kind: passengers, id: l-laplh, class: HELICOPTER }, message: pax.night_current }
+  - name: passengers-night-day-only
+    evaluation: passengers_night
+    says: Day take-offs and landings do not count for night passengers.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-laplh, authority: EASA, type: LAPL(H) }
+      ratings:
+        - { id: r-1, licenceId: l-laplh, class: HELICOPTER, typeDesignator: R44, expires: 2027-06-30 }
+      flights:
+        - { date: 2026-08-20, class: HELICOPTER, minutes: { total: 60, pic: 60 }, takeoffs: { day: 3 }, landings: { day: 3 }, pilotFlying: true, typeDesignator: R44 }
+    outcome: expired
+    expect: { subject: { kind: passengers, id: l-laplh, class: HELICOPTER }, message: pax.night_not_current }
+  - name: variants-flown
+    evaluation: variants
+    shows: [variant-is-recorded-variant]
+    says: A flight in the variant within 2 years keeps its privileges.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-laplh, authority: EASA, type: LAPL(H) }
+      ratings:
+        - { id: r-1, licenceId: l-laplh, class: HELICOPTER, typeDesignator: R44, expires: 2027-06-30 }
+      variants:
+        - { id: v-1, ratingId: r-1, name: GLASS_COCKPIT, issued: 2023-05-01 }
+      flights:
+        - { date: 2026-03-10, class: HELICOPTER, variant: GLASS_COCKPIT, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, typeDesignator: R44 }
+    outcome: current
+    expect: { subject: { kind: type, id: v-1 }, message: type.current, validUntil: 2028-03-10 }
+  - name: variants-not-flown
+    evaluation: variants
+    says: The variant was last flown more than 2 years ago; flights without it do not count, so it may not be flown before differences training or a proficiency check in it.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-laplh, authority: EASA, type: LAPL(H) }
+      ratings:
+        - { id: r-1, licenceId: l-laplh, class: HELICOPTER, typeDesignator: R44, expires: 2027-06-30 }
+      variants:
+        - { id: v-1, ratingId: r-1, name: GLASS_COCKPIT, issued: 2023-05-01 }
+      flights:
+        - { date: 2024-08-01, class: HELICOPTER, variant: GLASS_COCKPIT, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, typeDesignator: R44 }
+        - { date: 2026-04-10, class: HELICOPTER, variant: STANDARD, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, typeDesignator: R44 }
+    outcome: lapsed
+    expect: { subject: { kind: type, id: v-1 }, message: type.not_flown, requirements: { variant_flown: { current: 0, met: false, remedyKey: remedy.differences_training } } }
+  - name: composite-check-and-medical-valid
+    composite: true
+    says: A LAPL(H) holder with a valid medical and language endorsement and a proficiency check on the type in the last 12 months may exercise the licence.
+    asOf: 2026-09-15
+    record:
+      holder: { dateOfBirth: 1976-01-01 }
+      licences:
+        - { id: l-laplh, authority: EASA, type: LAPL(H) }
+      ratings:
+        - { id: r-1, licenceId: l-laplh, class: HELICOPTER, typeDesignator: R44 }
+      credentials:
+        - { id: c-med, type: EASA_LAPL_MEDICAL, issued: 2026-06-01 }
+        - { id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2023-04-15 }
+      events:
+        - { date: 2026-03-01, kind: proficiency_check, class: HELICOPTER, typeDesignator: R44 }
+    outcome: current
+    expect: { subject: { kind: licence, id: l-laplh } }
+  - name: composite-medical-not-recorded
+    composite: true
+    says: With the type current but no medical certificate recorded, the answer is unknown rather than a silent pass or fail.
+    asOf: 2026-09-15
+    record:
+      holder: { dateOfBirth: 1976-01-01 }
+      licences:
+        - { id: l-laplh, authority: EASA, type: LAPL(H) }
+      ratings:
+        - { id: r-1, licenceId: l-laplh, class: HELICOPTER, typeDesignator: R44 }
+      credentials:
+        - { id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2023-04-15 }
+      events:
+        - { date: 2026-03-01, kind: proficiency_check, class: HELICOPTER, typeDesignator: R44 }
+    outcome: unknown
+    expect: { subject: { kind: licence, id: l-laplh }, decidedBy: { evaluation: medical } }

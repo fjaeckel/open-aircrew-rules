@@ -1,0 +1,78 @@
+credential: easa.rating.ir-as
+examples:
+  - name: revalidation-check-met-expiring
+    evaluation: revalidation
+    shows: [ir-on-airship-licence]
+    says: An IR on a PPL(As) is an IR(As); an IR proficiency check in an airship in the 3 months before expiry revalidates it.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(As) }
+      ratings:
+        - { id: r-ir, licenceId: l-1, class: IR, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-08-20, class: AIRSHIP, minutes: { total: 60, pic: 60, ifr: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, checkRating: IR, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-ir, class: IR }, message: rating.revalidation_expiring_met, requirements: {proficiency_check: {current: 1, met: true, lastDate: 2026-08-20}} }
+  - name: revalidation-window-not-open
+    evaluation: revalidation
+    says: More than 3 months before expiry the revalidation period has not opened; the IR is valid.
+    asOf: 2026-05-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(As) }
+      ratings:
+        - { id: r-ir, licenceId: l-1, class: IR, expires: 2026-10-31 }
+    outcome: current
+    expect: { subject: { kind: rating, id: r-ir }, message: rating.window_not_open }
+  - name: revalidation-aeroplane-check-does-not-count
+    evaluation: revalidation
+    shows: [ir-check-recorded]
+    says: An IR check in an aeroplane does not revalidate an IR(As); the revalidation is not met yet.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(As) }
+      ratings:
+        - { id: r-ir, licenceId: l-1, class: IR, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-08-20, class: MEP_LAND, minutes: { total: 60, pic: 60, ifr: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, checkRating: IR, flags: { proficiencyCheck: true } }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-ir }, message: rating.ir_check_not_met, requirements: {proficiency_check: {current: 0, met: false}} }
+  - name: revalidation-expired-day-after
+    evaluation: revalidation
+    says: The day after its expiry date the IR(As) is expired.
+    asOf: 2026-11-01
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(As) }
+      ratings:
+        - { id: r-ir, licenceId: l-1, class: IR, expires: 2026-10-31 }
+    outcome: expired
+    expect: { subject: { kind: rating, id: r-ir }, message: rating.expired }
+  - name: revalidation-no-expiry-recorded
+    evaluation: revalidation
+    says: Without a recorded expiry date the validity of the IR(As) cannot be told.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(As) }
+      ratings:
+        - { id: r-ir, licenceId: l-1, class: IR }
+    outcome: unknown
+    expect: { subject: { kind: rating, id: r-ir }, message: rating.no_expiry_date }
+  - name: composite-licence-medical-expired
+    composite: true
+    says: The IR(As) is valid, but the PPL(As) it is held on may not be exercised with an expired medical, so neither may the IR.
+    asOf: 2026-05-15
+    record:
+      holder: { dateOfBirth: 1976-01-01 }
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(As) }
+      ratings:
+        - { id: r-ir, licenceId: l-1, class: IR, expires: 2026-10-31 }
+      credentials:
+        - { id: c-med, type: EASA_CLASS2_MEDICAL, issued: 2024-01-10, expires: 2025-01-31 }
+        - { id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2023-04-15 }
+    outcome: expired
+    expect: { subject: { kind: rating, id: r-ir }, decidedBy: { evaluation: licence, credential: easa.licence.ppl-as } }

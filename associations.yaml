@@ -1,0 +1,36 @@
+# Association documents: rules an association sets under a statutory delegation (DESIGN.md
+# section 6). They are cited as assoc:<id> next to the delegating statute, by id and title
+# only; their text is never stored under sources/ and never quoted. `verified: false` means
+# the title and the content the catalogue relies on have not been checked against the
+# document; every credential citing one says so in an interpretation.
+associations:
+  - id: dulv:ul-recency-gyroplane
+    publisher: DULV
+    title: DULV recency rule for ultralight gyroplanes (title as known, not verified)
+    delegated_by: de:LuftPersV.45(4)
+    verified: false
+  - id: dulv:ul-recency-weight-shift
+    publisher: DULV
+    title: DULV recency rule for weight-shift ultralights (title as known, not verified)
+    delegated_by: de:LuftPersV.45(4)
+    verified: false
+  - id: daec:ul-recency-weight-shift
+    publisher: DAeC
+    title: DAeC recency rule for weight-shift ultralights (title as known, not verified)
+    delegated_by: de:LuftPersV.45(4)
+    verified: false
+  - id: dulv:ul-recency-powered-paraglider
+    publisher: DULV
+    title: DULV recency rule for powered paragliders (title as known, not verified)
+    delegated_by: de:LuftPersV.45(4)
+    verified: false
+  - id: daec:ul-recency-powered-paraglider
+    publisher: DAeC
+    title: DAeC recency rule for powered paragliders (title as known, not verified)
+    delegated_by: de:LuftPersV.45(4)
+    verified: false
+  - id: daec:ul-recency-sailplane
+    publisher: DAeC
+    title: DAeC recency rule for ultralight sailplanes (title as known, not verified)
+    delegated_by: de:LuftPersV.45(4)
+    verified: false

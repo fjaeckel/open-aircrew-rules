@@ -78,7 +78,12 @@ func intersects(part string, a, b *Part, auths, lk []string, v *engine.Vocabular
 		for c := range v.Classes {
 			classes = append(classes, c)
 		}
-		return overlap(allowed(a, classes, a.Classes, nil), allowed(b, classes, b.Classes, nil))
+		if !overlap(allowed(a, classes, a.Classes, nil), allowed(b, classes, b.Classes, nil)) {
+			return false
+		}
+		// "none" stands for a rating recorded without an ultralight kind.
+		uk := append(slices.Clone(v.ULKinds), "none")
+		return overlap(allowed(a, uk, a.ULKinds, nil), allowed(b, uk, b.ULKinds, nil))
 	case "privilege", "credential":
 		return len(a.Kinds) == 0 || len(b.Kinds) == 0 || overlap(a.Kinds, b.Kinds)
 	}

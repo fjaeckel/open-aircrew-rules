@@ -1,0 +1,145 @@
+credential: de.rating.ul-gyroplane
+examples:
+  - name: current-by-experience
+    evaluation: recency
+    shows: [association-rule-unverified, gyroplane-class-credited]
+    says: Ultralight gyroplane and Part-FCL gyroplane time pools to 12 hours with 6 hours PIC and 12 landings; the training flight is on the ultralight gyroplane. The first flight is on the first day of the 24 months.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-gyro, licenceId: l-ul, class: ULTRALIGHT, ulKind: GYROPLANE }
+      flights:
+        - { date: 2024-09-15, class: ULTRALIGHT, ulKind: GYROPLANE, minutes: { total: 300, pic: 240, dual: 60 }, landings: { day: 6 } }
+        - { date: 2026-02-01, class: GYROPLANE, minutes: { total: 420, pic: 420 }, landings: { day: 6 } }
+    outcome: current
+    expect:
+      subject: { kind: rating, id: r-gyro, ulKind: GYROPLANE }
+      message: rating.recency_current
+      validUntil: 2026-09-15
+      requirements:
+        total_time: { current: 720, met: true }
+        pic_time: { current: 660, met: true }
+        landings: { current: 12, met: true }
+        training_flight: { current: 300, met: true }
+        proficiency_check: { current: 0, met: false }
+
+  - name: kind-unknown
+    evaluation: recency
+    shows: [kindless-flights-unknown]
+    says: Ultralight flights with no kind recorded cannot be counted as gyroplane flights; the recency is unknown.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-gyro, licenceId: l-ul, class: ULTRALIGHT, ulKind: GYROPLANE }
+      flights:
+        - { date: 2026-04-01, class: ULTRALIGHT, minutes: { total: 720, pic: 660, dual: 60 }, landings: { day: 12 } }
+    outcome: unknown
+    expect:
+      subject: { kind: rating, id: r-gyro }
+      message: rating.ul_flights_kind_unknown
+      requirements:
+        total_time: { tracked: false }
+
+  - name: not-applicable
+    evaluation: recency
+    says: 'Only the ultralight gyroplane rating on the ultralight licence is evaluated: a Part-FCL gyroplane rating, an ultralight gyroplane rating on an EASA licence and a three-axis rating are not (a second result would fail the example).'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-gpl, authority: EASA, type: GPL }
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-gyro, licenceId: l-ul, class: ULTRALIGHT, ulKind: GYROPLANE }
+        - { id: r-gpl, licenceId: l-gpl, class: GYROPLANE }
+        - { id: r-easa-ul, licenceId: l-gpl, class: ULTRALIGHT, ulKind: GYROPLANE }
+        - { id: r-3ax, licenceId: l-ul, class: ULTRALIGHT, ulKind: THREE_AXIS }
+    outcome: lapsed
+    expect: { message: rating.recency_not_met }
+
+  - name: proficiency-check
+    evaluation: recency
+    shows: [gyroplane-class-credited]
+    says: A proficiency check in a Part-FCL gyroplane replaces the experience.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DAeC, type: UL }
+      ratings:
+        - { id: r-gyro, licenceId: l-ul, class: ULTRALIGHT, ulKind: GYROPLANE }
+      flights:
+        - { date: 2025-10-01, class: GYROPLANE, minutes: { total: 60, pic: 60 }, landings: { day: 3 }, flags: { proficiencyCheck: true } }
+    outcome: current
+    expect:
+      subject: { kind: rating, id: r-gyro }
+      message: rating.recency_current
+      validUntil: 2027-10-01
+      requirements:
+        proficiency_check: { current: 1, met: true }
+
+  - name: window-day-before
+    evaluation: recency
+    says: The ultralight gyroplane flight of 14 September 2024 is outside the 24 months; three-axis ultralight time never counts toward gyroplane recency.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-gyro, licenceId: l-ul, class: ULTRALIGHT, ulKind: GYROPLANE }
+      flights:
+        - { date: 2024-09-14, class: ULTRALIGHT, ulKind: GYROPLANE, minutes: { total: 300, pic: 240, dual: 60 }, landings: { day: 6 } }
+        - { date: 2026-02-01, class: GYROPLANE, minutes: { total: 300, pic: 300 }, landings: { day: 6 } }
+        - { date: 2026-03-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 600, pic: 540, dual: 60 }, landings: { day: 10 } }
+    outcome: lapsed
+    expect:
+      subject: { kind: rating, id: r-gyro }
+      message: rating.recency_not_met
+      requirements:
+        total_time: { current: 300, met: false, remedyParams: { missing: 420, unit: minutes } }
+        pic_time: { current: 300, met: false }
+        landings: { current: 6, met: false }
+        training_flight: { current: 0, met: false, remedyKey: remedy.training_flight }
+
+  - name: pax-window-day-before
+    evaluation: passengers
+    says: The gyroplane take-off and landing of 16 June is one day outside the 90 days, and Part-FCL gyroplane landings do not count; one more is needed.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL, issued: 2018-04-01 }
+      ratings:
+        - { id: r-gyro, licenceId: l-ul, class: ULTRALIGHT, ulKind: GYROPLANE }
+      privileges:
+        - { id: p-pax, licenceId: l-ul, kind: UL_PASSENGER_AUTH }
+      flights:
+        - { date: 2026-06-16, class: ULTRALIGHT, ulKind: GYROPLANE, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-08-01, class: ULTRALIGHT, ulKind: GYROPLANE, minutes: { total: 60, pic: 60 }, takeoffs: { day: 2 }, landings: { day: 2 } }
+        - { date: 2026-08-02, class: GYROPLANE, minutes: { total: 60, pic: 60 }, takeoffs: { day: 4 }, landings: { day: 4 } }
+    outcome: expired
+    expect:
+      subject: { kind: passengers, id: l-ul, ulKind: GYROPLANE }
+      message: pax.not_current
+      params: { needed: 1 }
+      requirements:
+        day: { current: 2, met: false, remedyParams: { missing: 1, unit: landings } }
+
+  - name: pax-current
+    evaluation: passengers
+    says: Three take-offs and landings on an ultralight gyroplane in the last 90 days and a recorded passenger authorisation; passengers may be carried by day.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-gyro, licenceId: l-ul, class: ULTRALIGHT, ulKind: GYROPLANE }
+      privileges:
+        - { id: p-pax, licenceId: l-ul, kind: UL_PASSENGER_AUTH }
+      flights:
+        - { date: 2026-08-01, class: ULTRALIGHT, ulKind: GYROPLANE, minutes: { total: 60, pic: 60 }, takeoffs: { day: 3 }, landings: { day: 3 } }
+    outcome: current
+    expect:
+      subject: { kind: passengers, id: l-ul, ulKind: GYROPLANE }
+      message: pax.current_day_no_night_privilege

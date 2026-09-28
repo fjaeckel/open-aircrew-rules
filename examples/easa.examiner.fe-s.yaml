@@ -1,0 +1,67 @@
+credential: easa.examiner.fe-s
+examples:
+  - name: revalidation-met
+    evaluation: revalidation
+    says: A refresher course on the first day of the validity period and a demonstration on the first day of the 24 months before the derived five-year expiry meet the revalidation.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-spl, authority: EASA, type: SPL }
+      privileges:
+        - { id: p-fes, licenceId: l-spl, kind: FE_S, issued: 2022-01-10 }
+      events:
+        - { date: 2022-01-10, kind: examiner_refresher }
+        - { date: 2025-01-10, kind: assessment_of_competence }
+    outcome: current
+    expect: {subject: {kind: privilege, id: p-fes}, message: privilege.revalidation_current, params: {date: 2027-01-10}, expiresOn: 2027-01-10, requirements: {refresher: {current: 1, met: true}, demonstration: {current: 1, met: true}}}
+  - name: revalidation-valid-on-expiry-day
+    evaluation: revalidation
+    says: Five years after its issue the certificate is still valid on the expiry day itself.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-spl, authority: EASA, type: SPL }
+      privileges:
+        - { id: p-fes, licenceId: l-spl, kind: FE_S, issued: 2021-09-15 }
+      events:
+        - { date: 2025-10-01, kind: examiner_refresher }
+        - { date: 2026-02-01, kind: assessment_of_competence }
+    outcome: current
+    expect: {subject: {kind: privilege, id: p-fes}, message: privilege.revalidation_current, expiresOn: 2026-09-15}
+  - name: revalidation-not-met
+    evaluation: revalidation
+    says: A refresher course the day before the validity period and a demonstration the day before the 24-month window do not count; the certificate stays valid until its expiry but is not yet revalidated. A recorded expiry date earlier than five years wins.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-spl, authority: EASA, type: SPL }
+      privileges:
+        - { id: p-fes, licenceId: l-spl, kind: FE_S, issued: 2022-03-01, expires: 2026-12-31 }
+      events:
+        - { date: 2022-02-28, kind: examiner_refresher }
+        - { date: 2024-12-30, kind: assessment_of_competence }
+    outcome: expiring
+    expect: {subject: {kind: privilege, id: p-fes}, message: privilege.revalidation_not_met, params: {date: 2026-12-31}, expiresOn: 2026-12-31, requirements: {refresher: {current: 0, met: false}, demonstration: {current: 0, met: false}}}
+  - name: revalidation-expired
+    evaluation: revalidation
+    says: Five years and a day after its issue the certificate has expired; renewal is needed.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-spl, authority: EASA, type: SPL }
+      privileges:
+        - { id: p-fes, licenceId: l-spl, kind: FE_S, validFrom: 2021-09-14, issued: 2021-08-01 }
+    outcome: expired
+    expect: {subject: {kind: privilege, id: p-fes}, message: privilege.expired, params: {date: 2026-09-14}}
+  - name: revalidation-no-dates
+    evaluation: revalidation
+    says: Without an issue, validity or expiry date the certificate's validity cannot be determined.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-spl, authority: EASA, type: SPL }
+      privileges:
+        - { id: p-fes, licenceId: l-spl, kind: FE_S }
+        - { id: p-fis, licenceId: l-spl, kind: FI_S }
+    outcome: unknown
+    expect: {subject: {kind: privilege, id: p-fes}, message: privilege.no_expiry_date}

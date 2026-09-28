@@ -48,6 +48,7 @@ func newRoot(t *testing.T) string {
 	copyFile(t, "../../vocabulary.yaml", filepath.Join(root, "vocabulary.yaml"))
 	copyFile(t, "../../messages/keys.yaml", filepath.Join(root, "messages/keys.yaml"))
 	copyFile(t, "../../policies.yaml", filepath.Join(root, "policies.yaml"))
+	writeFile(t, filepath.Join(root, "associations.yaml"), "associations: []\n")
 	copyFile(t, "../../sources/faa/61.57.md", filepath.Join(root, "sources/faa/61.57.md"))
 	schemas, err := filepath.Glob("../../schema/*.schema.json")
 	if err != nil || len(schemas) == 0 {
@@ -91,6 +92,8 @@ evaluations:
 	writeFile(t, filepath.Join(root, "sources/faa/raw.xml"), "<xml/>\n")
 	writeFile(t, filepath.Join(root, "sources/faa/no-origin.md"), "# X\n\n- Source URL: https://www.ecfr.gov/x\n\n---\n\ntext\n")
 	writeFile(t, filepath.Join(root, "sources/de/amc.md"), "# AMC1 FCL.060\n\n- Origin: eu-legal-act\n- Attribution: none\n- URL: https://www.easa.europa.eu/document-library/easy-access-rules\n\n## Text\n\ncopied\n")
+	writeFile(t, filepath.Join(root, "associations.yaml"), "associations:\n  - { id: dulv:ul-rule, publisher: DULV, title: X, delegated_by: \"faa:61.57\", verified: false }\n")
+	writeFile(t, filepath.Join(root, "sources/de/ul-rule.md"), "# X\n\n- Origin: de-amtliches-werk\n- Attribution: § 5(1) UrhG\n\n## Text\n\ntext\n")
 	writeFile(t, filepath.Join(root, "sources/de/dulv.md"), "# Rule\n\n- Origin: de-amtliches-werk\n- Attribution: § 5(1) UrhG\n\n## DULV Ausbildungsrichtlinie\n\ntext\n")
 	var out bytes.Buffer
 	if code := run([]string{"-root", root, "-coverage=false"}, &out); code != 1 {
@@ -105,6 +108,7 @@ evaluations:
 		"sources/faa/raw.xml: only Markdown texts", "sources/faa/no-origin.md: header has no allowed origin",
 		"sources/de/amc.md: origin eu-legal-act belongs in sources/easa/", "sources/de/amc.md: header needs an \"- Attribution:\" line containing \"© European Union",
 		"which is not a host of origin eu-legal-act", "names \"AMC\" in its header or a heading", "names \"DULV\" in its header or a heading",
+		"sources/de/ul-rule.md: association document dulv:ul-rule is never stored", "association dulv:ul-rule is cited nowhere",
 		"FAIL:",
 	} {
 		if !strings.Contains(report, want) {

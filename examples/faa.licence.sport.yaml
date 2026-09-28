@@ -1,0 +1,276 @@
+credential: faa.licence.sport
+examples:
+  - name: passengers-day-current
+    evaluation: passengers_day
+    says: Three takeoffs and landings as sole manipulator in the SEP_LAND class on 1 July allow a sport pilot holder to carry passengers there on 16 August.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: SPORT}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: SEP_LAND}
+      flights:
+        - {date: 2026-07-01, class: SEP_LAND, minutes: {total: 90, pic: 90}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    outcome: current
+    expect: { message: pax.day_current }
+  - name: passengers-day-lapsed
+    evaluation: passengers_day
+    says: The last three takeoffs and landings in the SEP_LAND class were on 1 May, more than 90 days before 16 August; passenger recency has lapsed, the certificate stays valid.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: SPORT}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: SEP_LAND}
+      flights:
+        - {date: 2026-05-01, class: SEP_LAND, minutes: {total: 90, pic: 90}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    outcome: lapsed
+    expect: { message: pax.not_current, params: { needed: 3 } }
+  - name: passengers-day-type-current
+    evaluation: passengers_day_type
+    says: Three takeoffs and landings as sole manipulator in a MT03 on 1 July allow a sport pilot holder to carry passengers there on 16 August.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: SPORT}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: GYROPLANE, typeDesignator: MT03}
+      flights:
+        - {date: 2026-07-01, class: GYROPLANE, typeDesignator: MT03, minutes: {total: 90, pic: 90}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    outcome: current
+    expect: { message: pax.day_current }
+  - name: passengers-day-type-lapsed
+    evaluation: passengers_day_type
+    says: The last three takeoffs and landings in a MT03 were on 1 May, more than 90 days before 16 August; passenger recency has lapsed, the certificate stays valid.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: SPORT}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: GYROPLANE, typeDesignator: MT03}
+      flights:
+        - {date: 2026-05-01, class: GYROPLANE, typeDesignator: MT03, minutes: {total: 90, pic: 90}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    outcome: lapsed
+    expect: { message: pax.not_current, params: { needed: 3 } }
+  - name: passengers-glider-current
+    evaluation: passengers_glider
+    says: Three winch launches and three landings as sole manipulator in a glider allow a sport pilot to carry a passenger in one.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: SPORT}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: GLIDER}
+      flights:
+        - {date: 2026-07-04, class: GLIDER, launchMethod: winch, minutes: {total: 60, pic: 60}, launches: 3, landings: {day: 3}, soleManipulator: true}
+    outcome: current
+    expect: { message: pax.day_current }
+  - name: passengers-glider-launches-short
+    evaluation: passengers_glider
+    says: "Two launches and three landings: one more launch is needed before a passenger may be carried in a glider."
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: SPORT}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: GLIDER}
+      flights:
+        - {date: 2026-07-04, class: GLIDER, launchMethod: aerotow, minutes: {total: 60, pic: 60}, launches: 2, landings: {day: 3}, soleManipulator: true}
+    outcome: lapsed
+    expect: { message: pax.not_current, params: { needed: 1 } }
+  - name: passengers-tailwheel-current
+    evaluation: passengers_tailwheel
+    says: Three full-stop landings as sole manipulator in a tailwheel airplane on 2 August allow a sport pilot holder to carry passengers in one.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: SPORT}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: SEP_LAND}
+      flights:
+        - {date: 2026-08-02, class: SEP_LAND, tailwheel: true, minutes: {total: 60, pic: 60}, takeoffs: {day: 3}, landings: {day: 3}, fullStopLandings: 3, soleManipulator: true}
+    outcome: current
+    expect: { message: pax.tailwheel_current }
+  - name: passengers-tailwheel-lapsed
+    evaluation: passengers_tailwheel
+    says: The pilot flies a tailwheel airplane, but the last full-stop landings in one were in April; three more are needed before carrying passengers in it.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: SPORT}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: SEP_LAND}
+      flights:
+        - {date: 2026-04-02, class: SEP_LAND, tailwheel: true, minutes: {total: 60, pic: 60}, takeoffs: {day: 3}, landings: {day: 3}, fullStopLandings: 3, soleManipulator: true}
+    outcome: lapsed
+    expect: { message: pax.tailwheel_not_current, params: { needed: 3 } }
+  - name: passengers-night-no-endorsement
+    evaluation: passengers_night
+    shows: [night-regime-change]
+    says: A sport pilot without the 61.329 night endorsement has no night privilege; with it (privilege SPORT_NIGHT) night passenger recency is evaluated like any other pilot's.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-sport, authority: FAA, type: SPORT }
+        - { id: l-sport-night, authority: FAA, type: SPORT }
+      ratings:
+        - { id: r-sep, licenceId: l-sport, class: SEP_LAND }
+        - { id: r-gyro, licenceId: l-sport-night, class: GYROPLANE }
+      privileges:
+        - { id: p-night, licenceId: l-sport-night, kind: SPORT_NIGHT, issued: 2026-01-10 }
+      flights:
+        - { date: 2026-08-01, class: SEP_LAND, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 3 }, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
+        - { date: 2026-08-02, class: GYROPLANE, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 3 }, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
+    outcome: not_applicable
+    expect:
+      subject: { kind: passengers, id: l-sport, class: SEP_LAND }
+      message: pax.night_no_privilege
+  - name: passengers-night-endorsement-current
+    evaluation: passengers_night
+    says: A sport pilot without the 61.329 night endorsement has no night privilege; with it (privilege SPORT_NIGHT) night passenger recency is evaluated like any other pilot's.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-sport, authority: FAA, type: SPORT }
+        - { id: l-sport-night, authority: FAA, type: SPORT }
+      ratings:
+        - { id: r-sep, licenceId: l-sport, class: SEP_LAND }
+        - { id: r-gyro, licenceId: l-sport-night, class: GYROPLANE }
+      privileges:
+        - { id: p-night, licenceId: l-sport-night, kind: SPORT_NIGHT, issued: 2026-01-10 }
+      flights:
+        - { date: 2026-08-01, class: SEP_LAND, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 3 }, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
+        - { date: 2026-08-02, class: GYROPLANE, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 3 }, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
+    outcome: current
+    expect:
+      subject: { kind: passengers, id: l-sport-night, class: GYROPLANE }
+      message: pax.night_current
+  - name: passengers-night-day-only
+    evaluation: passengers_night
+    says: Only day takeoffs and landings in the SEP_LAND class in the last 90 days; night passenger recency has lapsed.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: SPORT}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: SEP_LAND}
+      privileges:
+        - {id: p-night, licenceId: l-faa, kind: SPORT_NIGHT, issued: 2026-01-10}
+      flights:
+        - {date: 2026-07-10, class: SEP_LAND, minutes: {total: 90, pic: 90}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    outcome: lapsed
+    expect: { message: pax.night_not_current, params: { needed: 3 } }
+  - name: passengers-night-type-no-endorsement
+    evaluation: passengers_night_type
+    says: Per type (each rating carries a type designator, so it is a type rating). A sport pilot without the 61.329 night endorsement has no night privilege; with it (privilege SPORT_NIGHT) night passenger recency is evaluated like any other pilot's.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-sport, authority: FAA, type: SPORT }
+        - { id: l-sport-night, authority: FAA, type: SPORT }
+      ratings:
+        - { id: r-sep, licenceId: l-sport, class: SEP_LAND, typeDesignator: PC6 }
+        - { id: r-gyro, licenceId: l-sport-night, class: GYROPLANE, typeDesignator: MT03 }
+      privileges:
+        - { id: p-night, licenceId: l-sport-night, kind: SPORT_NIGHT, issued: 2026-01-10 }
+      flights:
+        - { date: 2026-08-01, class: SEP_LAND, typeDesignator: PC6, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 3 }, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
+        - { date: 2026-08-02, class: GYROPLANE, typeDesignator: MT03, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 3 }, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
+    outcome: not_applicable
+    expect:
+      subject: { kind: passengers, id: l-sport, class: SEP_LAND }
+      message: pax.night_no_privilege
+  - name: passengers-night-type-endorsement-current
+    evaluation: passengers_night_type
+    says: Per type (each rating carries a type designator, so it is a type rating). A sport pilot without the 61.329 night endorsement has no night privilege; with it (privilege SPORT_NIGHT) night passenger recency is evaluated like any other pilot's.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-sport, authority: FAA, type: SPORT }
+        - { id: l-sport-night, authority: FAA, type: SPORT }
+      ratings:
+        - { id: r-sep, licenceId: l-sport, class: SEP_LAND, typeDesignator: PC6 }
+        - { id: r-gyro, licenceId: l-sport-night, class: GYROPLANE, typeDesignator: MT03 }
+      privileges:
+        - { id: p-night, licenceId: l-sport-night, kind: SPORT_NIGHT, issued: 2026-01-10 }
+      flights:
+        - { date: 2026-08-01, class: SEP_LAND, typeDesignator: PC6, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 3 }, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
+        - { date: 2026-08-02, class: GYROPLANE, typeDesignator: MT03, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 3 }, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
+    outcome: current
+    expect:
+      subject: { kind: passengers, id: l-sport-night, class: GYROPLANE }
+      message: pax.night_current
+  - name: passengers-night-type-day-only
+    evaluation: passengers_night_type
+    says: Only day takeoffs and landings in a MT03 in the last 90 days; night passenger recency has lapsed.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: SPORT}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: GYROPLANE, typeDesignator: MT03}
+      privileges:
+        - {id: p-night, licenceId: l-faa, kind: SPORT_NIGHT, issued: 2026-01-10}
+      flights:
+        - {date: 2026-07-10, class: GYROPLANE, typeDesignator: MT03, minutes: {total: 90, pic: 90}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    outcome: lapsed
+    expect: { message: pax.night_not_current, params: { needed: 3 } }
+  - name: no-night-privileges-before-61-329
+    evaluation: no_night_privileges
+    shows: [night-regime-change]
+    says: On 1 October 2025, before sport pilot night privileges existed, night passenger recency does not apply to a sport pilot whatever the logbook shows.
+    asOf: 2025-10-01
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: SPORT}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: SEP_LAND}
+      flights:
+        - {date: 2025-09-10, class: SEP_LAND, minutes: {total: 90, pic: 90, night: 60}, takeoffs: {night: 3}, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
+    outcome: not_applicable
+    expect: { message: pax.night_no_privilege }
+  - name: flight-review-current
+    evaluation: flight_review
+    says: A sport pilot certificate holder with a flight review on 1 September 2025 may act as pilot in command through 30 September 2027.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: SPORT}
+      events:
+        - {date: 2025-09-01, kind: flight_review}
+    outcome: current
+    expect: { message: flight_review.current }
+  - name: flight-review-none
+    evaluation: flight_review
+    says: A sport pilot certificate holder with no flight review, proficiency check or practical test on record may not act as pilot in command.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: SPORT}
+    outcome: expired
+    expect: { message: flight_review.none_on_record }
+  - name: composite-review-current
+    composite: true
+    shows: [medical-or-drivers-license]
+    says: A sport pilot with a current flight review may exercise the certificate; it names no medical requirement, because a U.S. driver's license may take the place of a medical certificate.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: SPORT}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: SEP_LAND}
+      events:
+        - {date: 2025-09-01, kind: flight_review}
+    outcome: current
+    expect: { subject: { kind: licence, id: l-faa } }
+  - name: composite-review-none
+    composite: true
+    says: Without a flight review on record the sport pilot may not act as pilot in command.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: SPORT}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: SEP_LAND}
+    outcome: expired
+    expect: { subject: { kind: licence, id: l-faa }, decidedBy: { evaluation: flight_review } }

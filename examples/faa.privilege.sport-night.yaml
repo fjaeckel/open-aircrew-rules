@@ -1,0 +1,39 @@
+credential: faa.privilege.sport-night
+examples:
+  - name: composite-endorsed-with-medical
+    composite: true
+    shows: [endorsement-as-privilege]
+    says: A sport pilot with the night endorsement, a current flight review and a valid third-class medical certificate may exercise night privileges.
+    asOf: 2026-08-16
+    record:
+      holder: {dateOfBirth: 1990-01-01}
+      licences:
+        - {id: l-faa, authority: FAA, type: SPORT}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: SEP_LAND}
+      privileges:
+        - {id: p-night, licenceId: l-faa, kind: SPORT_NIGHT, issued: 2026-01-10}
+      credentials:
+        - {id: c-med, type: FAA_CLASS3_MEDICAL, issued: 2025-03-01}
+      events:
+        - {date: 2025-09-01, kind: flight_review}
+    outcome: current
+    expect: { subject: { kind: privilege, id: p-night } }
+  - name: composite-drivers-license-only
+    composite: true
+    shows: [medical-for-night]
+    says: A sport pilot flying on a U.S. driver's license alone has no medical certificate or BasicMed on record; whether night privileges may be exercised is unknown.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: SPORT}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: SEP_LAND}
+      privileges:
+        - {id: p-night, licenceId: l-faa, kind: SPORT_NIGHT, issued: 2026-01-10}
+      credentials:
+        - {id: c-dl, type: US_DRIVERS_LICENSE, expires: 2030-01-01}
+      events:
+        - {date: 2025-09-01, kind: flight_review}
+    outcome: unknown
+    expect: { subject: { kind: privilege, id: p-night }, decidedBy: { evaluation: medical } }

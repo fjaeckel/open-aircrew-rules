@@ -1,0 +1,89 @@
+credential: easa.instructor.tri
+examples:
+  - name: validity-valid
+    evaluation: validity
+    says: A TRI certificate issued on 15 January 2024 is valid for 3 years.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: TRI, issued: 2024-01-15 }
+      flights: []
+    outcome: current
+    expect: {subject: {kind: privilege, id: p-1}, message: privilege.valid, params: {date: 2027-01-15}, expiresOn: 2027-01-15}
+  - name: validity-entered-date-later
+    evaluation: validity
+    says: An entered expiry date more than 3 years after issue is capped at 3 years.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: TRI, issued: 2024-01-15, expires: 2030-01-01 }
+      flights: []
+    outcome: current
+    expect: {subject: {kind: privilege, id: p-1}, expiresOn: 2027-01-15}
+  - name: validity-expiring
+    evaluation: validity
+    says: Within 90 days of expiry the certificate shows as expiring.
+    asOf: 2026-11-01
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: TRI, issued: 2024-01-15 }
+      flights: []
+    outcome: expiring
+    expect: {subject: {kind: privilege, id: p-1}, message: privilege.expiring, params: {days: 75, date: 2027-01-15}}
+  - name: validity-valid-on-expiry-day
+    evaluation: validity
+    says: The certificate is valid on its expiry date.
+    asOf: 2027-01-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: TRI, issued: 2024-01-15 }
+      flights: []
+    outcome: expiring
+    expect: {subject: {kind: privilege, id: p-1}}
+  - name: validity-expired-day-after
+    evaluation: validity
+    says: The day after its expiry date the certificate is expired.
+    asOf: 2027-01-16
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: TRI, issued: 2024-01-15 }
+      flights: []
+    outcome: expired
+    expect: {subject: {kind: privilege, id: p-1}, message: privilege.expired, params: {date: 2027-01-15}}
+  - name: validity-no-dates
+    evaluation: validity
+    says: Without an issue or expiry date nothing can be said.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: TRI }
+      flights: []
+    outcome: unknown
+    expect: {subject: {kind: privilege, id: p-1}, message: privilege.no_expiry_date}
+  - name: validity-other-certificates-not-selected
+    evaluation: validity
+    says: FI, CRI and MI certificates and non-instructor privileges have their own credentials; of these privileges only the TRI certificate is evaluated here.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: TRI, issued: 2024-01-15 }
+        - { id: p-fi, licenceId: l-1, kind: FI, issued: 2024-01-15 }
+        - { id: p-cri, licenceId: l-1, kind: CRI, issued: 2024-01-15 }
+        - { id: p-mi, licenceId: l-1, kind: MI }
+        - { id: p-night, licenceId: l-1, kind: NIGHT }
+    outcome: current
+    expect: { message: privilege.valid, expiresOn: 2027-01-15 }

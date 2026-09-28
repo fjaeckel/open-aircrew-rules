@@ -1,0 +1,201 @@
+credential: faa.instructor.flight-instructor
+examples:
+  - name: expiry-renewal-window
+    evaluation: certificate_expiry
+    says: 76 days before the certificate expires the instructor is in the renewal period and is reminded to renew under 61.197(e).
+    asOf: 2026-04-15
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: COMMERCIAL }
+      privileges:
+        - { id: p-cfi, licenceId: l-faa, kind: CFI, issued: 2024-06-10, expires: 2026-06-30 }
+    outcome: expiring
+    expect:
+      subject: { kind: privilege, id: p-cfi }
+      message: privilege.expiring
+      params: { days: 76, date: 2026-06-30 }
+      expiresOn: 2026-06-30
+  - name: expiry-new-regime
+    evaluation: certificate_expiry
+    shows: [regime-by-recorded-expiry]
+    says: A flight instructor certificate issued on or after 1 December 2024 has no expiration date; this rule does not apply (recent experience is faa.14cfr61.61-197.cfi-recent-experience). EASA instructor privileges are not evaluated.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: COMMERCIAL }
+        - { id: l-easa, authority: EASA, type: PPL(A) }
+      privileges:
+        - { id: p-cfi, licenceId: l-faa, kind: CFI, issued: 2025-03-01 }
+        - { id: p-fi, licenceId: l-easa, kind: FI, issued: 2025-03-01, expires: 2028-03-31 }
+    outcome: not_applicable
+    expect:
+      subject: { kind: privilege, id: p-cfi }
+      message: privilege.not_applicable
+  - name: expiry-old-certificate-valid
+    evaluation: certificate_expiry
+    says: Three flight instructor certificates issued before 1 December 2024 on 31 October 2026 - one valid to 31 March 2027, one on its last day, one expired the day before.
+    asOf: 2026-10-31
+    record:
+      licences:
+        - { id: l-a, authority: FAA, type: COMMERCIAL }
+        - { id: l-b, authority: FAA, type: COMMERCIAL }
+        - { id: l-c, authority: FAA, type: COMMERCIAL }
+      privileges:
+        - { id: p-before, licenceId: l-a, kind: CFI, issued: 2023-03-10, validFrom: 2025-03-10, expires: 2027-03-31 }
+        - { id: p-on, licenceId: l-b, kind: CFI, issued: 2024-10-02, expires: 2026-10-31 }
+        - { id: p-after, licenceId: l-c, kind: CFI, issued: 2024-09-15, expires: 2026-09-30 }
+    outcome: current
+    expect:
+      subject: { kind: privilege, id: p-before }
+      message: privilege.valid
+      params: { date: 2027-03-31 }
+  - name: expiry-old-certificate-last-day
+    evaluation: certificate_expiry
+    says: Three flight instructor certificates issued before 1 December 2024 on 31 October 2026 - one valid to 31 March 2027, one on its last day, one expired the day before.
+    asOf: 2026-10-31
+    record:
+      licences:
+        - { id: l-a, authority: FAA, type: COMMERCIAL }
+        - { id: l-b, authority: FAA, type: COMMERCIAL }
+        - { id: l-c, authority: FAA, type: COMMERCIAL }
+      privileges:
+        - { id: p-before, licenceId: l-a, kind: CFI, issued: 2023-03-10, validFrom: 2025-03-10, expires: 2027-03-31 }
+        - { id: p-on, licenceId: l-b, kind: CFI, issued: 2024-10-02, expires: 2026-10-31 }
+        - { id: p-after, licenceId: l-c, kind: CFI, issued: 2024-09-15, expires: 2026-09-30 }
+    outcome: expiring
+    expect:
+      subject: { kind: privilege, id: p-on }
+      message: privilege.expiring
+      params: { days: 0, date: 2026-10-31 }
+  - name: expiry-old-certificate-expired
+    evaluation: certificate_expiry
+    shows: [old-regime-not-bounded]
+    says: Three flight instructor certificates issued before 1 December 2024 on 31 October 2026 - one valid to 31 March 2027, one on its last day, one expired the day before.
+    asOf: 2026-10-31
+    record:
+      licences:
+        - { id: l-a, authority: FAA, type: COMMERCIAL }
+        - { id: l-b, authority: FAA, type: COMMERCIAL }
+        - { id: l-c, authority: FAA, type: COMMERCIAL }
+      privileges:
+        - { id: p-before, licenceId: l-a, kind: CFI, issued: 2023-03-10, validFrom: 2025-03-10, expires: 2027-03-31 }
+        - { id: p-on, licenceId: l-b, kind: CFI, issued: 2024-10-02, expires: 2026-10-31 }
+        - { id: p-after, licenceId: l-c, kind: CFI, issued: 2024-09-15, expires: 2026-09-30 }
+    outcome: expired
+    expect:
+      subject: { kind: privilege, id: p-after }
+      message: privilege.expired
+      params: { date: 2026-09-30 }
+  - name: recent-experience-old-regime-before
+    evaluation: recent_experience
+    says: Certificates carrying an expiration date were issued before 1 December 2024 and follow faa.14cfr61.61-19-d.cfi-expiry, whether before, on or after their expiry date.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: COMMERCIAL }
+      privileges:
+        - { id: p-before, licenceId: l-faa, kind: CFI, issued: 2024-11-20, expires: 2026-11-30 }
+        - { id: p-on, licenceId: l-faa, kind: CFI, issued: 2024-08-02, expires: 2026-08-16 }
+        - { id: p-after, licenceId: l-faa, kind: CFI, issued: 2024-07-02, expires: 2026-07-31 }
+    outcome: not_applicable
+    expect:
+      subject: { kind: privilege, id: p-before }
+      message: privilege.not_applicable
+  - name: recent-experience-old-regime-on
+    evaluation: recent_experience
+    says: Certificates carrying an expiration date were issued before 1 December 2024 and follow faa.14cfr61.61-19-d.cfi-expiry, whether before, on or after their expiry date.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: COMMERCIAL }
+      privileges:
+        - { id: p-before, licenceId: l-faa, kind: CFI, issued: 2024-11-20, expires: 2026-11-30 }
+        - { id: p-on, licenceId: l-faa, kind: CFI, issued: 2024-08-02, expires: 2026-08-16 }
+        - { id: p-after, licenceId: l-faa, kind: CFI, issued: 2024-07-02, expires: 2026-07-31 }
+    outcome: not_applicable
+    expect:
+      subject: { kind: privilege, id: p-on }
+  - name: recent-experience-old-regime-after
+    evaluation: recent_experience
+    says: Certificates carrying an expiration date were issued before 1 December 2024 and follow faa.14cfr61.61-19-d.cfi-expiry, whether before, on or after their expiry date.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: COMMERCIAL }
+      privileges:
+        - { id: p-before, licenceId: l-faa, kind: CFI, issued: 2024-11-20, expires: 2026-11-30 }
+        - { id: p-on, licenceId: l-faa, kind: CFI, issued: 2024-08-02, expires: 2026-08-16 }
+        - { id: p-after, licenceId: l-faa, kind: CFI, issued: 2024-07-02, expires: 2026-07-31 }
+    outcome: not_applicable
+    expect:
+      subject: { kind: privilege, id: p-after }
+  - name: recent-experience-practical-test-reinstatement
+    evaluation: recent_experience
+    shows: [reinstatement-window]
+    says: Recent experience ended on 30 April 2026; May, June and July have passed, so in August only a flight instructor practical test reinstates the privileges.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: ATP }
+      privileges:
+        - { id: p-cfi, licenceId: l-faa, kind: CFI, issued: 2024-12-05 }
+      events:
+        - { date: 2024-04-10, kind: instructor_refresher }
+    outcome: lapsed
+    expect:
+      subject: { kind: privilege, id: p-cfi }
+      message: privilege.cfi_reinstate_practical_test
+      requirements:
+        refresher_course: { current: 0, met: false }
+  - name: recent-experience-refresher-course
+    evaluation: recent_experience
+    shows: [refresher-counts-24-months, practical-test-events]
+    says: An approved flight instructor refresher course in October 2025 gives recent experience through 31 October 2027. A practical test for an instrument rating (not an instructor rating) does not count.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: COMMERCIAL }
+      privileges:
+        - { id: p-cfi, licenceId: l-faa, kind: CFI, issued: 2025-01-10 }
+      events:
+        - { date: 2025-06-01, kind: practical_test, rating: IR }
+        - { date: 2025-10-05, kind: instructor_refresher }
+    outcome: current
+    expect:
+      subject: { kind: privilege, id: p-cfi }
+      message: privilege.recency_current
+      params: { date: 2027-10-31 }
+      validUntil: 2027-10-31
+      requirements:
+        practical_test: { current: 0, met: false }
+        refresher_course: { current: 1, met: true }
+  - name: recent-experience-refresher-reinstatement
+    evaluation: recent_experience
+    says: The practical test of 31 July 2024 carried recent experience through 31 July 2026. In August, within 3 calendar months after that last month, a refresher course or a practical test reinstates the privileges.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: COMMERCIAL }
+      privileges:
+        - { id: p-cfi, licenceId: l-faa, kind: CFI, issued: 2024-12-05 }
+      events:
+        - { date: 2024-07-31, kind: practical_test, rating: CFI }
+    outcome: lapsed
+    expect:
+      subject: { kind: privilege, id: p-cfi }
+      message: privilege.cfi_reinstate_refresher
+  - name: recent-experience-window-first-day
+    evaluation: recent_experience
+    says: A flight instructor practical test on 1 August 2024 (the certificate was reissued without expiration later) still counts on 16 August 2026, through 31 August.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: COMMERCIAL }
+      privileges:
+        - { id: p-cfi, licenceId: l-faa, kind: CFI, issued: 2024-12-05 }
+      events:
+        - { date: 2024-08-01, kind: practical_test, rating: CFII }
+    outcome: current
+    expect:
+      subject: { kind: privilege, id: p-cfi }
+      params: { date: 2026-08-31 }

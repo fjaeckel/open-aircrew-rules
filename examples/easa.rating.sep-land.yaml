@@ -209,3 +209,165 @@ examples:
         - {date: 2026-08-01, class: SEP_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 1}, landings: {day: 1}, flags: {proficiencyCheck: true, examinerOnBoard: true}}
     outcome: expired
     expect: { subject: { kind: rating, id: r-sep }, decidedBy: { evaluation: licence, credential: easa.licence.ppl-a } }
+  - name: variants-differences-training
+    evaluation: variants
+    says: "Further differences training on the variant restores the privilege. (FCL.710 case.)"
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-06-30 }
+      variants:
+        - { id: v-electric, ratingId: r-sep, name: ELECTRIC, issued: 2023-05-01 }
+      events:
+        - { date: 2026-02-01, kind: differences_training, class: SEP_LAND, variant: ELECTRIC }
+        - { date: 2026-02-02, kind: differences_training, class: SEP_LAND, variant: PISTON }
+      flights:
+        - { date: 2023-06-01, class: SEP_LAND, variant: ELECTRIC, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect:
+      subject: { kind: type, id: v-electric, class: SEP_LAND }
+      message: type.current
+      validUntil: 2028-02-01
+  - name: variants-flown
+    evaluation: variants
+    says: "A flight on the variant within 2 years keeps the privilege; it lasts until 2 years after that flight. (FCL.710 case.)"
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-06-30 }
+      variants:
+        - { id: v-electric, ratingId: r-sep, name: ELECTRIC, issued: 2023-05-01 }
+      flights:
+        - { date: 2026-03-10, class: SEP_LAND, variant: ELECTRIC, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-04-10, class: SEP_LAND, variant: PISTON, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect:
+      subject: { kind: type, id: v-electric, class: SEP_LAND }
+      message: type.current
+      validUntil: 2028-03-10
+      requirements:
+        variant_flown: { current: 1, met: true, lastDate: 2026-03-10 }
+  - name: variants-not-flown
+    evaluation: variants
+    says: "The variant was last flown more than 2 years ago; flights on another variant do not count. (FCL.710 case.)"
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-06-30 }
+      variants:
+        - { id: v-electric, ratingId: r-sep, name: ELECTRIC, issued: 2023-05-01 }
+      flights:
+        - { date: 2024-08-01, class: SEP_LAND, variant: ELECTRIC, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-04-10, class: SEP_LAND, variant: PISTON, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: lapsed
+    expect:
+      subject: { kind: type, id: v-electric, class: SEP_LAND }
+      message: type.not_flown
+      requirements:
+        variant_flown: { current: 0, met: false, remedyKey: remedy.differences_training }
+  - name: variants-proficiency-check
+    evaluation: variants
+    says: "A proficiency check in the variant, logged as an event, restores the privilege. (FCL.710 case.)"
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-06-30 }
+      variants:
+        - { id: v-electric, ratingId: r-sep, name: ELECTRIC, issued: 2023-05-01 }
+      events:
+        - { date: 2026-08-01, kind: proficiency_check, class: SEP_LAND, variant: ELECTRIC }
+      flights:
+        - { date: 2023-06-01, class: SEP_LAND, variant: ELECTRIC, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect:
+      subject: { kind: type, id: v-electric, class: SEP_LAND }
+      message: type.current
+  - name: variants-refresher-training
+    evaluation: variants
+    says: "Refresher training in the variant restores the privilege. (FCL.710 case.)"
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-06-30 }
+      variants:
+        - { id: v-electric, ratingId: r-sep, name: ELECTRIC, issued: 2023-05-01 }
+      events:
+        - { date: 2026-05-01, kind: refresher_training, class: SEP_LAND, variant: ELECTRIC }
+      flights: []
+    outcome: current
+    expect:
+      subject: { kind: type, id: v-electric, class: SEP_LAND }
+      message: type.current
+  - name: variants-variant-not-recorded
+    evaluation: variants
+    says: "Flights in the class without a variant cannot be matched; the result is unknown. (FCL.710 case.)"
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-06-30 }
+      variants:
+        - { id: v-electric, ratingId: r-sep, name: ELECTRIC, issued: 2023-05-01 }
+      flights:
+        - { date: 2026-05-01, class: SEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: unknown
+    expect:
+      subject: { kind: type, id: v-electric, class: SEP_LAND }
+      message: type.unknown
+      requirements:
+        variant_flown: { met: false, tracked: false }
+  - name: variants-window-edges
+    evaluation: variants
+    says: "A flight on 15 September 2024 counts on 15 September 2026; one on 14 September 2024 does not. (FCL.710 case.)"
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-06-30 }
+      variants:
+        - { id: v-electric, ratingId: r-sep, name: ELECTRIC, issued: 2023-05-01 }
+      flights:
+        - { date: 2024-09-14, class: SEP_LAND, variant: ELECTRIC, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2024-09-15, class: SEP_LAND, variant: ELECTRIC, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect:
+      subject: { kind: type, id: v-electric, class: SEP_LAND }
+      message: type.current
+      validUntil: 2026-09-15
+      requirements:
+        variant_flown: { current: 1 }
+  - name: variants-other-ratings-not-evaluated
+    evaluation: variants
+    says: "TMG variants are exempt (FCL.710(da)), gyroplane variants follow FCL.240.G(b) and variants on FAA licences are not evaluated; only the SEP land variant is (FCL.710 not-applicable case with an SEP land rating added)."
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+        - { id: l-faa, authority: FAA, type: PRIVATE }
+        - { id: l-gpl, authority: EASA, type: GPL }
+      ratings:
+        - { id: r-tmg, licenceId: l-ppl, class: TMG, expires: 2027-06-30 }
+        - { id: r-faa, licenceId: l-faa, class: SEP_LAND }
+        - { id: r-gyro, licenceId: l-gpl, class: GYROPLANE }
+        - { id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-06-30 }
+      variants:
+        - { id: v-tmg, ratingId: r-tmg, name: RETRACTABLE }
+        - { id: v-faa, ratingId: r-faa, name: ELECTRIC }
+        - { id: v-gyro, ratingId: r-gyro, name: ENCLOSED_COCKPIT }
+        - { id: v-electric, ratingId: r-sep, name: ELECTRIC }
+      flights:
+        - { date: 2026-03-10, class: SEP_LAND, variant: ELECTRIC, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect: { message: type.current }

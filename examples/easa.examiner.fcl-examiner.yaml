@@ -1,0 +1,172 @@
+credential: easa.examiner.fcl-examiner
+examples:
+  - name: revalidation-revalidated
+    evaluation: revalidation
+    says: Six tests conducted, a refresher course and an assessed test in the last 12 months revalidate the examiner certificate.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: EXAMINER, issued: 2024-01-15 }
+      events:
+        - { date: 2026-05-01, kind: examiner_refresher }
+        - { date: 2026-06-01, kind: assessment_of_competence, rating: EXAMINER }
+      flights:
+        - { date: 2025-01-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-02-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-03-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-04-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-05-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-06-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect: {subject: {kind: privilege, id: p-1}, message: privilege.revalidation_current, params: {date: 2027-01-15}, requirements: {tests_conducted: {current: 6, met: true}}}
+  - name: revalidation-refresher-window-edges
+    evaluation: revalidation
+    says: A refresher course on 15 January 2026 counts; one on 14 January 2026 does not.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: EXAMINER, issued: 2024-01-15 }
+      events:
+        - { date: 2026-01-14, kind: examiner_refresher }
+        - { date: 2026-01-15, kind: examiner_refresher }
+        - { date: 2026-06-01, kind: assessment_of_competence, rating: EXAMINER }
+      flights:
+        - { date: 2025-01-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-02-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-03-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-04-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-05-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-06-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect: {subject: {kind: privilege, id: p-1}, requirements: {refresher: {current: 1, lastDate: 2026-01-15}}}
+  - name: revalidation-tests-window-edges
+    evaluation: revalidation
+    says: A test conducted on 15 January 2024 counts; one on 14 January 2024 does not; a simulator check counts.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: EXAMINER, issued: 2024-01-15 }
+      events:
+        - { date: 2026-05-01, kind: examiner_refresher }
+        - { date: 2026-06-01, kind: assessment_of_competence, rating: EXAMINER }
+      flights:
+        - { date: 2024-01-14, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2024-01-15, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-01-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-02-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-03-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-04-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-08-10, class: MEP_LAND, isSimulator: true, fstdType: FFS, minutes: { total: 60, examiner: 60 } }
+    outcome: current
+    expect: {subject: {kind: privilege, id: p-1}, requirements: {tests_conducted: {current: 6, met: true}}}
+  - name: revalidation-valid-on-expiry-day
+    evaluation: revalidation
+    says: On its expiry date the certificate is still valid.
+    asOf: 2027-01-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: EXAMINER, issued: 2024-01-15 }
+      events:
+        - { date: 2026-05-01, kind: examiner_refresher }
+        - { date: 2026-06-01, kind: assessment_of_competence, rating: EXAMINER }
+      flights:
+        - { date: 2025-01-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-02-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-03-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-04-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-05-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-06-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect: {subject: {kind: privilege, id: p-1}}
+  - name: revalidation-not-met
+    evaluation: revalidation
+    says: Five tests, no refresher course and an assessment of competence as a pilot (not as examiner) do not revalidate.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: EXAMINER, issued: 2024-01-15 }
+      events:
+        - { date: 2026-06-01, kind: assessment_of_competence }
+      flights:
+        - { date: 2025-01-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-02-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-03-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-04-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-05-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect: {subject: {kind: privilege, id: p-1}, message: privilege.revalidation_not_met, requirements: {tests_conducted: {current: 5, met: false}, refresher: {current: 0, met: false}, assessed_test: {current: 0, met: false}}}
+  - name: revalidation-expiring
+    evaluation: revalidation
+    says: Within 90 days of expiry and not revalidated.
+    asOf: 2026-11-01
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: EXAMINER, issued: 2024-01-15 }
+      flights:
+        - { date: 2025-01-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-02-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-03-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-04-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-05-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-06-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: expiring
+    expect: {subject: {kind: privilege, id: p-1}, message: privilege.expiring}
+  - name: revalidation-expired-day-after
+    evaluation: revalidation
+    says: The day after its expiry date the certificate is expired.
+    asOf: 2027-01-16
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: EXAMINER, issued: 2024-01-15 }
+      events:
+        - { date: 2026-05-01, kind: examiner_refresher }
+        - { date: 2026-06-01, kind: assessment_of_competence, rating: EXAMINER }
+      flights:
+        - { date: 2025-01-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-02-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-03-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-04-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-05-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-06-10, class: SEP_LAND, minutes: { total: 60, examiner: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: expired
+    expect: {subject: {kind: privilege, id: p-1}, message: privilege.expired}
+  - name: revalidation-no-dates
+    evaluation: revalidation
+    says: Without an issue date or an expiry date the validity cannot be placed.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: EXAMINER }
+      flights: []
+    outcome: unknown
+    expect: {subject: {kind: privilege, id: p-1}, message: privilege.no_expiry_date}
+  - name: revalidation-other-certificates-not-selected
+    evaluation: revalidation
+    shows: [one-privilege-kind]
+    says: Instructor certificates and the sailplane FE(S) are not evaluated here; only the Part-FCL examiner certificate is, valid and not yet revalidated.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: EXAMINER, issued: 2024-01-15 }
+        - { id: p-fi, licenceId: l-1, kind: FI, issued: 2024-01-15 }
+        - { id: p-fes, licenceId: l-1, kind: FE_S, issued: 2024-01-15 }
+    outcome: current
+    expect: { message: privilege.revalidation_not_met }

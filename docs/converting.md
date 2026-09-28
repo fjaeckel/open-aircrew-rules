@@ -48,6 +48,7 @@ Translate the legacy `applies_to` of the credential's own part:
 | Legacy | Credential file |
 | --- | --- |
 | `subject: rating`, `classes` | `selects.ratings.classes` |
+| `ulKinds` (on ratings) | `selects.ratings.ul_kinds` (`none` for a rating without a kind) |
 | `subject: licence`, `licenceKinds` | `selects.licence.kinds` |
 | `subject: privilege`, `privilegeKinds` | `selects.privilege.kinds` |
 | `subject: credential`, `credentialTypes` | `selects.credential.kinds` |
@@ -113,6 +114,10 @@ legacy `source.cite` and the quotes show which paragraph; the gate resolves ever
 path against the outline of the text under `sources/` and fails when the paragraph does
 not exist there. If an article you need is not stored yet, store its verbatim text first
 (`sources/README.md`).
+
+A number an association sets under a statutory delegation (DULV, DAeC) is not law of the
+stored text and not a policy: declare the document in `associations.yaml` and cite it as
+`assoc:<id>` next to the delegating paragraph (`[de:LuftPersV.45(4), assoc:dulv:...]`).
 
 ## 6. `policy:` for what is not law
 

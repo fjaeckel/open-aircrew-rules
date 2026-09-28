@@ -1,0 +1,225 @@
+credential: faa.licence.recreational
+examples:
+  - name: pic-recency-experienced
+    evaluation: pic_recency
+    shows: [four-hundred-hours-total]
+    says: With 400 flight hours logged the 180-day condition no longer applies, even after a year without PIC time.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-rec, authority: FAA, type: RECREATIONAL }
+      flights:
+        - { date: 2020-01-01, class: SEP_LAND, minutes: { total: 23000, pic: 23000 } }
+        - { date: 2025-06-01, class: SEP_LAND, minutes: { total: 1000, pic: 1000 } }
+    outcome: current
+    expect:
+      subject: { kind: licence, id: l-rec }
+      requirements:
+        experienced: { current: 24000, met: true }
+        recent_pic: { current: 0, met: false }
+  - name: pic-recency-instructor-endorsement
+    evaluation: pic_recency
+    shows: [endorsement-restores]
+    says: After training, the instructor's endorsement on 1 July lets the pilot act as PIC again although no PIC time was logged in the last 180 days.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-rec, authority: FAA, type: RECREATIONAL }
+      flights:
+        - { date: 2025-10-01, class: SEP_LAND, minutes: { total: 60, pic: 60 } }
+        - { date: 2026-07-01, class: SEP_LAND, minutes: { total: 60, dual: 60 } }
+      events:
+        - { date: 2026-07-01, kind: instructor_endorsement }
+    outcome: current
+    expect:
+      subject: { kind: licence, id: l-rec }
+      requirements:
+        recent_pic: { met: false }
+  - name: pic-recency-lapsed
+    evaluation: pic_recency
+    shows: [pic-time-in-any-aircraft]
+    says: Under 400 hours and the last PIC flight on 16 February (181 days ago); dual instruction since then is not PIC time. The pilot needs training and an instructor's endorsement.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-rec, authority: FAA, type: RECREATIONAL }
+      flights:
+        - { date: 2026-02-16, class: SEP_LAND, minutes: { total: 60, pic: 60 } }
+        - { date: 2026-07-01, class: SEP_LAND, minutes: { total: 60, dual: 60 } }
+    outcome: lapsed
+    expect:
+      subject: { kind: licence, id: l-rec }
+      message: licence.recency_not_met
+      requirements:
+        recent_pic: { current: 0, met: false, remedyKey: remedy.fly_more, remedyParams: { missing: 1, unit: minutes } }
+  - name: pic-recency-recent-pic
+    evaluation: pic_recency
+    says: A recreational pilot with 120 hours who logged PIC time on 17 February, the 180th day before 16 August, may still act as PIC that day.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-rec, authority: FAA, type: RECREATIONAL }
+      flights:
+        - { date: 2024-06-01, class: SEP_LAND, minutes: { total: 7140, pic: 7140 } }
+        - { date: 2026-02-17, class: SEP_LAND, minutes: { total: 60, pic: 60 } }
+    outcome: current
+    expect:
+      subject: { kind: licence, id: l-rec }
+      message: licence.recency_current
+      validUntil: 2026-08-16
+      requirements:
+        experienced: { current: 7200, required: 24000, met: false }
+        recent_pic: { current: 60, met: true }
+  - name: pic-recency-only-recreational
+    evaluation: pic_recency
+    says: Private, sport and EASA licences have no 61.101(g) recency; only the recreational certificate is evaluated, and its PIC flight in July keeps it current.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-rec, authority: FAA, type: RECREATIONAL}
+        - {id: l-ppl, authority: FAA, type: PRIVATE}
+        - {id: l-sport, authority: FAA, type: SPORT}
+        - {id: l-easa, authority: EASA, type: LAPL(A)}
+      flights:
+        - {date: 2026-07-01, class: SEP_LAND, minutes: {total: 60, pic: 60}}
+    outcome: current
+    expect: { message: licence.recency_current }
+  - name: passengers-day-current
+    evaluation: passengers_day
+    says: Three takeoffs and landings as sole manipulator in the SEP_LAND class on 1 July allow a recreational pilot holder to carry passengers there on 16 August.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: RECREATIONAL}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: SEP_LAND}
+      flights:
+        - {date: 2026-07-01, class: SEP_LAND, minutes: {total: 90, pic: 90}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    outcome: current
+    expect: { message: pax.day_current }
+  - name: passengers-day-lapsed
+    evaluation: passengers_day
+    says: The last three takeoffs and landings in the SEP_LAND class were on 1 May, more than 90 days before 16 August; passenger recency has lapsed, the certificate stays valid.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: RECREATIONAL}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: SEP_LAND}
+      flights:
+        - {date: 2026-05-01, class: SEP_LAND, minutes: {total: 90, pic: 90}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    outcome: lapsed
+    expect: { message: pax.not_current, params: { needed: 3 } }
+  - name: passengers-tailwheel-current
+    evaluation: passengers_tailwheel
+    says: Three full-stop landings as sole manipulator in a tailwheel airplane on 2 August allow a recreational pilot holder to carry passengers in one.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: RECREATIONAL}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: SEP_LAND}
+      flights:
+        - {date: 2026-08-02, class: SEP_LAND, tailwheel: true, minutes: {total: 60, pic: 60}, takeoffs: {day: 3}, landings: {day: 3}, fullStopLandings: 3, soleManipulator: true}
+    outcome: current
+    expect: { message: pax.tailwheel_current }
+  - name: passengers-tailwheel-lapsed
+    evaluation: passengers_tailwheel
+    says: The pilot flies a tailwheel airplane, but the last full-stop landings in one were in April; three more are needed before carrying passengers in it.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: RECREATIONAL}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: SEP_LAND}
+      flights:
+        - {date: 2026-04-02, class: SEP_LAND, tailwheel: true, minutes: {total: 60, pic: 60}, takeoffs: {day: 3}, landings: {day: 3}, fullStopLandings: 3, soleManipulator: true}
+    outcome: lapsed
+    expect: { message: pax.tailwheel_not_current, params: { needed: 3 } }
+  - name: passengers-night-no-privilege
+    evaluation: passengers_night
+    shows: [no-night-privilege]
+    says: A recreational pilot may not fly between sunset and sunrise, so night passenger recency does not apply, whatever the logbook shows.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-rec, authority: FAA, type: RECREATIONAL }
+      ratings:
+        - { id: r-sep, licenceId: l-rec, class: SEP_LAND }
+      flights:
+        - { date: 2026-08-01, class: SEP_LAND, minutes: { total: 60, dual: 60, night: 60 }, takeoffs: { night: 3 }, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
+    outcome: not_applicable
+    expect:
+      subject: { kind: passengers, id: l-rec, class: SEP_LAND }
+      message: pax.night_no_privilege
+  - name: passengers-night-type-no-privilege
+    evaluation: passengers_night
+    says: Per type (each rating carries a type designator, so it is a type rating). A recreational pilot may not fly between sunset and sunrise, so night passenger recency does not apply, whatever the logbook shows.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-rec, authority: FAA, type: RECREATIONAL }
+      ratings:
+        - { id: r-sep, licenceId: l-rec, class: SEP_LAND, typeDesignator: PC6 }
+      flights:
+        - { date: 2026-08-01, class: SEP_LAND, typeDesignator: PC6, minutes: { total: 60, dual: 60, night: 60 }, takeoffs: { night: 3 }, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
+    outcome: not_applicable
+    expect:
+      subject: { kind: passengers, id: l-rec, class: SEP_LAND }
+      message: pax.night_no_privilege
+  - name: flight-review-current
+    evaluation: flight_review
+    says: A recreational pilot certificate holder with a flight review on 1 September 2025 may act as pilot in command through 30 September 2027.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: RECREATIONAL}
+      events:
+        - {date: 2025-09-01, kind: flight_review}
+    outcome: current
+    expect: { message: flight_review.current }
+  - name: flight-review-none
+    evaluation: flight_review
+    says: A recreational pilot certificate holder with no flight review, proficiency check or practical test on record may not act as pilot in command.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: RECREATIONAL}
+    outcome: expired
+    expect: { message: flight_review.none_on_record }
+  - name: composite-current
+    composite: true
+    says: "Recent PIC time, a flight review and a valid third-class medical certificate: the recreational pilot certificate may be exercised."
+    asOf: 2026-08-16
+    record:
+      holder: {dateOfBirth: 1990-01-01}
+      licences:
+        - {id: l-rec, authority: FAA, type: RECREATIONAL}
+      ratings:
+        - {id: r-sep, licenceId: l-rec, class: SEP_LAND}
+      credentials:
+        - {id: c-med, type: FAA_CLASS3_MEDICAL, issued: 2025-03-01}
+      events:
+        - {date: 2025-09-01, kind: flight_review}
+      flights:
+        - {date: 2026-07-01, class: SEP_LAND, minutes: {total: 60, pic: 60}}
+    outcome: current
+    expect: { subject: { kind: licence, id: l-rec } }
+  - name: composite-pic-recency-lapsed
+    composite: true
+    says: "Under 400 hours and no PIC time in the last 180 days: the recreational pilot may not act as PIC until an instructor endorses the logbook, whatever the medical and flight review."
+    asOf: 2026-08-16
+    record:
+      holder: {dateOfBirth: 1990-01-01}
+      licences:
+        - {id: l-rec, authority: FAA, type: RECREATIONAL}
+      ratings:
+        - {id: r-sep, licenceId: l-rec, class: SEP_LAND}
+      credentials:
+        - {id: c-med, type: FAA_CLASS3_MEDICAL, issued: 2025-03-01}
+      events:
+        - {date: 2025-09-01, kind: flight_review}
+      flights:
+        - {date: 2025-12-01, class: SEP_LAND, minutes: {total: 60, pic: 60}}
+    outcome: lapsed
+    expect: { subject: { kind: licence, id: l-rec }, decidedBy: { evaluation: pic_recency } }

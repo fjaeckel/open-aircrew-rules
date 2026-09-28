@@ -1,0 +1,36 @@
+credential: easa.instructor.fti
+examples:
+  - name: validity-valid
+    evaluation: validity
+    says: An FTI certificate issued on 15 January 2024 is valid for 3 years, until 15 January 2027; its revalidation requirements are not evaluated.
+    shows: [revalidation-not-evaluated]
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: FTI, issued: 2024-01-15 }
+    outcome: current
+    expect: { subject: { kind: privilege, id: p-1 }, message: privilege.valid, params: { date: 2027-01-15 }, expiresOn: 2027-01-15 }
+  - name: validity-from-valid-from
+    evaluation: validity
+    says: The 3 years run from the recorded validity start rather than the issue date; the day after they end the certificate is expired.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: LBA, type: ATPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: FTI, issued: 2023-08-01, validFrom: 2023-09-14 }
+    outcome: expired
+    expect: { subject: { kind: privilege, id: p-1 }, message: privilege.expired, params: { date: 2026-09-14 } }
+  - name: validity-no-dates
+    evaluation: validity
+    says: Without a validity start, issue or expiry date the certificate's validity cannot be placed.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: FTI }
+    outcome: unknown
+    expect: { subject: { kind: privilege, id: p-1 }, message: privilege.no_expiry_date }

@@ -1,0 +1,163 @@
+credential: easa.rating.ir-h
+examples:
+  - name: revalidation-aeroplane-check-on-helicopter-licence
+    evaluation: revalidation
+    says: 'An IR on a PPL(H) is an IR(H): an IR check in an aeroplane and IFR time in an aeroplane do not revalidate it.'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-h, authority: EASA, type: PPL(H) }
+      ratings:
+        - { id: r-ir, licenceId: l-h, class: IR, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-08-20, class: MEP_LAND, minutes: { total: 600, pic: 600, ifr: 600 }, takeoffs: { day: 1 }, landings: { day: 1 }, checkRating: IR, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-ir, class: IR }, message: rating.ir_check_not_met, requirements: {proficiency_check: {current: 0, met: false}} }
+  - name: revalidation-check-met-expiring
+    evaluation: revalidation
+    says: An IR proficiency check in the 3 months before expiry revalidates the IR; no IFR hours are needed.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(H) }
+      ratings:
+        - { id: r-ir, licenceId: l-1, class: IR, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-08-20, class: HELICOPTER, minutes: { total: 60, pic: 60, ifr: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, checkRating: IR, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-ir, class: IR }, message: rating.revalidation_expiring_met, params: {days: 46}, expiresOn: 2026-10-31, requirements: {proficiency_check: {current: 1, required: 1, met: true, lastDate: 2026-08-20}} }
+  - name: revalidation-class-check-does-not-count
+    evaluation: revalidation
+    says: IFR hours and a class or type rating check without the IR sections do not revalidate the IR.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(H) }
+      ratings:
+        - { id: r-ir, licenceId: l-1, class: IR, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-08-01, class: HELICOPTER, minutes: { total: 60, pic: 60, ifr: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-08-02, class: HELICOPTER, minutes: { total: 60, pic: 60, ifr: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-08-03, class: HELICOPTER, minutes: { total: 60, pic: 60, ifr: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-08-04, class: HELICOPTER, minutes: { total: 60, pic: 60, ifr: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-08-05, class: HELICOPTER, minutes: { total: 60, pic: 60, ifr: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-08-06, class: HELICOPTER, minutes: { total: 60, pic: 60, ifr: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-08-07, class: HELICOPTER, minutes: { total: 60, pic: 60, ifr: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-08-08, class: HELICOPTER, minutes: { total: 60, pic: 60, ifr: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-08-09, class: HELICOPTER, minutes: { total: 60, pic: 60, ifr: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-08-10, class: HELICOPTER, minutes: { total: 60, pic: 60, ifr: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-08-20, class: HELICOPTER, minutes: { total: 60, pic: 60, ifr: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { proficiencyCheck: true } }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-ir }, message: rating.ir_check_not_met, requirements: {proficiency_check: {current: 0, met: false, remedyKey: remedy.proficiency_check}} }
+  - name: revalidation-expired-day-after
+    evaluation: revalidation
+    says: The day after its expiry date the IR is expired; renewal is not modelled.
+    asOf: 2026-11-01
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(H) }
+      ratings:
+        - { id: r-ir, licenceId: l-1, class: IR, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-08-20, class: HELICOPTER, minutes: { total: 60, pic: 60, ifr: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, checkRating: IR, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: expired
+    expect: { subject: { kind: rating, id: r-ir }, message: rating.expired }
+  - name: revalidation-fstd-check
+    evaluation: revalidation
+    says: An IR check in an FSTD recorded with the HELICOPTER class counts; an IR check recorded in SEP_LAND does not.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(H) }
+      ratings:
+        - { id: r-ir, licenceId: l-1, class: IR, expires: 2026-10-31 }
+      events:
+        - { date: 2026-08-10, kind: proficiency_check, class: SEP_LAND, rating: IR }
+      flights:
+        - { date: 2026-08-20, class: HELICOPTER, isSimulator: true, fstdType: FFS, minutes: { total: 60, simulatedInstrument: 60 }, checkRating: IR, flags: { proficiencyCheck: true } }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-ir }, message: rating.revalidation_expiring_met, requirements: {proficiency_check: {current: 1, met: true, lastDate: 2026-08-20}} }
+  - name: revalidation-met-current
+    evaluation: revalidation
+    says: With 92 days to expiry, on the first day of the window, the check makes the IR current.
+    asOf: 2026-09-30
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(H) }
+      ratings:
+        - { id: r-ir, licenceId: l-1, class: IR, expires: 2026-12-31 }
+      flights:
+        - { date: 2026-09-30, class: HELICOPTER, minutes: { total: 60, pic: 60, ifr: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, checkRating: IR, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: current
+    expect: { subject: { kind: rating, id: r-ir }, message: rating.revalidation_current }
+  - name: revalidation-no-expiry-date
+    evaluation: revalidation
+    says: Without an expiry date the window cannot be placed.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(H) }
+      ratings:
+        - { id: r-ir, licenceId: l-1, class: IR }
+      flights:
+        - { date: 2026-08-20, class: HELICOPTER, minutes: { total: 60, pic: 60, ifr: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, checkRating: IR, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: unknown
+    expect: { subject: { kind: rating, id: r-ir }, message: rating.no_expiry_date }
+  - name: revalidation-valid-on-expiry-day
+    evaluation: revalidation
+    says: On its expiry date the IR is still valid.
+    asOf: 2026-10-31
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(H) }
+      ratings:
+        - { id: r-ir, licenceId: l-1, class: IR, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-08-20, class: HELICOPTER, minutes: { total: 60, pic: 60, ifr: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, checkRating: IR, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-ir }, message: rating.revalidation_expiring_met, params: {days: 0} }
+  - name: revalidation-window-edges
+    evaluation: revalidation
+    says: An IR check on 31 July, 3 months before the 31 October expiry, counts; one on 30 July does not.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(H) }
+      ratings:
+        - { id: r-ir, licenceId: l-1, class: IR, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-07-30, class: HELICOPTER, minutes: { total: 60, pic: 60, ifr: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, checkRating: IR, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+        - { date: 2026-07-31, class: HELICOPTER, minutes: { total: 60, pic: 60, ifr: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, checkRating: IR, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-ir }, message: rating.revalidation_expiring_met, requirements: {proficiency_check: {current: 1, lastDate: 2026-07-31}} }
+  - name: revalidation-window-not-open
+    evaluation: revalidation
+    says: Earlier than 3 months before expiry the window is not open.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(H) }
+      ratings:
+        - { id: r-ir, licenceId: l-1, class: IR, expires: 2027-06-30 }
+      flights: []
+    outcome: current
+    expect: { subject: { kind: rating, id: r-ir }, message: rating.window_not_open, params: {date: 2027-03-30} }
+  - name: revalidation-not-applicable-other-items
+    evaluation: revalidation
+    shows: [ir-on-helicopter-licence]
+    says: An IR on an aeroplane licence, FAA and DULV IRs and type ratings are not evaluated here; only the IR on the EASA helicopter licence is (legacy not-applicable case with that IR added).
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-other, authority: EASA, type: PPL(A) }
+        - { id: l-faa, authority: FAA, type: PRIVATE }
+        - { id: l-dulv, authority: DULV, type: UL }
+        - { id: l-1, authority: EASA, type: PPL(H) }
+      ratings:
+        - { id: r-other, licenceId: l-other, class: IR, expires: 2026-10-31 }
+        - { id: r-faa, licenceId: l-faa, class: IR }
+        - { id: r-dulv, licenceId: l-dulv, class: IR, expires: 2026-10-31 }
+        - { id: r-sep, licenceId: l-1, class: HELICOPTER, expires: 2026-10-31 }
+        - { id: r-ir, licenceId: l-1, class: IR, expires: 2027-06-30 }
+    outcome: current
+    expect: { message: rating.window_not_open }

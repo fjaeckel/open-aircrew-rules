@@ -1,0 +1,98 @@
+credential: easa.licence.cpl-a
+examples:
+  - name: medical-expired
+    evaluation: medical
+    says: An expired medical certificate does not allow exercising the licence.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      credentials:
+        - { id: c-1, type: EASA_CLASS1_MEDICAL, expires: 2026-09-14 }
+    outcome: expired
+    expect: { subject: { kind: licence, id: l-1 }, message: licence.medical_required }
+  - name: medical-lower-class
+    evaluation: medical
+    says: A lower-class medical certificate is not enough for this licence.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      credentials:
+        - { id: c-1, type: EASA_CLASS2_MEDICAL, expires: 2027-09-14 }
+    outcome: expired
+    expect: { subject: { kind: licence, id: l-1 }, message: licence.medical_required }
+  - name: medical-none-recorded
+    evaluation: medical
+    says: With no EASA medical recorded the result is unknown; an FAA medical does not count.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      credentials:
+        - { id: c-1, type: FAA_CLASS1_MEDICAL, expires: 2027-01-10 }
+    outcome: unknown
+    expect: { subject: { kind: licence, id: l-1 }, message: licence.medical_not_recorded }
+  - name: medical-on-expiry-day
+    evaluation: medical
+    says: The medical is valid on its expiry date.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      credentials:
+        - { id: c-1, type: EASA_CLASS1_MEDICAL, expires: 2026-09-15 }
+    outcome: current
+    expect: { subject: { kind: licence, id: l-1 } }
+  - name: medical-valid
+    evaluation: medical
+    says: A valid class1 medical certificate allows exercising the licence.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      credentials:
+        - { id: c-1, type: EASA_CLASS1_MEDICAL, issued: 2026-01-10, expires: 2027-01-10 }
+    outcome: current
+    expect: { subject: { kind: licence, id: l-1 }, message: licence.valid }
+  - name: medical-not-applicable-other-licences
+    evaluation: medical
+    shows: [licence-authorities]
+    says: A CPL(H), an FAA licence and a PPL(A) are not evaluated here; only the CPL(A) is (legacy not-applicable case with a CPL(A) added).
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-h, authority: EASA, type: CPL(H) }
+        - { id: l-faa, authority: FAA, type: COMMERCIAL }
+        - { id: l-o, authority: EASA, type: PPL(A) }
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      credentials:
+        - { id: c-1, type: EASA_CLASS1_MEDICAL, expires: 2027-01-10 }
+    outcome: current
+    expect: { message: licence.valid }
+  - name: composite-class-1-and-language-valid
+    composite: true
+    says: With a valid class 1 medical and a valid language endorsement the CPL(A) may be exercised.
+    asOf: 2026-09-15
+    record:
+      holder: { dateOfBirth: 1976-01-01 }
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      credentials:
+        - { id: c-med, type: EASA_CLASS1_MEDICAL, issued: 2026-06-01 }
+        - { id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2023-04-15 }
+    outcome: current
+    expect: { subject: { kind: licence, id: l-1 } }
+  - name: composite-class-2-only
+    composite: true
+    says: A class 2 medical does not allow the privileges of a CPL(A); the medical decides.
+    asOf: 2026-09-15
+    record:
+      holder: { dateOfBirth: 1976-01-01 }
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      credentials:
+        - { id: c-med, type: EASA_CLASS2_MEDICAL, issued: 2026-06-01 }
+        - { id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2023-04-15 }
+    outcome: expired
+    expect: { subject: { kind: licence, id: l-1 }, decidedBy: { evaluation: medical } }

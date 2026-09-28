@@ -186,6 +186,7 @@ keys:
   - { key: licence.expired, kind: message, params: [date], notes: "Licence past its expiry date." }
   - { key: licence.recency_current, kind: message, params: [], notes: "Licence recency met." }
   - { key: licence.recency_not_met, kind: message, params: [], notes: "Licence recency not met; privileges may not be exercised." }
+  - { key: licence.recency_not_evaluable, kind: message, params: [], notes: "The licence's recency cannot be evaluated from the record at all (BFCL.160: the record holds no balloon class or hot-air balloon group), so whether its privileges may be exercised cannot be decided." }
   - { key: licence.not_applicable, kind: message, params: [], notes: "Rule does not apply to this licence." }
 
   # --- privilege, further keys ---

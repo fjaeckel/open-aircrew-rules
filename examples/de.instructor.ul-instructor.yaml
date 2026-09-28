@@ -1,0 +1,147 @@
+credential: de.instructor.ul-instructor
+examples:
+  - name: expired-day-after
+    evaluation: extension
+    shows: [renewal-not-evaluated]
+    says: The day after the three years end the rating is expired; renewal is not evaluated.
+    asOf: 2027-01-11
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      privileges:
+        - { id: p-fi, licenceId: l-ul, kind: UL_INSTRUCTOR, validFrom: 2024-01-10 }
+    outcome: expired
+    expect:
+      subject: { kind: privilege, id: p-fi }
+      message: privilege.expired
+      params: { date: "2027-01-10" }
+      expiresOn: 2027-01-10
+
+  - name: met-by-instruction-and-course
+    evaluation: extension
+    shows: [three-years-from-valid-from, instruction-as-instructor-or-examiner, refresher-course-event]
+    says: 'Rating valid from 10 January 2024, so valid until 10 January 2027. Sixty take-offs and landings instructing on ultralights (the first flight on the first day of the three years) and a refresher course on the first day of the validity meet two of the three items; PIC time and instruction in an SEP aeroplane do not count.'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      privileges:
+        - { id: p-fi, licenceId: l-ul, kind: UL_INSTRUCTOR, validFrom: 2024-01-10 }
+      events:
+        - { date: 2024-01-10, kind: instructor_refresher }
+      flights:
+        - { date: 2024-01-10, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 120, dualGiven: 120 }, takeoffs: { day: 20 }, landings: { day: 20 } }
+        - { date: 2025-05-01, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 180, dualGiven: 180 }, takeoffs: { day: 40 }, landings: { day: 40 } }
+        - { date: 2025-05-02, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 600, pic: 600 }, takeoffs: { day: 40 }, landings: { day: 40 } }
+        - { date: 2025-05-03, class: SEP_LAND, minutes: { total: 600, dualGiven: 600 }, takeoffs: { day: 40 }, landings: { day: 40 } }
+    outcome: current
+    expect:
+      subject: { kind: privilege, id: p-fi }
+      message: privilege.revalidation_current
+      params: { date: "2027-01-10" }
+      expiresOn: 2027-01-10
+      requirements:
+        instruction_takeoffs_landings: { current: 60, met: true }
+        instruction_time: { current: 300, met: false }
+        refresher_course: { current: 1, met: true }
+        assessment: { current: 0, met: false }
+
+  - name: met-by-time-and-assessment
+    evaluation: extension
+    shows: [befaehigungspruefung-event, last-three-years-before-expiry]
+    says: Ten hours of instruction and examining on ultralights and an assessment of competence on 10 January 2026, the first day of the 12 months before expiry, meet two items; the assessment of the day before does not count toward the 12 months.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      privileges:
+        - { id: p-fi, licenceId: l-ul, kind: UL_INSTRUCTOR, issued: 2021-01-10, validFrom: 2024-01-10 }
+      events:
+        - { date: 2026-01-09, kind: assessment_of_competence }
+        - { date: 2026-01-10, kind: assessment_of_competence }
+      flights:
+        - { date: 2025-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 480, dualGiven: 480 }, takeoffs: { day: 10 }, landings: { day: 10 } }
+        - { date: 2025-06-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 120, examiner: 120 }, takeoffs: { day: 2 }, landings: { day: 2 } }
+    outcome: current
+    expect:
+      subject: { kind: privilege, id: p-fi }
+      message: privilege.revalidation_current
+      requirements:
+        instruction_takeoffs_landings: { current: 12, met: false }
+        instruction_time: { current: 600, met: true }
+        assessment: { current: 1, met: true }
+
+  - name: no-expiry
+    evaluation: extension
+    says: Without an issue, valid-from or expiry date the three years cannot be placed.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: LBA, type: UL }
+      privileges:
+        - { id: p-fi, licenceId: l-ul, kind: UL_INSTRUCTOR }
+    outcome: unknown
+    expect:
+      subject: { kind: privilege, id: p-fi }
+      message: privilege.no_expiry_date
+
+  - name: not-applicable
+    evaluation: extension
+    says: 'Only the § 95a rating on the ultralight licence is evaluated: an ultralight towing rating, an EASA FI certificate and a UL_INSTRUCTOR privilege recorded on an EASA PPL(A) are not it (a second result would fail the example).'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      privileges:
+        - { id: p-fi, licenceId: l-ul, kind: UL_INSTRUCTOR }
+        - { id: p-tow, licenceId: l-ul, kind: UL_TOWING }
+        - { id: p-fi-easa, licenceId: l-ppl, kind: FI, validFrom: 2024-01-10 }
+        - { id: p-ulfi-easa, licenceId: l-ppl, kind: UL_INSTRUCTOR, validFrom: 2024-01-10 }
+    outcome: unknown
+    expect: { message: privilege.no_expiry_date }
+
+  - name: valid-on-expiry-day
+    evaluation: extension
+    says: A recorded expiry earlier than three years wins; the rating is valid on that date. Instruction and a course within the validity still meet the extension.
+    asOf: 2026-06-30
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      privileges:
+        - { id: p-fi, licenceId: l-ul, kind: UL_INSTRUCTOR, validFrom: 2024-01-10, expires: 2026-06-30 }
+      events:
+        - { date: 2025-01-10, kind: instructor_refresher }
+      flights:
+        - { date: 2025-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 600, dualGiven: 600 }, takeoffs: { day: 60 }, landings: { day: 60 } }
+    outcome: current
+    expect:
+      subject: { kind: privilege, id: p-fi }
+      message: privilege.revalidation_current
+      params: { date: "2026-06-30" }
+      expiresOn: 2026-06-30
+
+  - name: window-day-before
+    evaluation: extension
+    says: The instruction flight and the refresher course of 9 January 2024, the day before the rating's validity began, count toward nothing; the assessment alone is one item, not two, so the extension is not met yet.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DAeC, type: UL }
+      privileges:
+        - { id: p-fi, licenceId: l-ul, kind: UL_INSTRUCTOR, issued: 2024-01-10 }
+      events:
+        - { date: 2024-01-09, kind: instructor_refresher }
+        - { date: 2026-03-01, kind: assessment_of_competence }
+      flights:
+        - { date: 2024-01-09, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 120, dualGiven: 120 }, takeoffs: { day: 20 }, landings: { day: 20 } }
+        - { date: 2025-05-01, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 180, dualGiven: 180 }, takeoffs: { day: 40 }, landings: { day: 40 } }
+    outcome: expiring
+    expect:
+      subject: { kind: privilege, id: p-fi }
+      message: privilege.revalidation_not_met
+      params: { date: "2027-01-10" }
+      requirements:
+        instruction_takeoffs_landings: { current: 40, met: false, remedyParams: { missing: 20, unit: landings } }
+        refresher_course: { current: 0, met: false }
+        assessment: { current: 1, met: true }

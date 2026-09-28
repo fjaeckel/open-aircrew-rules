@@ -42,6 +42,20 @@ func (cp *compiler) ref(n *yaml.Node, what string) {
 	for _, r := range l {
 		cp.cat.addRef(r, cp.where+" "+what, n.Line)
 	}
+	cp.delegated(l, what, n.Line)
+}
+
+// delegated requires the statute delegating an association document next to its ref.
+func (cp *compiler) delegated(l RefList, what string, line int) {
+	for _, r := range l {
+		id, ok := strings.CutPrefix(r, AssociationPrefix+":")
+		if !ok {
+			continue
+		}
+		if a, found := cp.cat.Associations[id]; found && !slices.Contains(l, a.DelegatedBy) {
+			cp.errs = append(cp.errs, fmt.Sprintf("%s (line %d): %s cites %s without the statute delegating it (%s)", cp.where, line, what, r, a.DelegatedBy))
+		}
+	}
 }
 
 func (cp *compiler) refList(l RefList, what string, line int, required bool) {
@@ -54,6 +68,7 @@ func (cp *compiler) refList(l RefList, what string, line int, required bool) {
 	for _, r := range l {
 		cp.cat.addRef(r, cp.where+" "+what, line)
 	}
+	cp.delegated(l, what, line)
 }
 
 // pairs returns the key/value pairs of a mapping node.
@@ -202,6 +217,7 @@ func (cp *compiler) appliesTo(c *Credential, e *Evaluation) engine.AppliesTo {
 			a.LicenceKinds = append(slices.Clone(part.Kinds), part.LicenceKinds...)
 		case "ratings":
 			a.Classes = part.Classes
+			a.ULKinds = part.ULKinds
 		case "privilege":
 			a.PrivilegeKinds = part.Kinds
 		case "credential":
@@ -230,6 +246,7 @@ func applyScope(a *engine.AppliesTo, s *Scope) {
 	set(&a.CredentialTypes, s.CredentialTypes)
 	set(&a.PrivilegeKinds, s.PrivilegeKinds)
 	set(&a.LaunchMethods, s.LaunchMethods)
+	set(&a.ULKinds, s.ULKinds)
 	if s.TypeRated != nil {
 		a.TypeRated = s.TypeRated
 	}
@@ -513,11 +530,27 @@ func (cp *compiler) filterQualifier(k string, def QualifierDef, v *yaml.Node, m 
 				cp.ref(p[1], "ul_credit")
 				continue
 			}
-			var kinds []string
-			if err := p[1].Decode(&kinds); err != nil {
-				cp.fail(p[1], "ul_credit.%s: want a list of ultralight kinds", p[0].Value)
+			credit := map[string]any{"class": p[0].Value}
+			if p[1].Kind == yaml.MappingNode {
+				var c struct {
+					ULKinds   []string `yaml:"ul_kinds"`
+					MinMTOMKg *int     `yaml:"min_mtom_kg"`
+				}
+				if err := p[1].Decode(&c); err != nil || len(c.ULKinds) == 0 || c.MinMTOMKg == nil || len(pairs(p[1])) != 2 {
+					cp.fail(p[1], "ul_credit.%s: want { ul_kinds: [...], min_mtom_kg: n }", p[0].Value)
+				}
+				credit["ulKinds"] = c.ULKinds
+				if c.MinMTOMKg != nil {
+					credit["minMtomKg"] = *c.MinMTOMKg
+				}
+			} else {
+				var kinds []string
+				if err := p[1].Decode(&kinds); err != nil {
+					cp.fail(p[1], "ul_credit.%s: want a list of ultralight kinds", p[0].Value)
+				}
+				credit["ulKinds"] = kinds
 			}
-			credits = append(credits, map[string]any{"class": p[0].Value, "ulKinds": kinds})
+			credits = append(credits, credit)
 		}
 		if !slices.ContainsFunc(pairs(v), func(p [2]*yaml.Node) bool { return p[0].Value == "ref" }) {
 			cp.fail(v, "ul_credit has no ref")

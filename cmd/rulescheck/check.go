@@ -24,6 +24,7 @@ func check(o options) (*report, error) {
 	validate("vocabulary", filepath.Join(o.root, "vocabulary.yaml"))
 	validate("messages", filepath.Join(o.root, "messages", "keys.yaml"))
 	validate("policies", filepath.Join(o.root, "policies.yaml"))
+	validate("associations", filepath.Join(o.root, "associations.yaml"))
 	if len(r.schema) > 0 {
 		return r, nil
 	}
@@ -81,7 +82,7 @@ func check(o options) (*report, error) {
 	r.f = credentials.Check(cat, ex)
 	r.cov = credentials.CheckCoverage(cat)
 	r.vocabUnimpl = unimplemented(cat.Engine.Vocabulary)
-	r.sources, err = checkSources(o.root, cat.Engine.Vocabulary)
+	r.sources, err = checkSources(o.root, cat.Engine.Vocabulary, keys(cat.Associations))
 	if err != nil {
 		return nil, err
 	}

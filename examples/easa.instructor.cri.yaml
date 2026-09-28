@@ -1,0 +1,128 @@
+credential: easa.instructor.cri
+examples:
+  - name: revalidation-two-of-three
+    evaluation: revalidation
+    says: 10 hours of instruction and instructor refresher training within the validity period revalidate the certificate.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: CRI, issued: 2024-01-15 }
+      events:
+        - { date: 2026-02-01, kind: instructor_refresher }
+      flights:
+        - { date: 2025-03-01, class: SEP_LAND, minutes: { total: 300, dualGiven: 300 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-03-01, class: SEP_LAND, minutes: { total: 300, dualGiven: 300 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect: {subject: {kind: privilege, id: p-1}, message: privilege.revalidation_current, params: {date: 2027-01-15}, expiresOn: 2027-01-15, requirements: {instruction: {current: 600, met: true}, refresher: {current: 1, met: true}, assessment: {current: 0, met: false}}}
+  - name: revalidation-assessment-and-refresher
+    evaluation: revalidation
+    says: An assessment of competence and refresher training revalidate the certificate without the instruction hours.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: CRI, issued: 2024-01-15 }
+      events:
+        - { date: 2024-06-01, kind: assessment_of_competence }
+        - { date: 2025-05-01, kind: instructor_refresher }
+      flights: []
+    outcome: current
+    expect: {subject: {kind: privilege, id: p-1}, requirements: {assessment: {current: 1, met: true}, instruction: {current: 0, met: false}}}
+  - name: revalidation-one-of-three
+    evaluation: revalidation
+    says: Only the refresher training is done; two of the three items are needed.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: CRI, issued: 2024-01-15 }
+      events:
+        - { date: 2026-02-01, kind: instructor_refresher }
+      flights:
+        - { date: 2025-03-01, class: SEP_LAND, minutes: { total: 120, dualGiven: 120 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect: {subject: {kind: privilege, id: p-1}, message: privilege.revalidation_not_met, params: {date: 2027-01-15}, requirements: {instruction: {current: 120, met: false, remedyKey: remedy.fly_more, remedyParams: {missing: 480, unit: minutes}}}}
+  - name: revalidation-validity-window-edges
+    evaluation: revalidation
+    says: Instruction on 15 January 2024, the first day of the validity period, counts; instruction the day before does not; helicopter instruction does not count.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: CRI, issued: 2024-01-15 }
+      flights:
+        - { date: 2024-01-14, class: SEP_LAND, minutes: { total: 300, dualGiven: 300 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2024-01-15, class: SEP_LAND, minutes: { total: 300, dualGiven: 300 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2025-01-15, class: HELICOPTER, minutes: { total: 300, dualGiven: 300 } }
+    outcome: current
+    expect: {subject: {kind: privilege, id: p-1}, message: privilege.revalidation_not_met, requirements: {instruction: {current: 300}}}
+  - name: revalidation-expiring-not-met
+    evaluation: revalidation
+    says: Within 90 days of expiry and not revalidated, the certificate shows as expiring.
+    asOf: 2026-11-01
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: CRI, issued: 2024-01-15 }
+      flights: []
+    outcome: expiring
+    expect: {subject: {kind: privilege, id: p-1}, message: privilege.expiring, params: {days: 75, date: 2027-01-15}, requirements: {refresher: {current: 0, met: false}}}
+  - name: revalidation-valid-on-expiry-day
+    evaluation: revalidation
+    says: On its expiry date the certificate is still valid.
+    asOf: 2027-01-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: CRI, issued: 2024-01-15 }
+      flights: []
+    outcome: expiring
+    expect: {subject: {kind: privilege, id: p-1}, params: {days: 0, date: 2027-01-15}}
+  - name: revalidation-expired-day-after
+    evaluation: revalidation
+    says: The day after its expiry date the certificate is expired; renewal is not modelled.
+    asOf: 2027-01-16
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: CRI, issued: 2024-01-15 }
+      events:
+        - { date: 2026-02-01, kind: instructor_refresher }
+        - { date: 2026-03-01, kind: assessment_of_competence }
+      flights: []
+    outcome: expired
+    expect: {subject: {kind: privilege, id: p-1}, message: privilege.expired, params: {date: 2027-01-15}}
+  - name: revalidation-no-dates
+    evaluation: revalidation
+    says: Without an issue date or an expiry date the validity cannot be placed.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: CRI }
+      flights: []
+    outcome: unknown
+    expect: {subject: {kind: privilege, id: p-1}, message: privilege.no_expiry_date}
+  - name: revalidation-other-certificates-not-selected
+    evaluation: revalidation
+    says: Other instructor certificates and the sailplane FI(S) are not evaluated here; only the CRI is, valid and not yet revalidated.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: CRI, issued: 2024-01-15 }
+        - { id: p-o, licenceId: l-1, kind: FI, issued: 2024-01-15 }
+        - { id: p-fis, licenceId: l-1, kind: FI_S, issued: 2024-01-15 }
+        - { id: p-tri, licenceId: l-1, kind: TRI, issued: 2024-01-15 }
+    outcome: current
+    expect: { message: privilege.revalidation_not_met }

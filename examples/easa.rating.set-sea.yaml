@@ -1,0 +1,113 @@
+credential: easa.rating.set-sea
+examples:
+  - name: revalidation-check-in-sea-class
+    evaluation: revalidation
+    says: A proficiency check in an SET sea aeroplane within the 3 months before expiry revalidates the rating.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-1, licenceId: l-1, class: SET_SEA, expires: 2026-10-31 }
+      events:
+        - { date: 2026-08-01, kind: proficiency_check, class: SET_SEA }
+    outcome: expiring
+    expect: { message: rating.revalidation_expiring_met }
+  - name: revalidation-no-check
+    evaluation: revalidation
+    shows: [part-fcl-licences]
+    says: Without a check in the class the rating is not revalidated yet; a check in SET land aeroplanes does not count.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-1, licenceId: l-1, class: SET_SEA, expires: 2026-10-31 }
+      events:
+        - { date: 2026-08-01, kind: proficiency_check, class: SET_LAND }
+    outcome: expiring
+    expect: { message: rating.revalidation_not_met_prof_check }
+  - name: passengers-day-current
+    evaluation: passengers_day
+    says: Three take-offs and landings as pilot flying in an SET sea aeroplane within 90 days allow carrying passengers.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-1, licenceId: l-1, class: SET_SEA, expires: 2027-06-30 }
+      flights:
+        - { date: 2026-08-20, class: SET_SEA, minutes: { total: 60, pic: 60 }, takeoffs: { day: 3 }, landings: { day: 3 }, pilotFlying: true }
+    outcome: current
+    expect: { subject: { kind: passengers, id: l-1, class: SET_SEA }, message: pax.day_current }
+  - name: passengers-day-one-short
+    evaluation: passengers_day
+    says: Two take-offs and landings are one short.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-1, licenceId: l-1, class: SET_SEA, expires: 2027-06-30 }
+      flights:
+        - { date: 2026-08-20, class: SET_SEA, minutes: { total: 60, pic: 60 }, takeoffs: { day: 2 }, landings: { day: 2 }, pilotFlying: true }
+    outcome: expired
+    expect: { subject: { kind: passengers, id: l-1, class: SET_SEA }, message: pax.not_current, params: { needed: 1 } }
+  - name: passengers-night-current
+    evaluation: passengers_night
+    says: One night take-off and landing as pilot flying in an SET sea aeroplane within 90 days allow carrying passengers at night.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-1, licenceId: l-1, class: SET_SEA, expires: 2027-06-30 }
+      flights:
+        - { date: 2026-08-20, class: SET_SEA, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 1 }, landings: { night: 1 }, pilotFlying: true }
+    outcome: current
+    expect: { subject: { kind: passengers, id: l-1, class: SET_SEA }, message: pax.night_current }
+  - name: passengers-night-day-only
+    evaluation: passengers_night
+    says: Day take-offs and landings do not count for night passengers.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-1, licenceId: l-1, class: SET_SEA, expires: 2027-06-30 }
+      flights:
+        - { date: 2026-08-20, class: SET_SEA, minutes: { total: 60, pic: 60 }, takeoffs: { day: 3 }, landings: { day: 3 }, pilotFlying: true }
+    outcome: expired
+    expect: { subject: { kind: passengers, id: l-1, class: SET_SEA }, message: pax.night_not_current }
+  - name: variants-flown
+    evaluation: variants
+    shows: [variant-is-recorded-variant]
+    says: A flight in the variant within 2 years keeps its privileges.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-1, licenceId: l-1, class: SET_SEA, expires: 2027-06-30 }
+      variants:
+        - { id: v-1, ratingId: r-1, name: GLASS_COCKPIT, issued: 2023-05-01 }
+      flights:
+        - { date: 2026-03-10, class: SET_SEA, variant: GLASS_COCKPIT, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect: { subject: { kind: type, id: v-1 }, message: type.current, validUntil: 2028-03-10 }
+  - name: variants-not-flown
+    evaluation: variants
+    says: The variant was last flown more than 2 years ago; flights without it do not count, so it may not be flown before differences training or a proficiency check in it.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-1, licenceId: l-1, class: SET_SEA, expires: 2027-06-30 }
+      variants:
+        - { id: v-1, ratingId: r-1, name: GLASS_COCKPIT, issued: 2023-05-01 }
+      flights:
+        - { date: 2024-08-01, class: SET_SEA, variant: GLASS_COCKPIT, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-04-10, class: SET_SEA, variant: STANDARD, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: lapsed
+    expect: { subject: { kind: type, id: v-1 }, message: type.not_flown, requirements: { variant_flown: { current: 0, met: false, remedyKey: remedy.differences_training } } }

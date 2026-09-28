@@ -1,0 +1,117 @@
+credential: faa.privilege.glider-towing
+examples:
+  - name: accompanied-tows
+    evaluation: recency
+    shows: [accompanied-tows]
+    says: Three glider tows flown while accompanied by a qualified tow pilot in May 2025 keep the towing privilege current through 31 May 2027.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: COMMERCIAL }
+      privileges:
+        - { id: p-tow, licenceId: l-faa, kind: SAILPLANE_TOWING, issued: 2025-04-01 }
+      flights:
+        - { date: 2025-05-10, class: SEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 3 }, landings: { day: 3 }, towKind: glider, towedGliders: 3, flags: { towFlight: true, accompanied: true } }
+    outcome: current
+    expect:
+      subject: { kind: privilege, id: p-tow }
+      message: privilege.recency_current
+      params: { date: 2027-05-31 }
+      validUntil: 2027-05-31
+      requirements:
+        tows_accompanied: { current: 3, required: 3, met: true }
+        towed_glider_flights: { current: 0, met: false }
+  - name: tow-kind-not-recorded
+    evaluation: recency
+    says: Accompanied tow flights that do not say what they towed cannot be counted; with nothing else to go on the status is unknown.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: PRIVATE }
+      privileges:
+        - { id: p-tow, licenceId: l-faa, kind: SAILPLANE_TOWING }
+      flights:
+        - { date: 2026-06-10, class: SEP_LAND, minutes: { total: 60, pic: 60 }, towedGliders: 3, flags: { towFlight: true, accompanied: true } }
+    outcome: unknown
+    expect:
+      subject: { kind: privilege, id: p-tow }
+      message: privilege.recency_not_logged
+      requirements:
+        tows_accompanied: { tracked: false, met: false }
+  - name: towed-glider-flights
+    evaluation: recency
+    shows: [towed-glider-flights]
+    says: Three aerotowed glider flights as PIC count; a winch launch and a dual aerotow do not.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: PRIVATE }
+      ratings:
+        - { id: r-glider, licenceId: l-faa, class: GLIDER }
+      privileges:
+        - { id: p-tow, licenceId: l-faa, kind: SAILPLANE_TOWING }
+      flights:
+        - { date: 2026-04-01, class: GLIDER, launchMethod: aerotow, minutes: { total: 60, pic: 60 }, launches: 1, landings: { day: 1 } }
+        - { date: 2026-04-02, class: GLIDER, launchMethod: aerotow, minutes: { total: 60, pic: 60 }, launches: 1, landings: { day: 1 } }
+        - { date: 2026-04-03, class: GLIDER, launchMethod: winch, minutes: { total: 10, pic: 10 }, launches: 1, landings: { day: 1 } }
+        - { date: 2026-04-04, class: GLIDER, launchMethod: aerotow, minutes: { total: 40, dual: 40 }, launches: 1, landings: { day: 1 } }
+        - { date: 2026-04-05, class: GLIDER, launchMethod: aerotow, minutes: { total: 60, pic: 60 }, launches: 1, landings: { day: 1 } }
+    outcome: current
+    expect:
+      subject: { kind: privilege, id: p-tow }
+      message: privilege.recency_current
+      requirements:
+        towed_glider_flights: { current: 3, met: true }
+  - name: unaccompanied-tows
+    evaluation: recency
+    says: Tows flown alone do not count toward the 61.69(a)(6)(i) recency, which requires a qualified pilot on board; nor do banner tows.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: PRIVATE }
+      privileges:
+        - { id: p-tow, licenceId: l-faa, kind: SAILPLANE_TOWING }
+      flights:
+        - { date: 2026-06-10, class: SEP_LAND, minutes: { total: 90, pic: 90 }, takeoffs: { day: 6 }, landings: { day: 6 }, towKind: glider, towedGliders: 6, flags: { towFlight: true } }
+        - { date: 2026-06-11, class: SEP_LAND, minutes: { total: 90, pic: 90 }, takeoffs: { day: 3 }, landings: { day: 3 }, towKind: banner, towedGliders: 3, flags: { towFlight: true, accompanied: true } }
+    outcome: lapsed
+    expect:
+      subject: { kind: privilege, id: p-tow }
+      message: privilege.recency_not_met
+      requirements:
+        tows_accompanied: { current: 0, met: false, tracked: true, remedyKey: remedy.fly_more, remedyParams: { missing: 3, unit: tows } }
+  - name: window-edges
+    evaluation: recency
+    shows: [calendar-months-before-flight]
+    says: On 16 August 2026 the 24 calendar months start on 1 August 2024; tows on that day count, tows on 31 July 2024 do not.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - { id: l-faa, authority: FAA, type: COMMERCIAL }
+      privileges:
+        - { id: p-tow, licenceId: l-faa, kind: SAILPLANE_TOWING }
+      flights:
+        - { date: 2024-07-31, class: SEP_LAND, minutes: { total: 60, pic: 60 }, towKind: glider, towedGliders: 2, flags: { towFlight: true, accompanied: true } }
+        - { date: 2024-08-01, class: SEP_LAND, minutes: { total: 60, pic: 60 }, towKind: ul_glider, towedGliders: 2, flags: { towFlight: true, accompanied: true } }
+    outcome: lapsed
+    expect:
+      subject: { kind: privilege, id: p-tow }
+      message: privilege.recency_not_met
+      requirements:
+        tows_accompanied: { current: 2, met: false }
+  - name: only-faa-glider-towing
+    evaluation: recency
+    says: An EASA sailplane towing privilege follows Part-SFCL or Part-FCL and FAA banner towing has no 61.69 recency; only the FAA glider towing privilege is evaluated, current after three accompanied glider tows in May.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-easa, authority: EASA, type: PPL(A)}
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      privileges:
+        - {id: p-easa, licenceId: l-easa, kind: SAILPLANE_TOWING}
+        - {id: p-banner, licenceId: l-faa, kind: BANNER_TOWING}
+        - {id: p-tow, licenceId: l-faa, kind: SAILPLANE_TOWING}
+      flights:
+        - {date: 2026-05-10, class: SEP_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 3}, landings: {day: 3}, towKind: glider, towedGliders: 3, flags: {towFlight: true, accompanied: true}}
+    outcome: current
+    expect: { message: privilege.recency_current }

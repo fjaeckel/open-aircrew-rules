@@ -40,8 +40,8 @@ policies:
     rationale: The licence or rating stays valid; only the privilege may not be exercised until the experience is regained, which "lapsed" says and "expired" would not.
 
   - id: passengers-expired
-    statement: EASA passenger recency that is not met is reported expired.
-    rationale: The text sets no status name; expired marks that the passenger privilege ended on a date (90 days after the last qualifying flight), as other EASA privileges with a fixed end do.
+    statement: EASA passenger recency and German ultralight passenger recency (LuftPersV § 45a) that is not met are reported expired.
+    rationale: Neither text sets a status name; expired marks that the passenger privilege ended on a date (90 days after the last qualifying flight, or take-off and landing), as other privileges with a fixed end do.
 
   - id: training-in-progress-lapsed
     statement: A training programme whose requirements are not all met yet is reported lapsed, with a message saying it is in progress.

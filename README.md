@@ -4,7 +4,8 @@ Machine-readable pilot licence, rating and medical rules. Every credential a pil
 (a licence, a class or type rating, a privilege, an endorsement, an instructor or examiner
 certificate, a medical) is one YAML file that lists every evaluation it needs: recency,
 revalidation, passenger carriage, validity. Each condition carries a reference to the exact
-EASA, FAA or German paragraph behind it. A Go evaluator runs the files against a pilot's
+EASA, FAA or German paragraph behind it (or, for rules an association sets under a German
+statute, to that association document by title). A Go evaluator runs the files against a pilot's
 logbook record.
 
 **Not legal advice.** The catalogue can be wrong, incomplete or out of date. It does not
@@ -106,6 +107,7 @@ is reported untracked and never met, and the status says what to record.
 | `sources/` | Verbatim regulation texts of allowed origin ([sources/README.md](sources/README.md)) |
 | `vocabulary.yaml`, `messages/keys.yaml` | The closed vocabulary and the message keys |
 | `policies.yaml` | Every convention with no legal text behind it, with its rationale |
+| `associations.yaml` | Association documents cited by title (`assoc:` refs); their text is never stored |
 | `fragments/` | Unmerged changes to the shared files during parallel work ([fragments/README.md](fragments/README.md)) |
 | `schema/` | JSON Schema for every YAML file |
 | `credentials/*.go`, `engine/` | Loader and compiler; the evaluator |
@@ -119,20 +121,20 @@ is reported untracked and never met, and the status says what to record.
 
 On 2026-09-28:
 
-| Authority | Credentials | Shared evaluations | Articles in scope | Evaluated | Pending | Not evaluated |
-| --- | --- | --- | --- | --- | --- | --- |
-| EASA (Part-FCL, Part-SFCL, Part-BFCL, Part-MED) | 13 | 4 | 66 | 16 | 23 | 27 |
-| FAA (14 CFR Parts 61, 68) | 6 | 6 | 32 | 11 | 8 | 13 |
-| Germany (LuftPersV, LuftVZO) | 0 | 0 | 15 | 0 | 8 | 7 |
-| **Total** | **19** | **10** | **113** | **27** | **39** | **47** |
+| Authority | Licences | Ratings | Privileges | Endorsements | Instructor / examiner | Medicals | Shared evaluations | Articles in scope | Evaluated | Pending | Not evaluated |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| EASA (Part-FCL, Part-SFCL, Part-BFCL, Part-MED) | 14 | 15 | 8 | 1 | 10 / 2 | 3 | 6 | 66 | 42 | 0 | 24 |
+| FAA (14 CFR Parts 61, 68) | 11 | 1 | 3 | 0 | 2 / 0 | 4 | 7 | 32 | 19 | 0 | 13 |
+| Germany (LuftPersV, LuftVZO) | 1 | 6 | 2 | 0 | 1 / 0 | 0 | 1 | 15 | 7 | 0 | 8 |
+| **Total** | **26** | **22** | **13** | **1** | **13 / 2** | **7** | **14** | **113** | **68** | **0** | **45** |
 
-"Evaluated" articles have at least one evaluation; 51 articles (EASA 30, FAA 13, Germany 8)
-still name credential files to be written, 12 of them alongside existing evaluations. "Not
-evaluated" articles say why (for example, not a currency rule, or the record cannot show what
-they need). The 19 credentials hold 57 evaluations (45 compiled rules and 12 requirement
-entries), 114 worked examples (4 of them composite), 388 references (policies included), 10
-policies and 106 interpretations, none signed off yet. See [CHANGELOG.md](CHANGELOG.md)
-for the list.
+Every article in scope is evaluated or says why it is not (for example, not a currency rule,
+or the record cannot show what it needs); no credential file is pending. The 84 credentials
+hold 278 evaluations (187 compiled rules and 81 requirement entries; evaluations reused
+through `uses:` share a rule), 767 worked examples (61 of them composite), 1568 references
+(policies and association documents included), 10 policies, 6 association documents (none
+verified) and 407 interpretations, none signed off yet. See [CHANGELOG.md](CHANGELOG.md) for
+the list.
 
 ## Keeping up with regulation
 
@@ -142,8 +144,9 @@ for the list.
   adding their successors with `effective_from`.
 - **A rule looks wrong?** Open a "This rule looks wrong" issue naming the credential,
   evaluation and paragraph.
-- **A credential is missing?** Open an "Add a credential" issue, or write it: the pending
-  entries in `coverage/articles.yaml` name the files still to come.
+- **A credential is missing?** Open an "Add a credential" issue, or write it following
+  [CONTRIBUTING.md](CONTRIBUTING.md); `coverage/articles.yaml` says why each article not
+  evaluated is left out.
 - **Interpretations** are signed off by a reviewer qualified for the credential, through
   pull-request review, which sets `approved_by` and `approved_on`.
 
