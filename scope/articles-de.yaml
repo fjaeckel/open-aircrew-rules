@@ -1,0 +1,96 @@
+# German national articles in scope (DESIGN.md section 9): LuftPersV for ultralights
+# (Luftsportgeräteführer), plus LuftVZO § 1 because LuftPersV § 45(4) and § 45(1) depend on
+# its 120 kg definition. The verbatim text lives in source_file (official XML at
+# gesetze-im-internet.de; LuftPersV "Stand: zuletzt geändert durch Art. 2 V v. 7.12.2021
+# I 5190"; LuftVZO "zuletzt geändert durch Art. 28 V v. 11.12.2024 I Nr. 411"; retrieved
+# 2026-09-27); summaries are own words, not quotes.
+articles:
+  - cite: LuftPersV § 1
+    url: https://www.gesetze-im-internet.de/luftpersv/__1.html
+    subject: licence
+    summary: Lists the aviation personnel that need a licence, including ultralight/sport-aircraft pilots (Luftsportgeräteführer).
+    source_file: sources/de/luftpersv-1.md
+
+  - cite: LuftPersV § 8
+    url: https://www.gesetze-im-internet.de/luftpersv/__8.html
+    subject: credential
+    summary: The licence must be carried with an ID document and, where one is required, the medical certificate.
+    source_file: sources/de/luftpersv-8.md
+
+  - cite: LuftPersV § 9
+    url: https://www.gesetze-im-internet.de/luftpersv/__9.html
+    subject: licence
+    summary: Licences issued under LuftPersV or Part-FCL are unlimited in time unless stated otherwise; ratings follow the validity rules of their own provisions.
+    source_file: sources/de/luftpersv-9.md
+
+  - cite: LuftPersV § 11
+    url: https://www.gesetze-im-internet.de/luftpersv/__11.html
+    subject: licence
+    summary: Privileges may only be exercised if the certificates required for issue remain valid and ongoing flight experience can be shown from the logbook on request.
+    source_file: sources/de/luftpersv-11.md
+
+  - cite: LuftPersV § 16
+    url: https://www.gesetze-im-internet.de/luftpersv/__16.html
+    subject: credential
+    summary: Training prerequisites; ultralight applicants need no medical unless the device exceeds 120 kg empty mass, in which case a LAPL-level medical is due by the first solo.
+    source_file: sources/de/luftpersv-16.md
+
+  - cite: LuftPersV § 42
+    url: https://www.gesetze-im-internet.de/luftpersv/__42.html
+    subject: training
+    summary: Training for the ultralight licence; flight hours, solo and dual time and cross-country flights for three-axis, weight-shift and helicopter ultralights; details delegated to the Beauftragte.
+    source_file: sources/de/luftpersv-42.md
+
+  - cite: LuftPersV § 44
+    url: https://www.gesetze-im-internet.de/luftpersv/__44.html
+    subject: licence
+    summary: The UL licence covers the device kind and launch methods entered in it, by day only (parachutes also at night), and includes VFR radio outside class B/C/D airspace if trained.
+    source_file: sources/de/luftpersv-44.md
+
+  - cite: LuftPersV § 45
+    url: https://www.gesetze-im-internet.de/luftpersv/__45.html
+    subject: rating
+    summary: The UL licence has no expiry; above 120 kg empty mass it is valid only with a LAPL-level medical; three-axis privileges need 12 h (6 h PIC, 12 takeoffs, 12 landings, a 1 h instructor flight) in 24 months on three-axis UL/TMG/SEP piston; UL helicopters 6 h (6 takeoffs/landings, 1 h instructor flight) in 12 months; either may be replaced by a proficiency check; other devices under LuftVZO § 1(4) and parachutes need "sufficient practice" as set by the delegated body.
+    source_file: sources/de/luftpersv-45.md
+
+  - cite: LuftPersV § 45a
+    url: https://www.gesetze-im-internet.de/luftpersv/__45a.html
+    subject: passengers
+    summary: To carry passengers as PIC of a UL, 3 takeoffs and 3 landings in the preceding 90 days on a device of the same kind (tandem parachutists 10 jumps).
+    source_file: sources/de/luftpersv-45a.md
+
+  - cite: LuftPersV § 45b
+    url: https://www.gesetze-im-internet.de/luftpersv/__45b.html
+    subject: rating
+    summary: Which flight time counts toward UL licence issue and the evidence for exercising privileges - instructor time, dual time, training flights with an instructor, examiner time and time as applicant on tests.
+    source_file: sources/de/luftpersv-45b.md
+
+  - cite: LuftPersV § 84
+    url: https://www.gesetze-im-internet.de/luftpersv/__84.html
+    subject: privilege
+    summary: Towing with a powered UL needs a towing rating; to use it, 10 tows of the entered type within the last 24 months, otherwise the training tows of paragraph (2) or (3) must be repeated.
+    source_file: sources/de/luftpersv-84.md
+
+  - cite: LuftPersV § 84a
+    url: https://www.gesetze-im-internet.de/luftpersv/__84a.html
+    subject: privilege
+    summary: UL pilots need a passenger authorisation; for two-seat ULs, five cross-country flights with an instructor after licence issue (two with intermediate landing over at least 200 km) and a practical test; deemed granted for three-axis pilots holding a valid PPL or glider licence; validity follows the licence unless the delegated body limits it.
+    source_file: sources/de/luftpersv-84a.md
+
+  - cite: LuftPersV § 96
+    url: https://www.gesetze-im-internet.de/luftpersv/__96.html
+    subject: privilege
+    summary: The UL instructor rating (§ 95a) is valid for three years and is extended or renewed by meeting two of - 60 takeoffs/landings or 10 h as instructor/examiner, a refresher seminar, or a proficiency check - within the last three years.
+    source_file: sources/de/luftpersv-96.md
+
+  - cite: LuftPersV § 120
+    url: https://www.gesetze-im-internet.de/luftpersv/__120.html
+    subject: licence
+    summary: Pilots must keep a logbook with stated fields for two years; entries proving requirements done with an instructor or examiner must be certified by them.
+    source_file: sources/de/luftpersv-120.md
+
+  - cite: LuftVZO § 1
+    url: https://www.gesetze-im-internet.de/luftvzo/__1.html
+    subject: rating
+    summary: Lists aircraft needing type certification; one- and two-seat sport aircraft up to 120 kg empty mass (with harness and rescue system) are exempt.
+    source_file: sources/de/luftvzo-1.md

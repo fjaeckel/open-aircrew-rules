@@ -1,0 +1,219 @@
+credential: faa.licence.private-airplane
+examples:
+  - name: passengers-day-sole-manipulator-not-logged
+    evaluation: passengers_day
+    shows: [sole-manipulator-recorded]
+    says: Enough takeoffs and landings, but no flight records whether the pilot was sole manipulator of the controls; passenger recency is unknown, not current.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-sep, licenceId: l-faa, class: SEP_LAND}
+      flights:
+        - {date: 2026-07-10, class: SEP_LAND, minutes: {total: 90, pic: 90}, takeoffs: {day: 5}, landings: {day: 5}}
+    expect: { status: unknown, message: pax.experience_not_logged }
+  - name: passengers-day-current-sole-manipulator
+    evaluation: passengers_day
+    says: Three takeoffs and landings as sole manipulator in an SEP land airplane allow passengers in that class through 29 September; they do not count for the MEP land class, and a dual flight where the instructor flew does not count either.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-sep, licenceId: l-faa, class: SEP_LAND}
+        - {id: r-mep, licenceId: l-faa, class: MEP_LAND}
+        - {id: r-ir, licenceId: l-faa, class: IR}
+      flights:
+        - {date: 2026-06-20, class: SEP_LAND, minutes: {total: 60, dual: 60}, takeoffs: {day: 4}, landings: {day: 4}, soleManipulator: false}
+        - {date: 2026-07-01, class: SEP_LAND, minutes: {total: 90, pic: 90}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    expect: { subject: { kind: passengers, id: l-faa, class: SEP_LAND }, status: current, message: pax.day_current }
+  - name: passengers-day-window-day-before
+    evaluation: passengers_day
+    says: Takeoffs and landings on 17 May are 91 days before 16 August and no longer count; only the one on 18 May does.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-sep, licenceId: l-faa, class: SEP_LAND}
+      flights:
+        - {date: 2026-05-17, class: SEP_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 2}, landings: {day: 2}, soleManipulator: true}
+        - {date: 2026-05-18, class: SEP_LAND, minutes: {total: 30, pic: 30}, takeoffs: {day: 1}, landings: {day: 1}, soleManipulator: true}
+    expect: { status: lapsed, message: pax.not_current }
+  - name: passengers-day-type-current-sole-manipulator
+    evaluation: passengers_day_type
+    says: Per type (each rating carries a type designator, so it is a type rating). Three takeoffs and landings as sole manipulator in an SEP land airplane allow passengers in that class through 29 September; they do not count for the MEP land class, and a dual flight where the instructor flew does not count either.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-sep, licenceId: l-faa, class: SEP_LAND, typeDesignator: PC6}
+        - {id: r-mep, licenceId: l-faa, class: MEP_LAND, typeDesignator: B350}
+        - {id: r-ir, licenceId: l-faa, class: IR}
+      flights:
+        - {date: 2026-06-20, class: SEP_LAND, typeDesignator: PC6, minutes: {total: 60, dual: 60}, takeoffs: {day: 4}, landings: {day: 4}, soleManipulator: false}
+        - {date: 2026-07-01, class: SEP_LAND, typeDesignator: PC6, minutes: {total: 90, pic: 90}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    expect: { subject: { kind: passengers, id: l-faa, class: SEP_LAND }, status: current, message: pax.day_current }
+  - name: passengers-day-type-window-day-before
+    evaluation: passengers_day_type
+    says: Per type (each rating carries a type designator, so it is a type rating). Takeoffs and landings on 17 May are 91 days before 16 August and no longer count; only the one on 18 May does.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-sep, licenceId: l-faa, class: SEP_LAND, typeDesignator: PC6}
+      flights:
+        - {date: 2026-05-17, class: SEP_LAND, typeDesignator: PC6, minutes: {total: 60, pic: 60}, takeoffs: {day: 2}, landings: {day: 2}, soleManipulator: true}
+        - {date: 2026-05-18, class: SEP_LAND, typeDesignator: PC6, minutes: {total: 30, pic: 30}, takeoffs: {day: 1}, landings: {day: 1}, soleManipulator: true}
+    expect: { status: lapsed, message: pax.not_current }
+  - name: passengers-tailwheel-no-tailwheel-flights
+    evaluation: passengers_tailwheel
+    shows: [tailwheel-from-logbook]
+    says: A pilot whose logbook shows only nosewheel airplanes is not flying a tailwheel airplane; the tailwheel condition does not apply.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-sep, licenceId: l-faa, class: SEP_LAND}
+      flights:
+        - {date: 2026-07-20, class: SEP_LAND, tailwheel: false, minutes: {total: 60, pic: 60}, takeoffs: {day: 3}, landings: {day: 3}, fullStopLandings: 3, soleManipulator: true}
+    expect: { status: not_applicable, message: pax.tailwheel_not_applicable }
+  - name: passengers-tailwheel-current
+    evaluation: passengers_tailwheel
+    says: Three full-stop landings as sole manipulator in a tailwheel airplane allow passengers in a tailwheel airplane; touch-and-goes in a nosewheel airplane do not count.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-sep, licenceId: l-faa, class: SEP_LAND}
+      flights:
+        - {date: 2026-07-20, class: SEP_LAND, tailwheel: false, minutes: {total: 60, pic: 60}, takeoffs: {day: 5}, landings: {day: 5}, fullStopLandings: 5, soleManipulator: true}
+        - {date: 2026-08-02, class: SEP_LAND, tailwheel: true, minutes: {total: 60, pic: 60}, takeoffs: {day: 3}, landings: {day: 3}, fullStopLandings: 3, soleManipulator: true}
+    expect: { status: current, message: pax.tailwheel_current }
+  - name: passengers-tailwheel-full-stop-not-recorded
+    evaluation: passengers_tailwheel
+    says: One tailwheel flight lacks the full-stop count and another the sole-manipulator field; neither can be counted, so the status is unknown.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-sep, licenceId: l-faa, class: SEP_LAND}
+      flights:
+        - {date: 2026-08-01, class: SEP_LAND, tailwheel: true, minutes: {total: 60, pic: 60}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+        - {date: 2026-08-02, class: SEP_LAND, tailwheel: true, minutes: {total: 60, pic: 60}, takeoffs: {day: 3}, landings: {day: 3}, fullStopLandings: 3}
+    expect: { status: unknown, message: pax.experience_not_logged }
+  - name: passengers-night-current
+    evaluation: passengers_night
+    says: Three night takeoffs and three full-stop night landings as sole manipulator allow night passengers in that class; night touch-and-goes do not count as full-stop landings.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-sep, licenceId: l-faa, class: SEP_LAND}
+      flights:
+        - {date: 2026-07-10, class: SEP_LAND, minutes: {total: 60, pic: 60, night: 60}, takeoffs: {night: 4}, landings: {night: 4}, fullStopNightLandings: 1, soleManipulator: true}
+        - {date: 2026-07-24, class: SEP_LAND, minutes: {total: 60, pic: 60, night: 50}, takeoffs: {day: 1, night: 2}, landings: {night: 3}, fullStopNightLandings: 2, soleManipulator: true}
+    expect: { status: current, message: pax.night_current }
+  - name: passengers-night-none-at-night
+    evaluation: passengers_night
+    says: A pilot with day landings only has lapsed night passenger recency; the certificate stays valid.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-sep, licenceId: l-faa, class: SEP_LAND}
+      flights:
+        - {date: 2026-07-10, class: SEP_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    expect: { status: lapsed, message: pax.night_not_current }
+  - name: passengers-night-type-current
+    evaluation: passengers_night_type
+    says: Per type (each rating carries a type designator, so it is a type rating). Three night takeoffs and three full-stop night landings as sole manipulator allow night passengers in that class; night touch-and-goes do not count as full-stop landings.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-sep, licenceId: l-faa, class: SEP_LAND, typeDesignator: PC6}
+      flights:
+        - {date: 2026-07-10, class: SEP_LAND, typeDesignator: PC6, minutes: {total: 60, pic: 60, night: 60}, takeoffs: {night: 4}, landings: {night: 4}, fullStopNightLandings: 1, soleManipulator: true}
+        - {date: 2026-07-24, class: SEP_LAND, typeDesignator: PC6, minutes: {total: 60, pic: 60, night: 50}, takeoffs: {day: 1, night: 2}, landings: {night: 3}, fullStopNightLandings: 2, soleManipulator: true}
+    expect: { status: current, message: pax.night_current }
+  - name: passengers-night-type-takeoffs-short
+    evaluation: passengers_night_type
+    says: Per type (each rating carries a type designator, so it is a type rating). Three full-stop night landings after flights that took off in daylight give only one night takeoff; two more are needed.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-mep, licenceId: l-faa, class: MEP_LAND, typeDesignator: B350}
+      flights:
+        - {date: 2026-06-15, class: MEP_LAND, typeDesignator: B350, minutes: {total: 240, pic: 240, night: 80}, takeoffs: {day: 2, night: 1}, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
+    expect: { status: lapsed, message: pax.night_not_current }
+  - name: flight-review-glider-flights-not-a-review
+    evaluation: flight_review
+    shows: [glider-flights-part-of-review]
+    says: Three instructional glider flights replace only the flight-training hour within a review; without a logged review (or a substitute) the glider pilot has none on record. An instrument proficiency check with an instructor is not a substitute either.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-glider, licenceId: l-faa, class: GLIDER}
+      flights:
+        - {date: 2026-05-02, class: GLIDER, launchMethod: aerotow, minutes: {total: 25, dual: 25}, launches: 1, landings: {day: 1}}
+        - {date: 2026-05-02, class: GLIDER, launchMethod: aerotow, minutes: {total: 20, dual: 20}, launches: 1, landings: {day: 1}}
+        - {date: 2026-05-03, class: GLIDER, launchMethod: aerotow, minutes: {total: 30, dual: 30}, launches: 1, landings: {day: 1}}
+        - {date: 2026-06-01, class: SEP_LAND, minutes: {total: 90, dual: 90, simulatedInstrument: 60}, approaches: 6, holds: 1, flags: {ipc: true}}
+    expect: { status: expired, message: flight_review.none_on_record }
+  - name: flight-review-practical-test-substitutes
+    evaluation: flight_review
+    shows: [who-and-endorsement-not-checked]
+    says: Passing the instrument rating practical test in June 2025 replaces the flight review; the old review from 2023 no longer counts.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      events:
+        - {date: 2023-05-02, kind: flight_review}
+        - {date: 2025-06-12, kind: practical_test, class: SEP_LAND, rating: IR}
+    expect: { status: current, message: flight_review.substituted }
+  - name: flight-review-student-exempt
+    evaluation: flight_review
+    shows: [student-exemption]
+    says: A student pilot in training (with a current solo endorsement) needs no flight review.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-student, authority: FAA, type: STUDENT}
+      events:
+        - {date: 2026-07-01, kind: solo_endorsement}
+    expect: { status: not_applicable, message: flight_review.not_applicable }
+  - name: flight-review-current-91-days
+    evaluation: flight_review
+    says: A review on 10 November 2024 holds through 30 November 2026; on 31 August 2026 that is 91 days away, so the review is current.
+    asOf: 2026-08-31
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      events:
+        - {date: 2024-11-10, kind: flight_review, class: SEP_LAND}
+    expect: { status: current, message: flight_review.current }
+  - name: flight-review-expired-day-before
+    evaluation: flight_review
+    says: A review on 31 July 2024 ran out on 31 July 2026; on 16 August the pilot may not act as PIC until a new review.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      events:
+        - {date: 2024-07-31, kind: flight_review}
+    expect: { status: expired, message: flight_review.expired }

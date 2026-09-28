@@ -1,0 +1,309 @@
+# Every article in scope (scope/articles-*.yaml) and how it is accounted for:
+#   evaluations    the credential evaluations that encode it;
+#   not_evaluated  why it is not evaluated (not a currency or validity rule, or the record
+#                  cannot show what it needs);
+#   pending        the credential files (credentials/<path>.yaml) planned to encode it, with
+#                  a one-line note; the gate lists pending articles and does not fail on them.
+# An article may combine evaluations with pending. The gate fails on an article of the scope
+# that is missing here, on an evaluation that does not exist, on an evaluation not listed
+# under its source article, and on a reference that does not resolve.
+articles:
+  # EASA
+  - article: "easa:FCL.010"
+    evaluations: [easa.rating.sep-land#passengers_night, easa.rating.sep-sea#passengers_night, easa.rating.tmg#passengers_night]
+    pending: [easa/ratings/mep-land, easa/ratings/powered-lift-type, easa/ratings/set-land, easa/ratings/helicopter-type, easa/licences/lapl-a]
+    note: "Still to convert beyond the evaluations above: MEP revalidation, powered-lift type rating revalidation, passenger recency for the classes and licences not yet converted."
+  - article: "easa:FCL.035"
+    evaluations: [easa.rating.sep-land#revalidation, easa.rating.sep-sea#revalidation, easa.rating.tmg#revalidation]
+    pending: [easa/licences/lapl-a]
+    note: "Still to convert beyond the evaluations above: LAPL(A) recency."
+  - article: "easa:FCL.050"
+    not_evaluated: 'Not a currency or validity rule: FCL.050 is the obligation to keep the logbook itself.'
+  - article: "easa:FCL.055"
+    evaluations: [easa.endorsement.language-proficiency#level_4, easa.endorsement.language-proficiency#level_5]
+  - article: "easa:FCL.060"
+    evaluations: [easa.rating.sep-land#passengers_day, easa.rating.sep-sea#passengers_day, easa.rating.tmg#passengers_day, easa.rating.sep-land#passengers_night, easa.rating.sep-sea#passengers_night, easa.rating.tmg#passengers_night]
+    pending: [easa/ratings/mep-land, easa/ratings/set-land, easa/ratings/helicopter-type, easa/licences/lapl-a]
+    note: "Still to convert beyond the evaluations above: passenger recency for the classes and licences not yet converted."
+  - article: "easa:FCL.065"
+    not_evaluated: The record has the holder's date of birth but not whether a flight or a job is commercial air transport, single-pilot or multi-pilot, or a HEMS operation; the limits cannot be applied.
+  - article: "easa:FCL.105.A"
+    pending: [easa/licences/lapl-a]
+    note: "Still to convert: the LAPL(A) passenger prerequisite."
+  - article: "easa:FCL.105.H"
+    not_evaluated: 'A scope of privileges (aircraft mass, number of passengers), not a recency or validity condition: it decides what a flight may be, not whether the pilot is current on a date.'
+  - article: "easa:FCL.140.A"
+    pending: [easa/licences/lapl-a, easa/ratings/type-rating]
+    note: "Still to convert: LAPL(A) recency, variant recency."
+  - article: "easa:FCL.140.H"
+    pending: [easa/licences/lapl-h]
+    note: "Still to convert: LAPL(H) recency."
+  - article: "easa:FCL.205.G"
+    pending: [easa/licences/gpl]
+    note: "Still to convert: the GPL passenger prerequisite."
+  - article: "easa:FCL.240.G"
+    pending: [easa/licences/gpl]
+    note: "Still to convert: GPL recency, GPL variant recency."
+  - article: "easa:FCL.625"
+    pending: [easa/ratings/ir-a, easa/ratings/ir-h]
+    note: "Still to convert: IR(A) revalidation, IR(H) revalidation."
+  - article: "easa:FCL.625.A"
+    pending: [easa/ratings/ir-a]
+    note: "Still to convert: IR(A) revalidation."
+  - article: "easa:FCL.625.H"
+    pending: [easa/ratings/ir-h]
+    note: "Still to convert: IR(H) revalidation."
+  - article: "easa:FCL.625.As"
+    not_evaluated: An IR is recorded without its aircraft category; an IR(As) cannot be told from an IR(A) on an aeroplane licence (there is no airship licence kind).
+  - article: "easa:FCL.710"
+    pending: [easa/ratings/type-rating]
+    note: "Still to convert: variant recency."
+  - article: "easa:FCL.740"
+    evaluations: [easa.rating.sep-land#revalidation, easa.rating.sep-sea#revalidation, easa.rating.tmg#revalidation]
+    pending: [easa/ratings/type-rating, easa/ratings/mep-land, easa/ratings/set-land, easa/ratings/helicopter-type, easa/ratings/powered-lift-type, easa/ratings/airship-type]
+    note: "Still to convert beyond the evaluations above: validity of other type ratings, MEP revalidation, SET revalidation, helicopter type rating revalidation, powered-lift type rating revalidation, airship type rating revalidation."
+  - article: "easa:FCL.740.A"
+    evaluations: [easa.rating.sep-land#revalidation, easa.rating.sep-sea#revalidation, easa.rating.tmg#revalidation]
+    pending: [easa/ratings/mep-land, easa/ratings/set-land]
+    note: "Still to convert beyond the evaluations above: MEP revalidation, SET revalidation."
+  - article: "easa:FCL.740.H"
+    pending: [easa/ratings/helicopter-type]
+    note: "Still to convert: helicopter type rating revalidation."
+  - article: "easa:FCL.740.PL"
+    pending: [easa/ratings/powered-lift-type]
+    note: "Still to convert: powered-lift type rating revalidation."
+  - article: "easa:FCL.740.As"
+    pending: [easa/ratings/airship-type]
+    note: "Still to convert: airship type rating revalidation."
+  - article: "easa:FCL.800"
+    not_evaluated: The aerobatic rating has no validity period and no recency requirement; FCL.800 sets only training prerequisites, which are out of scope (DESIGN.md section 9).
+  - article: "easa:FCL.805"
+    pending: [easa/privileges/sailplane-towing, easa/privileges/banner-towing]
+    note: "Still to convert: Part-FCL sailplane towing, Part-FCL banner towing."
+  - article: "easa:FCL.810"
+    not_evaluated: The night rating has no validity period and no recency requirement of its own; FCL.810 sets training requirements, which are out of scope.
+  - article: "easa:FCL.815"
+    pending: [easa/privileges/mountain]
+    note: "Still to convert: the mountain rating."
+  - article: "easa:FCL.820"
+    not_evaluated: The flight test rating has no validity period or recency requirement; FCL.820 sets privileges and issue prerequisites only.
+  - article: "easa:FCL.825"
+    not_evaluated: Point FCL.825 has been deleted from Part-FCL; under the transitional Article 4c of Regulation (EU) No 1178/2011, EIR privileges and their revalidation ended on 8 September 2022 (EIR holders receive BIR credit).
+  - article: "easa:FCL.835"
+    pending: [easa/ratings/bir]
+    note: "Still to convert: the basic instrument rating."
+  - article: "easa:FCL.940"
+    pending: [easa/instructors/tri, easa/instructors/sfi, easa/instructors/mcci, easa/instructors/sti, easa/instructors/fti, easa/instructors/fi, easa/instructors/iri, easa/instructors/cri]
+    note: "Still to convert: validity of the other instructor certificates, FI and IRI revalidation, CRI revalidation."
+  - article: "easa:FCL.940.FI"
+    pending: [easa/instructors/fi, easa/instructors/iri]
+    note: "Still to convert: FI and IRI revalidation."
+  - article: "easa:FCL.940.TRI"
+    not_evaluated: The record does not say whether instruction given was part of a complete type rating or recurrent training course, nor for which category (A, H, PL) the TRI certificate is held, and the helicopter and powered-lift variants count hours per type held.
+  - article: "easa:FCL.940.CRI"
+    pending: [easa/instructors/cri]
+    note: "Still to convert: CRI revalidation."
+  - article: "easa:FCL.940.IRI"
+    pending: [easa/instructors/fi, easa/instructors/iri]
+    note: "Still to convert: FI and IRI revalidation."
+  - article: "easa:FCL.940.SFI"
+    not_evaluated: Hours as instructor or examiner in FSTDs are not recorded separately from the pilot's own FSTD sessions reliably, and (b), the FFS proficiency checks for every type held, needs per-type data.
+  - article: "easa:FCL.940.MCCI"
+    not_evaluated: The requirement refers to FCL.930.MCCI(a)(3), which is not in sources/, and to instruction in an MCC course, which the record does not identify.
+  - article: "easa:FCL.940.STI"
+    not_evaluated: Instruction given in an FSTD as part of a complete licence or rating course, and a check passed on the same FSTD, are not identifiable in the record.
+  - article: "easa:FCL.940.MI"
+    pending: [easa/instructors/mi]
+    note: "Still to convert: MI validity."
+  - article: "easa:FCL.940.FTI"
+    not_evaluated: Flight-test time and flight-test instruction are not recorded as such.
+  - article: "easa:FCL.1025"
+    pending: [easa/examiners/examiner]
+    note: "Still to convert: examiner certificates."
+  - article: "easa:MED.A.020"
+    not_evaluated: A self-assessment by the pilot on the day (awareness of reduced fitness, medication, treatment, surgery, pregnancy, hospital admission, first need for corrective lenses).
+  - article: "easa:MED.A.030"
+    evaluations: [easa.licence.ppl-a#medical, easa.licence.spl#medical]
+    pending: [easa/licences/cpl-a, easa/licences/atpl-a, easa/licences/mpl, easa/licences/gpl, easa/licences/lapl-a, easa/licences/lapl-h, easa/licences/bpl]
+    note: "Still to convert beyond the evaluations above: the medical of the professional licences, the GPL medical, the medical of the LAPL and BPL."
+  - article: "easa:MED.A.045"
+    evaluations: [easa.medical.class-1#validity, easa.medical.class-2#validity, easa.medical.lapl#validity]
+  - article: "easa:SFCL.035"
+    not_evaluated: A crediting principle for issue requirements, not a currency rule; the recency rules count solo (supervised), dual and PIC time where their articles say so.
+  - article: "easa:SFCL.065"
+    not_evaluated: The record does not say whether a flight or a planned flight is a commercial passenger sailplane operation; the age limit cannot be applied to anything.
+  - article: "easa:SFCL.115"
+    evaluations: [easa.licence.spl#passenger_prerequisite, easa.privilege.spl-tmg#passenger_prerequisite]
+    not_evaluated: The record holds no commercial (remunerated) sailplane operations or a privilege for them, so (a)(3) has no subject.
+  - article: "easa:SFCL.130"
+    evaluations: [easa.licence.spl#training_course, easa.privilege.spl-tmg#extension_training]
+  - article: "easa:SFCL.150"
+    evaluations: [easa.privilege.spl-tmg#extension_training]
+  - article: "easa:SFCL.155"
+    evaluations: [easa.licence.spl#launch_methods_towed, easa.licence.spl#launch_method_self, easa.licence.spl#launch_method_bungee]
+    pending: [easa/privileges/spl-launch-methods]
+    note: "Still to convert beyond the evaluations above: launch method privileges."
+  - article: "easa:SFCL.160"
+    evaluations: [easa.licence.spl#recency, easa.privilege.spl-tmg#recency, easa.licence.spl#passengers, easa.privilege.spl-tmg#passengers]
+  - article: "easa:SFCL.200"
+    not_evaluated: The article sets issue requirements (30 hours or 120 launches as PIC after issue, a training course) and no recency or validity; the recorded privilege is the outcome.
+  - article: "easa:SFCL.205"
+    evaluations: [easa.privilege.sfcl-sailplane-towing#recency, easa.privilege.sfcl-banner-towing#recency]
+  - article: "easa:SFCL.210"
+    evaluations: [easa.privilege.spl-tmg#passengers]
+    not_evaluated: 'No recency or validity of its own: the article sets training requirements only.'
+  - article: "easa:SFCL.215"
+    evaluations: [easa.privilege.cloud-flying#recency]
+  - article: "easa:SFCL.360"
+    pending: [easa/instructors/fi-s]
+    note: "Still to convert: FI(S) recency."
+  - article: "easa:SFCL.460"
+    pending: [easa/examiners/fe-s]
+    note: "Still to convert: FE(S) validity."
+  - article: "easa:BFCL.035"
+    not_evaluated: 'Balloons are not modelled: the record holds no balloon flights, no balloon class (hot-air, gas, mixed, hot-air airship) and no hot-air balloon group (A to D), so a rule could not tell which class or group a flight or check belongs to.'
+  - article: "easa:BFCL.065"
+    not_evaluated: 'Balloons are not modelled: the record holds no balloon flights, no balloon class (hot-air, gas, mixed, hot-air airship) and no hot-air balloon group (A to D), so a rule could not tell which class or group a flight or check belongs to.'
+  - article: "easa:BFCL.115"
+    not_evaluated: 'Balloons are not modelled: the record holds no balloon flights, no balloon class (hot-air, gas, mixed, hot-air airship) and no hot-air balloon group (A to D), so a rule could not tell which class or group a flight or check belongs to.'
+  - article: "easa:BFCL.150"
+    not_evaluated: 'Balloons are not modelled: the record holds no balloon flights, no balloon class (hot-air, gas, mixed, hot-air airship) and no hot-air balloon group (A to D), so a rule could not tell which class or group a flight or check belongs to.'
+  - article: "easa:BFCL.160"
+    not_evaluated: 'Balloons are not modelled: the record holds no balloon flights, no balloon class (hot-air, gas, mixed, hot-air airship) and no hot-air balloon group (A to D), so a rule could not tell which class or group a flight or check belongs to.'
+  - article: "easa:BFCL.200"
+    not_evaluated: 'Balloons are not modelled: the record holds no balloon flights, no balloon class (hot-air, gas, mixed, hot-air airship) and no hot-air balloon group (A to D), so a rule could not tell which class or group a flight or check belongs to.'
+  - article: "easa:BFCL.210"
+    not_evaluated: 'Balloons are not modelled: the record holds no balloon flights, no balloon class (hot-air, gas, mixed, hot-air airship) and no hot-air balloon group (A to D), so a rule could not tell which class or group a flight or check belongs to.'
+  - article: "easa:BFCL.215"
+    not_evaluated: 'Balloons are not modelled: the record holds no balloon flights, no balloon class (hot-air, gas, mixed, hot-air airship) and no hot-air balloon group (A to D), so a rule could not tell which class or group a flight or check belongs to.'
+  - article: "easa:BFCL.360"
+    not_evaluated: 'Balloons are not modelled: the record holds no balloon flights, no balloon class (hot-air, gas, mixed, hot-air airship) and no hot-air balloon group (A to D), so a rule could not tell which class or group a flight or check belongs to.'
+  - article: "easa:BFCL.460"
+    not_evaluated: 'Balloons are not modelled: the record holds no balloon flights, no balloon class (hot-air, gas, mixed, hot-air airship) and no hot-air balloon group (A to D), so a rule could not tell which class or group a flight or check belongs to.'
+  # FAA
+  - article: "faa:61.2"
+    not_evaluated: 'Definitional: 61.2 separates validity (a certificate, rating or medical that is expired, suspended or revoked) from currency (recent experience and medical requirements for the operation).'
+  - article: "faa:61.3"
+    not_evaluated: 'Not supported: 61.3 is about holding and carrying the pilot certificate, photo identification and, where required, a medical certificate or U.S. driver''s license, and about holding the rating or authorization an operation needs.'
+  - article: "faa:61.19"
+    evaluations: [faa.rating.instrument-airplane#instrument_experience]
+    pending: [faa/instructors/flight-instructor]
+    note: "Still to convert beyond the evaluations above: flight instructor certificates."
+  - article: "faa:61.21"
+    pending: [faa/privileges/category-ii-iii]
+    note: "Still to convert: Category II and III authorizations."
+  - article: "faa:61.23"
+    evaluations: [faa.medical.first-class#atp_privileges, faa.medical.first-class#commercial_privileges, faa.medical.second-class#commercial_privileges, faa.medical.first-class#private_privileges, faa.medical.second-class#private_privileges, faa.medical.third-class#private_privileges, faa.medical.basicmed#course_and_examination]
+    not_evaluated: 'Not supported: which class of medical (or none, or a U.S. driver''s license) an operation needs depends on the operation flown (ATP or commercial privileges, glider or balloon, instructing without acting as PIC, sport pilot aircraft), which the record does not state in advance.'
+  - article: "faa:61.31"
+    not_evaluated: 'Not supported: 61.31 sets which aircraft need a type rating and the one-time training endorsements for complex, high-performance, pressurized high-altitude and tailwheel airplanes, gliders on ground tow and night vision goggles.'
+  - article: "faa:61.51"
+    not_evaluated: 'Definitional: 61.51 defines what is logged and how PIC, SIC, solo, instrument and training time and simulator time are logged.'
+  - article: "faa:61.53"
+    not_evaluated: 'Not supported: a self-assessment by the pilot on the day of the flight; nothing in the record can show it.'
+  - article: "faa:61.55"
+    not_evaluated: 'Not supported: the record has no SIC type rating or SIC-privileges-only designation to evaluate, and the 12-calendar-month familiarization (systems, performance, procedures, flight manual, placards), engine-out procedures and crew resource management training are not recorded.'
+  - article: "faa:61.56"
+    evaluations: [faa.licence.private-airplane#flight_review]
+  - article: "faa:61.57"
+    evaluations: [faa.rating.instrument-airplane#instrument_experience, faa.licence.private-airplane#passengers_day, faa.licence.private-airplane#passengers_day_type, faa.licence.private-airplane#passengers_night_type, faa.licence.private-airplane#passengers_tailwheel, faa.licence.private-airplane#passengers_night]
+    pending: [faa/licences/commercial-airplane, faa/licences/private-rotorcraft, faa/licences/private-glider, faa/licences/recreational]
+    note: "Still to convert beyond the evaluations above: passenger recency for the certificates and classes not yet converted, glider passenger recency."
+    not_evaluated: 'Not supported: the record''s IR rating does not say whether its privileges are used in a glider, and instrument time is not split by the tasks (A) and (B) require (interception and tracking for one hour, performance manoeuvres for two hours). Not supported: the exceptions depend on the operation, not the pilot''s record: employment by a part 119 certificate holder under parts 121, 125 or 135 with that operator''s own recency ((e)(1)-(3)), the turbine multi-pilot night alternative ((e)(4)), flight training with an instructor as sole occupants ((e)(5)) and practical tests ((e)(6)). Not supported: the record does not mark flights as night vision goggle operations, nor the NVG tasks (takeoffs and landings with each phase, hovering, area departures and arrivals, aided-unaided transitions).'
+  - article: "faa:61.58"
+    not_evaluated: 'Not supported: the record does not say which type ratings are for aircraft certificated for more than one pilot or turbojet-powered.'
+  - article: "faa:61.66"
+    not_evaluated: 'Not supported: 61.66(d) needs six instrument approaches flown using EFVS as sole manipulator within the 6 calendar months before the month of the flight, one to a full stop, and (e) an EFVS refresher course after more than six further months.'
+  - article: "faa:61.69"
+    pending: [faa/privileges/glider-towing]
+    note: "Still to convert: glider towing."
+  - article: "faa:61.87"
+    pending: [faa/licences/student]
+    note: "Still to convert: student solo endorsements."
+  - article: "faa:61.89"
+    not_evaluated: 'Not supported as a rule of its own: a student pilot may never carry passengers, so the passenger rules (faa.14cfr61.61-57-a.passengers, faa.14cfr61.61-57-a.glider-passengers, faa.14cfr61.61-57-a.tailwheel, faa.14cfr61.61-57-b.night-passengers) exclude student certificates.'
+  - article: "faa:61.101"
+    evaluations: [faa.licence.private-airplane#passengers_night, faa.rating.instrument-airplane#no_instrument_privileges]
+    pending: [faa/licences/recreational, faa/licences/commercial-airplane, faa/licences/private-rotorcraft]
+    note: "Still to convert beyond the evaluations above: recreational pilot recency, passenger recency for the certificates and classes not yet converted."
+  - article: "faa:61.110"
+    not_evaluated: 'Not supported: the record has no "Night flying prohibited" limitation and no Alaska- training marker.'
+  - article: "faa:61.113"
+    evaluations: [faa.medical.basicmed#course_and_examination]
+  - article: "faa:61.195"
+    not_evaluated: 'Not supported: 61.195 limits what a flight instructor may teach and endorse (8 hours of flight training per 24 hours, the ratings and experience needed for certain students and endorsements).'
+  - article: "faa:61.197"
+    pending: [faa/instructors/flight-instructor]
+    note: "Still to convert: flight instructor certificates."
+  - article: "faa:61.199"
+    pending: [faa/instructors/flight-instructor]
+    note: "Still to convert: flight instructor certificates."
+  - article: "faa:61.217"
+    pending: [faa/instructors/ground-instructor]
+    note: "Still to convert: ground instructor recency."
+  - article: "faa:61.303"
+    not_evaluated: 'Not supported: the table decides which sport pilot limits and endorsements apply depending on whether the pilot holds a medical, only a U.S. driver''s license, or neither, and on the certificate and ratings held, for flights in aircraft meeting 61.316.'
+  - article: "faa:61.315"
+    evaluations: [faa.rating.instrument-airplane#no_instrument_privileges, faa.licence.private-airplane#passengers_night]
+    pending: [faa/licences/commercial-airplane, faa/licences/private-rotorcraft, faa/licences/recreational]
+    note: "Still to convert beyond the evaluations above: passenger recency for the certificates and classes not yet converted."
+  - article: "faa:61.329"
+    evaluations: [faa.licence.private-airplane#passengers_night]
+    pending: [faa/licences/commercial-airplane, faa/licences/private-rotorcraft, faa/licences/recreational]
+    note: "Still to convert beyond the evaluations above: passenger recency for the certificates and classes not yet converted."
+  - article: "faa:61.425"
+    pending: [faa/instructors/flight-instructor]
+    note: "Still to convert: flight instructor certificates."
+  - article: "faa:61.427"
+    pending: [faa/instructors/flight-instructor]
+    note: "Still to convert: flight instructor certificates."
+  - article: "faa:68.1"
+    evaluations: [faa.medical.basicmed#course_and_examination]
+  - article: "faa:68.3"
+    evaluations: [faa.medical.basicmed#course_and_examination]
+  - article: "faa:68.5"
+    evaluations: [faa.medical.basicmed#course_and_examination]
+  - article: "faa:68.9"
+    not_evaluated: 'Not supported: the one-time special issuance for listed mental health, neurological and cardiovascular conditions and the two-yearly certification of specialist care depend on medical history the record does not hold.'
+  # DE
+  - article: "de:LuftPersV.1"
+    not_evaluated: 'Context only: ultralight pilots (Luftsportgeräteführer) need a licence.'
+  - article: "de:LuftPersV.8"
+    not_evaluated: A carriage requirement (licence, identity document and, where one is required, the medical certificate on board); it cannot be computed from the record.
+  - article: "de:LuftPersV.9"
+    not_evaluated: 'No licence-level evaluation: licences issued under LuftPersV or Part-FCL are unlimited (the ultralight licence too, § 45(1)), and ratings and privileges follow their own provisions, which the catalogue encodes rule by rule (§ 45, § 84(5), § 84a(5), § 96).'
+  - article: "de:LuftPersV.11"
+    not_evaluated: A general gate combining the validity of the certificates required for the licence and provable ongoing flight experience.
+  - article: "de:LuftPersV.16"
+    not_evaluated: 'Training-phase rule: a student for an ultralight above 120 kg empty mass needs an LAPL-level medical by the first solo flight.'
+  - article: "de:LuftPersV.42"
+    pending: [de/licences/ul]
+    note: "Still to convert: ultralight licence training."
+  - article: "de:LuftPersV.44"
+    pending: [de/licences/ul]
+    note: "Still to convert: ultralight ratings without a kind."
+    not_evaluated: 'The scope of the ultralight licence: the kind entered, the launch methods entered, by day only.'
+  - article: "de:LuftPersV.45"
+    pending: [de/ratings/ul-three-axis, de/ratings/ul-helicopter, de/licences/ul, de/ratings/ul-gyroplane, de/ratings/ul-weight-shift, de/ratings/ul-powered-paraglider, de/ratings/ul-sailplane]
+    note: "Still to convert: three-axis ultralight recency, ultralight helicopter recency, ultralight ratings without a kind, ultralight gyroplane recency, weight-shift recency, powered paraglider recency, ultralight sailplane recency."
+    not_evaluated: 'Not evaluated: above 120 kg empty mass the ultralight licence is valid only with a valid LAPL-level medical (MED.A.030(b)), but the record has no empty mass per ultralight, so it cannot be told which ultralights need it, and a medical is not linked to ultralight ratings in the record.'
+  - article: "de:LuftPersV.45a"
+    pending: [de/privileges/ul-passenger-authorisation]
+    note: "Still to convert: ultralight passenger carriage."
+  - article: "de:LuftPersV.45b"
+    pending: [de/licences/ul]
+    note: "Still to convert: ultralight licence training."
+    not_evaluated: 'Not a rule of its own: it says which flight time counts for issue and for exercising the privileges.'
+  - article: "de:LuftPersV.84"
+    pending: [de/privileges/ul-towing]
+    note: "Still to convert: ultralight towing."
+  - article: "de:LuftPersV.84a"
+    pending: [de/privileges/ul-passenger-authorisation]
+    note: "Still to convert: ultralight passenger carriage, the passenger authorisation's own validity."
+  - article: "de:LuftPersV.96"
+    pending: [de/instructors/ul-instructor]
+    note: "Still to convert: ultralight instructor rating."
+  - article: "de:LuftPersV.120"
+    not_evaluated: 'Evidence rule: entries that prove a requirement flown with an instructor or examiner (the § 45(2) training flight, the § 45(3) proficiency check, the § 84a cross-country flights) must be certified by them.'
+  - article: "de:LuftVZO.1"
+    not_evaluated: 'A definition, not a rule: one- and two-seat sport aircraft up to 120 kg empty mass are exempt from type certification.'

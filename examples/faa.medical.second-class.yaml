@@ -1,0 +1,46 @@
+credential: faa.medical.second-class
+examples:
+  - name: private-privileges-expiry-edges
+    evaluation: private_privileges
+    says: Three medicals of a 50-year-old sport pilot flying on a medical - one ending on 31 August 2026 (valid that day, in the last 30 days), one ended on 31 July, and a recorded expiry earlier than the derived one, which wins.
+    asOf: 2026-08-31
+    record:
+      holder: {dateOfBirth: 1976-02-01}
+      licences:
+        - {id: l-sport, authority: FAA, type: SPORT}
+      credentials:
+        - {id: c-on, type: FAA_CLASS3_MEDICAL, issued: 2024-08-05}
+        - {id: c-after, type: FAA_CLASS2_MEDICAL, issued: 2024-07-31}
+        - {id: c-recorded, type: FAA_CLASS3_MEDICAL, issued: 2025-06-01, expires: 2026-09-10}
+    expect: { status: expired, message: credential.expired }
+  - name: commercial-privileges-expired-day-after
+    evaluation: commercial_privileges
+    says: From 1 September 2026 the medical no longer covers commercial privileges (it may still cover private ones, see faa.14cfr61.61-23-d.private).
+    asOf: 2026-09-01
+    record:
+      licences:
+        - {id: l-atp, authority: FAA, type: ATP}
+      credentials:
+        - {id: c-2, type: FAA_CLASS2_MEDICAL, issued: 2025-08-20}
+    expect: { status: expired, message: credential.expired }
+  - name: commercial-privileges-valid
+    evaluation: commercial_privileges
+    says: Examined in June 2026, a second-class certificate supports commercial privileges through 30 June 2027.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-com, authority: FAA, type: Commercial}
+      credentials:
+        - {id: m2, type: FAA_CLASS2_MEDICAL, issued: 2026-06-01}
+    expect: { status: current, message: credential.valid, expiresOn: 2027-06-30 }
+  - name: private-privileges-under-40
+    evaluation: private_privileges
+    says: Examined at 35, the certificate supports private privileges for 60 calendar months.
+    asOf: 2026-09-15
+    record:
+      holder: { dateOfBirth: 1990-05-05 }
+      licences:
+        - {id: l-ppl, authority: FAA, type: Private}
+      credentials:
+        - {id: m2, type: FAA_CLASS2_MEDICAL, issued: 2026-01-10}
+    expect: { status: current, message: credential.valid, expiresOn: 2031-01-31 }

@@ -1,0 +1,40 @@
+credential: easa.medical.class-2
+examples:
+  - name: validity-age-50
+    evaluation: validity
+    shows: [age-bands]
+    says: Issued at 50 the certificate runs 12 months.
+    asOf: 2026-09-15
+    record:
+      holder: {dateOfBirth: 1976-01-01}
+      credentials:
+        - {id: c-med, type: EASA_CLASS2_MEDICAL, issued: 2026-06-01}
+    expect: { status: current, message: credential.valid }
+  - name: validity-entered-date-earlier
+    evaluation: validity
+    shows: [earlier-expiry-wins]
+    says: An entered expiry date earlier than the derived one is used.
+    asOf: 2026-09-15
+    record:
+      holder: {dateOfBirth: 1980-05-20}
+      credentials:
+        - {id: c-med, type: EASA_CLASS2_MEDICAL, issued: 2026-03-01, expires: 2026-12-31}
+    expect: { status: current, message: credential.valid }
+  - name: validity-age-49-capped-at-51
+    evaluation: validity
+    says: Issued at 49 the certificate would run 24 months but ends on the 51st birthday.
+    asOf: 2026-09-15
+    record:
+      holder: {dateOfBirth: 1977-01-01}
+      credentials:
+        - {id: c-med, type: EASA_CLASS2_MEDICAL, issued: 2026-01-10}
+    expect: { status: current, message: credential.valid }
+  - name: validity-expired-day-after
+    evaluation: validity
+    says: The day after its expiry date the certificate is expired.
+    asOf: 2028-03-02
+    record:
+      holder: {dateOfBirth: 1980-05-20}
+      credentials:
+        - {id: c-med, type: EASA_CLASS2_MEDICAL, issued: 2026-03-01}
+    expect: { status: expired, message: credential.expired }

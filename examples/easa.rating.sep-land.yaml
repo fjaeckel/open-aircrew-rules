@@ -1,0 +1,181 @@
+credential: easa.rating.sep-land
+examples:
+  - name: revalidation-proficiency-check
+    evaluation: revalidation
+    shows: [examiner-not-checked]
+    says: A proficiency check in the class within the 3 months before expiry revalidates the rating without the experience route.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      ratings:
+        - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2026-10-31}
+      flights:
+        - {date: 2026-08-01, class: SEP_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 1}, landings: {day: 1}, flags: {proficiencyCheck: true, examinerOnBoard: true}}
+    expect: { status: expiring, message: rating.revalidation_expiring_met }
+  - name: revalidation-refresher-exempt-by-skill-test
+    evaluation: revalidation
+    shows: [exemption-period, exemption-any-aeroplane]
+    says: A skill test in another aeroplane class exempts from the refresher training; one in a helicopter would not.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      ratings:
+        - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2026-10-31}
+      events:
+        - {date: 2026-02-01, kind: skill_test, class: MEP_LAND}
+        - {date: 2026-02-02, kind: skill_test, class: HELICOPTER}
+      flights:
+        - {date: 2026-03-10, class: SEP_LAND, minutes: {total: 720, pic: 360, sic: 360}, takeoffs: {day: 12}, landings: {day: 12}}
+    expect: { status: expiring, message: rating.revalidation_expiring_met }
+  - name: revalidation-sep-land-and-tmg-pooled
+    evaluation: revalidation
+    shows: [pooling-same-licence]
+    says: A pilot holding SEP(land) and TMG on the same licence may fly the requirements in either class and revalidates both (FCL.740.A(b)(2)).
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-ppl, authority: LBA, type: PPL(A)}
+      ratings:
+        - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2026-10-31}
+        - {id: r-tmg, licenceId: l-ppl, class: TMG, expires: 2026-10-31}
+      flights:
+        - {date: 2026-03-10, class: SEP_LAND, minutes: {total: 300, pic: 300}, takeoffs: {day: 5}, landings: {day: 5}}
+        - {date: 2026-05-20, class: TMG, minutes: {total: 60, dual: 60}, takeoffs: {day: 2}, landings: {day: 2}}
+        - {date: 2026-06-12, class: TMG, minutes: {total: 360, pic: 60, dual: 300}, takeoffs: {day: 5}, landings: {day: 5}}
+    expect: { status: expiring, message: rating.revalidation_expiring_met }
+  - name: revalidation-ultralight-credit
+    evaluation: revalidation
+    shows: [ul-credit-time-only]
+    says: Three-axis ultralight hours count toward the 12 h and 6 h PIC, but not toward take-offs, landings or the refresher; weight-shift hours never count; an ultralight flight with no kind cannot be classified and is reported as unknown input.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      ratings:
+        - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2026-10-31}
+      flights:
+        - {date: 2026-04-01, class: SEP_LAND, minutes: {total: 120, pic: 60, dual: 60}, takeoffs: {day: 12}, landings: {day: 12}}
+        - {date: 2026-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: {total: 600, pic: 540, dual: 60}, takeoffs: {day: 10}, landings: {day: 10}}
+        - {date: 2026-06-01, class: ULTRALIGHT, minutes: {total: 90, pic: 90}, takeoffs: {day: 1}, landings: {day: 1}}
+        - {date: 2026-06-02, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: {total: 60, pic: 60}, takeoffs: {day: 1}, landings: {day: 1}}
+    expect: { status: expiring, message: rating.revalidation_expiring_met }
+  - name: revalidation-valid-on-expiry-day
+    evaluation: revalidation
+    shows: [valid-through-expiry]
+    says: On its expiry date the rating is still valid; 0 days remain.
+    asOf: 2026-10-31
+    record:
+      licences:
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      ratings:
+        - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2026-10-31}
+      flights:
+        - {date: 2026-03-10, class: SEP_LAND, minutes: {total: 300, pic: 300}, takeoffs: {day: 5}, landings: {day: 5}}
+        - {date: 2026-05-20, class: SEP_LAND, minutes: {total: 60, dual: 60}, takeoffs: {day: 2}, landings: {day: 2}}
+        - {date: 2026-06-12, class: SEP_LAND, minutes: {total: 360, pic: 60, dual: 300}, takeoffs: {day: 5}, landings: {day: 5}}
+    expect: { status: expiring, message: rating.revalidation_expiring_met }
+  - name: revalidation-experience-met-current
+    evaluation: revalidation
+    says: With more than 90 days to expiry the met rating is current. The authority matches whatever its case and spacing.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-ppl, authority: " Easa ", type: PPL}
+      ratings:
+        - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-06-30}
+      flights:
+        - {date: 2026-07-05, class: SEP_LAND, minutes: {total: 300, pic: 300}, takeoffs: {day: 5}, landings: {day: 5}}
+        - {date: 2026-07-20, class: SEP_LAND, minutes: {total: 60, dual: 60}, takeoffs: {day: 2}, landings: {day: 2}}
+        - {date: 2026-08-10, class: SEP_LAND, minutes: {total: 360, pic: 60, dual: 300}, takeoffs: {day: 5}, landings: {day: 5}}
+    expect: { status: current, message: rating.revalidation_current }
+  - name: revalidation-experience-not-met
+    evaluation: revalidation
+    says: 5 h and 5 take-offs and landings are not enough; every unmet row carries its remedy.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      ratings:
+        - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2026-10-31}
+      flights:
+        - {date: 2026-03-10, class: SEP_LAND, minutes: {total: 300, pic: 300}, takeoffs: {day: 5}, landings: {day: 5}}
+    expect: { status: expiring, message: rating.revalidation_not_met }
+  - name: passengers-day-pilot-flying-not-logged
+    evaluation: passengers_day
+    shows: [pilot-flying-recorded]
+    says: When no flight in the 90 days records whether the pilot was flying, the recency is unknown, never current.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      ratings:
+        - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-06-30}
+      flights:
+        - {date: 2026-08-20, class: SEP_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 5}, landings: {day: 5}}
+    expect: { status: unknown, message: pax.experience_not_logged }
+  - name: passengers-day-current
+    evaluation: passengers_day
+    says: Three take-offs and landings as pilot flying in the class within 90 days allow carrying passengers; the recency lasts until the first of them is 90 days old.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      ratings:
+        - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-06-30}
+      flights:
+        - {date: 2026-08-01, class: SEP_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 1}, landings: {day: 1}, pilotFlying: true}
+        - {date: 2026-08-20, class: SEP_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 2}, landings: {day: 2}, pilotFlying: true}
+    expect: { status: current, message: pax.day_current }
+  - name: passengers-day-not-current
+    evaluation: passengers_day
+    says: Two take-offs and landings are one short.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      ratings:
+        - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-06-30}
+      flights:
+        - {date: 2026-08-20, class: SEP_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 2}, landings: {day: 2}, pilotFlying: true}
+    expect: { status: expired, message: pax.not_current }
+  - name: passengers-night-ir-no-expiry-waives
+    evaluation: passengers_night
+    shows: [ir-held]
+    says: An IR recorded without an expiry date is taken as held and waives the night requirement.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      ratings:
+        - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-06-30}
+        - {id: r-ir, licenceId: l-ppl, class: IR}
+      flights:
+        - {date: 2026-08-20, class: SEP_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 1}, landings: {day: 1}, pilotFlying: true}
+    expect: { status: current, message: pax.night_waived_ir }
+  - name: passengers-night-ffs-night
+    evaluation: passengers_night
+    says: A night take-off and landing as pilot flying in an FFS representing the class allow night passengers.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      ratings:
+        - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-06-30}
+      flights:
+        - {date: 2026-08-10, class: SEP_LAND, isSimulator: true, fstdType: FFS, minutes: {total: 60}, takeoffs: {night: 1}, landings: {night: 1}, pilotFlying: true}
+    expect: { status: current, message: pax.night_current }
+  - name: passengers-night-ir-expired
+    evaluation: passengers_night
+    says: An IR that expired the day before does not waive the night requirement.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      ratings:
+        - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-06-30}
+        - {id: r-ir, licenceId: l-ppl, class: IR, expires: 2026-09-14}
+      flights:
+        - {date: 2026-08-20, class: SEP_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 1}, landings: {day: 1}, pilotFlying: true}
+    expect: { status: expired, message: pax.night_not_current }

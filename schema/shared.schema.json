@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/fjaeckel/open-aircrew-rules/schema/shared.schema.json",
+  "title": "Shared evaluation (credentials/<authority>/shared/<name>.yaml)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["shared", "id", "authority", "evaluation"],
+  "properties": {
+    "shared": { "type": "string", "minLength": 1 },
+    "id": { "type": "string", "pattern": "^[a-z]+\\.shared\\.[a-z0-9-]+$" },
+    "authority": { "type": "string" },
+    "params": { "type": "object", "additionalProperties": { "type": "string" } },
+    "evaluation": { "type": "object" },
+    "interpretations": { "type": "array", "items": { "$ref": "credential.schema.json#/$defs/interpretation" } }
+  }
+}

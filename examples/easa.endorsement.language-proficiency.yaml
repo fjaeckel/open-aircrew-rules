@@ -1,0 +1,34 @@
+credential: easa.endorsement.language-proficiency
+examples:
+  - name: level-4-entered-date-later
+    evaluation: level_4
+    says: An entered expiry date more than 4 years after the assessment is capped.
+    asOf: 2026-09-15
+    record:
+      credentials:
+        - {id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2023-04-15, expires: 2035-01-01}
+    expect: { status: current, message: credential.valid }
+  - name: level-4-expired-day-after
+    evaluation: level_4
+    says: The day after its expiry date the endorsement is expired.
+    asOf: 2027-04-16
+    record:
+      credentials:
+        - {id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2023-04-15}
+    expect: { status: expired, message: credential.expired }
+  - name: level-5-entered-date-later
+    evaluation: level_5
+    says: An entered expiry date more than 6 years after the assessment is capped.
+    asOf: 2026-09-15
+    record:
+      credentials:
+        - {id: c-lang, type: LANG_ICAO_LEVEL5, issued: 2023-04-15, expires: 2035-01-01}
+    expect: { status: current, message: credential.valid }
+  - name: level-5-expired-day-after
+    evaluation: level_5
+    says: The day after its expiry date the endorsement is expired.
+    asOf: 2029-04-16
+    record:
+      credentials:
+        - {id: c-lang, type: LANG_ICAO_LEVEL5, issued: 2023-04-15}
+    expect: { status: expired, message: credential.expired }

@@ -1,0 +1,36 @@
+name: This rule looks wrong
+description: An evaluation gives the wrong result, or reads a paragraph differently than you do.
+labels: [rule-correctness]
+body:
+  - type: input
+    id: credential
+    attributes:
+      label: Credential and evaluation
+      description: The credential file and evaluation id, e.g. easa/ratings/sep-land.yaml, revalidation
+    validations:
+      required: true
+  - type: input
+    id: ref
+    attributes:
+      label: Paragraph
+      description: The exact paragraph you rely on, e.g. easa:FCL.740.A(b)(1)(ii)(C)
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What the text requires, and what the rule does instead
+      description: Quote only the regulation text itself. Do not paste AMC/GM, ICAO or association documents; cite them by reference.
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Example
+      description: A minimal record (flights, ratings, dates) where the result is wrong, and the result you expect.
+  - type: checkboxes
+    id: authority
+    attributes:
+      label: Your basis
+      options:
+        - label: I hold or examine for this credential, or have confirmed my reading with the authority.

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/fjaeckel/open-aircrew-rules/schema/examples.schema.json",
+  "title": "Worked examples of one credential (examples/<credential id>.yaml)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["credential", "examples"],
+  "properties": {
+    "credential": { "type": "string" },
+    "examples": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "evaluation", "asOf", "record", "expect"],
+        "properties": {
+          "name": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "evaluation": { "type": "string" },
+          "says": { "type": "string" },
+          "shows": { "type": "array", "items": { "type": "string" } },
+          "asOf": { "type": "string", "format": "date" },
+          "record": { "$ref": "record.schema.json" },
+          "expect": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["status"],
+            "properties": {
+              "subject": { "type": "object" },
+              "status": { "enum": ["current", "expiring", "expired", "lapsed", "unknown", "not_applicable"] },
+              "message": { "type": "string" },
+              "params": { "type": "object" },
+              "expiresOn": { "type": "string" },
+              "validUntil": { "type": "string" },
+              "requirements": { "type": "object" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

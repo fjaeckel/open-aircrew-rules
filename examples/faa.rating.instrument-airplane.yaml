@@ -1,0 +1,83 @@
+credential: faa.rating.instrument-airplane
+examples:
+  - name: instrument-experience-grace-last-day
+    evaluation: instrument_experience
+    shows: [grace-from-last-met]
+    says: Tasks in January 2026 keep the pilot current through July; the six grace months (August to January) end on 31 January 2027.
+    asOf: 2027-01-31
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-ir, licenceId: l-faa, class: IR}
+      flights:
+        - {date: 2026-01-15, class: SEP_LAND, minutes: {total: 120, pic: 120, simulatedInstrument: 90}, approaches: 6, holds: 1, interceptAndTrack: true}
+    expect: { status: expiring, message: rating.ir_lapsed_safety_pilot }
+  - name: instrument-experience-ipc-restores
+    evaluation: instrument_experience
+    shows: [ipc-restores]
+    says: An instrument proficiency check in June re-establishes currency through 31 December, although the rows show no tasks.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-ir, licenceId: l-faa, class: IR}
+      flights:
+        - {date: 2024-03-01, class: SEP_LAND, minutes: {total: 90, pic: 90}, approaches: 6, holds: 1, interceptAndTrack: true}
+        - {date: 2026-06-10, class: SEP_LAND, minutes: {total: 90, dual: 90, simulatedInstrument: 80}, interceptAndTrack: false, flags: {ipc: true}}
+    expect: { status: current, message: rating.ir_current }
+  - name: instrument-experience-tracking-not-logged
+    evaluation: instrument_experience
+    shows: [intercept-track-recorded]
+    says: Approaches and holds are met but no flight records whether courses were intercepted and tracked; the status is unknown, not current.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-ir, licenceId: l-faa, class: IR}
+      flights:
+        - {date: 2026-05-10, class: SEP_LAND, minutes: {total: 90, pic: 90, simulatedInstrument: 60}, approaches: 6, holds: 2}
+    expect: { status: unknown, message: rating.ir_tasks_not_logged }
+  - name: instrument-experience-calendar-month-start
+    evaluation: instrument_experience
+    says: Tasks flown on 5 February, earlier than six months back to the day but within the 6 calendar months before August, still count on 16 August.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: COMMERCIAL}
+      ratings:
+        - {id: r-ir, licenceId: l-faa, class: IR}
+      flights:
+        - {date: 2026-02-05, class: MEP_LAND, minutes: {total: 120, pic: 120, actualInstrument: 60}, approaches: 6, holds: 1, interceptAndTrack: true}
+    expect: { status: current, message: rating.ir_current }
+  - name: instrument-experience-ipc-required
+    evaluation: instrument_experience
+    says: One day after the grace period the pilot needs an instrument proficiency check.
+    asOf: 2027-02-01
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-ir, licenceId: l-faa, class: IR, expires: 2030-01-01}
+      flights:
+        - {date: 2026-01-15, class: SEP_LAND, minutes: {total: 120, pic: 120, simulatedInstrument: 90}, approaches: 6, holds: 1, interceptAndTrack: true}
+    expect: { status: expired, message: rating.ir_expired_ipc }
+  - name: no-instrument-privileges-sport-and-recreational
+    evaluation: no_instrument_privileges
+    says: An instrument rating recorded on a sport or a recreational certificate carries no privileges (no flight without visual reference to the surface); on a private certificate the 61.57(c) instrument experience applies instead.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-sport, authority: FAA, type: SPORT}
+        - {id: l-rec, authority: faa, type: recreational}
+        - {id: l-ppl, authority: FAA, type: PRIVATE}
+        - {id: l-easa, authority: EASA, type: LAPL(A)}
+      ratings:
+        - {id: r-sport-ir, licenceId: l-sport, class: IR}
+        - {id: r-rec-ir, licenceId: l-rec, class: IR}
+        - {id: r-ppl-ir, licenceId: l-ppl, class: IR}
+        - {id: r-easa-ir, licenceId: l-easa, class: IR}
+        - {id: r-sport-sep, licenceId: l-sport, class: SEP_LAND}
+    expect: { subject: { kind: rating, id: r-sport-ir, class: IR }, status: not_applicable, message: rating.ir_not_applicable }

@@ -1,0 +1,42 @@
+open-aircrew-rules
+Copyright (c) 2026 Frederic Jung and contributors
+
+NOT LEGAL ADVICE. This repository encodes pilot licence, rating, privilege and medical rules
+as its contributors read them. It can be wrong, incomplete or out of date, and it does not
+replace the official text, your competent authority, your examiner or your instructor. The
+pilot in command is responsible for meeting every requirement that applies to a flight.
+Nothing in this NOTICE or in sources/README.md is legal advice about copyright either.
+
+LICENCE SCOPE. The MIT License (see LICENSE) covers the code (engine/, credentials/*.go,
+cmd/, gen/), the catalogue (credentials/, vocabulary.yaml, messages/, schema/, scope/,
+coverage/, docs/), the worked examples (examples/) and the tools. It does not cover the
+texts under sources/: they are not ours to license, keep their own status, described below
+and in sources/README.md, and are not relicensed under the MIT License.
+
+TEXTS UNDER sources/. Each is taken verbatim from one of the following publications, with
+the retrieval date recorded in the file's header. All of them are consolidated,
+non-authoritative versions:
+
+- US federal works. eCFR (www.ecfr.gov): Title 14 Code of Federal Regulations, Parts 61 and
+  68. Works of the US federal government are not subject to copyright in the United States
+  (17 U.S.C. § 105) and are in the public domain there. The authoritative texts are the
+  Federal Register and the annual edition of the Code of Federal Regulations.
+- German statutes and ordinances. gesetze-im-internet.de (Bundesministerium der Justiz):
+  Verordnung über Luftfahrtpersonal (LuftPersV) and Luftverkehrs-Zulassungs-Ordnung
+  (LuftVZO). Official works (amtliche Werke) not protected by copyright (§ 5(1) UrhG). The
+  authoritative text is the Bundesgesetzblatt.
+- EU legal acts. EUR-Lex (eur-lex.europa.eu): Commission Regulation (EU) No 1178/2011
+  (Part-FCL, Part-MED), Commission Implementing Regulation (EU) 2018/1976 (Part-SFCL) and
+  Commission Regulation (EU) 2018/395 (Part-BFCL). © European Union,
+  https://eur-lex.europa.eu. Reused under Commission Decision 2011/833/EU on the reuse of
+  Commission documents, with this attribution and without changes that distort their
+  meaning. Only the texts published in the Official Journal of the European Union are
+  authentic.
+
+NEVER STORED. The following are never stored in this repository:
+
+- EASA Acceptable Means of Compliance (AMC), Guidance Material (GM) and Easy Access Rules.
+  Where they matter, docs/amc-gm-notes.md summarises them in our own words and names them.
+- ICAO documents. They are cited by name only.
+- Association documents (for example DULV and DAeC rules). They remain the property of
+  their publishers and are cited by title only.

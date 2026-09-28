@@ -1,0 +1,44 @@
+credential: easa.privilege.cloud-flying
+examples:
+  - name: recency-bir-credit
+    evaluation: recency
+    shows: [bir-ir-credit]
+    says: A pilot holding a valid BIR is fully credited toward the cloud flying recency.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-spl, authority: EASA, type: SPL}
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      privileges:
+        - {id: p-cloud, licenceId: l-spl, kind: CLOUD_FLYING}
+        - {id: p-bir, licenceId: l-ppl, kind: BIR, expires: 2027-06-30}
+    expect: { status: current, message: privilege.recency_credited }
+  - name: recency-proficiency-check-restores
+    evaluation: recency
+    shows: [check-restores]
+    says: A cloud flying proficiency check with an FE(S) restores the privileges for 24 months without the flights.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-spl, authority: EASA, type: SPL}
+      privileges:
+        - {id: p-cloud, licenceId: l-spl, kind: CLOUD_FLYING}
+      flights:
+        - {date: 2026-03-10, class: GLIDER, checkRating: CLOUD_FLYING, minutes: {total: 60, pic: 60, ifr: 20}, launches: 1, landings: {day: 1}, flags: {proficiencyCheck: true, examinerOnBoard: true}}
+    expect: { status: current, message: privilege.recency_current }
+  - name: recency-expired-ir-no-credit
+    evaluation: recency
+    says: An expired IR(A) and an FAA instrument rating give no credit; an expired cloud flying privilege is expired.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-spl, authority: EASA, type: SPL}
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-ir, licenceId: l-ppl, class: IR, expires: 2026-09-14}
+        - {id: r-faa-ir, licenceId: l-faa, class: IR}
+      privileges:
+        - {id: p-cloud, licenceId: l-spl, kind: CLOUD_FLYING}
+        - {id: p-cloud-old, licenceId: l-spl, kind: CLOUD_FLYING, expires: 2026-09-14}
+    expect: { subject: { kind: privilege, id: p-cloud, class:  }, status: lapsed, message: privilege.recency_not_met }

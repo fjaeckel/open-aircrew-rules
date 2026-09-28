@@ -1,0 +1,23 @@
+credential: faa.medical.third-class
+examples:
+  - name: private-privileges-by-age
+    evaluation: private_privileges
+    says: For private privileges a medical taken under 40 runs to the end of the 60th month after the examination month, one taken at 40 or older to the end of the 24th.
+    asOf: 2026-08-16
+    record:
+      holder: {dateOfBirth: 1990-01-01}
+      licences:
+        - {id: l-ppl, authority: FAA, type: PRIVATE}
+      credentials:
+        - {id: c-3, type: FAA_CLASS3_MEDICAL, issued: 2024-06-10}
+    expect: { status: current, message: credential.valid }
+  - name: private-privileges-missing-inputs
+    evaluation: private_privileges
+    says: Without a date of birth the age on the examination date, and so the duration, is unknown.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-ppl, authority: FAA, type: PRIVATE}
+      credentials:
+        - {id: c-3, type: FAA_CLASS3_MEDICAL, issued: 2024-06-10}
+    expect: { status: unknown, message: credential.date_of_birth_required }

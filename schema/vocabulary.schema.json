@@ -1,0 +1,213 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/fjaeckel/open-aircrew-rules/schema/vocabulary.schema.json",
+  "title": "Closed vocabulary",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "source_origins", "source_forbidden_markers", "record_authorities", "categories", "classes", "ul_kinds", "launch_methods", "licence_kinds", "privilege_kinds", "credential_types", "flight_flags", "event_kinds", "record_fields", "minute_fields", "subjects", "statuses", "units", "metrics", "filters", "roles", "windows", "combinators", "stage_conditions", "rule_events", "param_sources", "validity", "hatches"],
+  "properties": {
+    "credential_vocabulary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kinds", "selects", "about", "ref_authorities", "policy_refs", "counts", "qualifiers", "outcome_presets"],
+      "properties": {
+        "kinds": { "$ref": "#/$defs/described" },
+        "selects": { "$ref": "#/$defs/described" },
+        "about": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["description"],
+            "properties": { "subject": { "type": "string" }, "selects": { "type": "string" }, "description": { "type": "string" } }
+          }
+        },
+        "ref_authorities": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["directory", "file", "cite"],
+            "properties": { "directory": { "type": "string" }, "file": { "enum": ["lower_dashed", "as_is"] }, "cite": { "type": "string" } }
+          }
+        },
+        "policy_refs": { "$ref": "#/$defs/described" },
+        "counts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["metric", "amount", "id", "name", "unit"],
+            "properties": {
+              "metric": { "type": "string" },
+              "events": { "type": "array", "items": { "type": "string" } },
+              "amount": { "enum": ["count", "time"] },
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "unit": { "type": "string" },
+              "remedy": { "type": "string" },
+              "filter": { "type": "object" }
+            }
+          }
+        },
+        "qualifiers": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["description"],
+            "properties": {
+              "window": { "type": "string" },
+              "anchor": { "type": "string" },
+              "filter": { "type": "string" },
+              "value": { "type": "string" },
+              "document": { "type": "boolean" },
+              "description": { "type": "string" }
+            }
+          }
+        },
+        "outcome_presets": { "$ref": "#/$defs/described" }
+      }
+    },
+    "version": { "type": "integer" },
+    "source_origins": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["directory", "basis", "attribution", "hosts"],
+        "properties": {
+          "directory": { "type": "string", "minLength": 1 },
+          "basis": { "type": "string", "minLength": 1 },
+          "attribution": { "type": "string", "minLength": 1 },
+          "hosts": { "$ref": "#/$defs/names" }
+        }
+      }
+    },
+    "source_forbidden_markers": { "$ref": "#/$defs/names" },
+    "record_authorities": { "$ref": "#/$defs/names" },
+    "categories": { "$ref": "#/$defs/names" },
+    "classes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["category"],
+        "properties": { "category": { "type": "string" } }
+      }
+    },
+    "ul_kinds": { "$ref": "#/$defs/names" },
+    "launch_methods": { "$ref": "#/$defs/names" },
+    "fstd_types": { "$ref": "#/$defs/names" },
+    "tow_kinds": { "$ref": "#/$defs/names" },
+    "licence_kinds": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["aliases"],
+        "properties": { "aliases": { "$ref": "#/$defs/names" } }
+      }
+    },
+    "privilege_kinds": { "$ref": "#/$defs/names" },
+    "credential_types": { "$ref": "#/$defs/names" },
+    "flight_flags": { "$ref": "#/$defs/names" },
+    "event_kinds": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": { "from_flag": { "type": "string" } }
+      }
+    },
+    "record_fields": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type"],
+        "properties": { "type": { "type": "string" }, "optional": { "type": "boolean" } }
+      }
+    },
+    "minute_fields": { "$ref": "#/$defs/names" },
+    "subjects": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["description"],
+        "properties": { "description": { "type": "string" }, "expiry": { "type": "boolean" } }
+      }
+    },
+    "statuses": { "$ref": "#/$defs/described" },
+    "units": { "$ref": "#/$defs/names" },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source", "aggregate", "reads", "units", "description"],
+        "properties": {
+          "source": { "enum": ["flights", "events"] },
+          "aggregate": { "enum": ["sum", "max", "min_of_sums", "none"] },
+          "reads": { "type": "array", "items": { "type": "string" } },
+          "optional": { "type": "boolean" },
+          "units": { "$ref": "#/$defs/names" },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "filters": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["applies_to", "reads", "values", "description"],
+        "properties": {
+          "applies_to": { "type": "array", "items": { "enum": ["flights", "events"] } },
+          "reads": { "type": "array", "items": { "type": "string" } },
+          "values": {},
+          "subject_ref": { "type": "boolean" },
+          "absent": { "enum": ["unknown", "no_match", "match"] },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "roles": { "$ref": "#/$defs/names" },
+    "windows": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["param", "description"],
+        "properties": {
+          "param": {},
+          "moving": { "type": "boolean" },
+          "anchor": { "enum": ["expiry", "issue"] },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "combinators": { "$ref": "#/$defs/described" },
+    "stage_conditions": { "$ref": "#/$defs/described" },
+    "missing_inputs": { "$ref": "#/$defs/names" },
+    "rule_events": { "$ref": "#/$defs/described" },
+    "param_sources": { "$ref": "#/$defs/described" },
+    "validity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["anchors", "period_conditions", "period_fields"],
+      "properties": {
+        "anchors": { "$ref": "#/$defs/names" },
+        "period_conditions": { "$ref": "#/$defs/names" },
+        "period_fields": { "$ref": "#/$defs/names" }
+      }
+    },
+    "hatches": { "$ref": "#/$defs/described" }
+  },
+  "$defs": {
+    "names": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "described": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "string" } }
+  }
+}

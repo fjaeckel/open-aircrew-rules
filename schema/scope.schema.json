@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/fjaeckel/open-aircrew-rules/schema/scope.schema.json",
+  "title": "Articles in scope for one authority (scope/articles-<authority>.yaml)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["articles"],
+  "properties": {
+    "articles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["cite", "url", "subject", "summary", "source_file"],
+        "properties": {
+          "cite": { "type": "string", "minLength": 1 },
+          "url": { "type": "string", "pattern": "^https://" },
+          "subject": { "type": "string", "minLength": 1 },
+          "summary": { "type": "string", "minLength": 1 },
+          "source_file": { "type": "string", "pattern": "^sources/[a-z]+/[^/]+\\.md$" }
+        }
+      }
+    }
+  }
+}

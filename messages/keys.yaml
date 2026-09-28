@@ -1,0 +1,317 @@
+# Every message, requirement-name, remedy and rule-description key an evaluation can report.
+# Keys are stable, language-neutral ids; applications translate them. Fields:
+#   kind       message | requirement_name | requirement_message | remedy | rule_description |
+#              training_title | training_item | training_message
+#   params     messageParams / remedyParams names; a trailing ? marks an optional param
+#   notes      what the key means, in one line
+# A new key is added here, in the section of its family, before a credential uses it.
+keys:
+
+  # --- rating messages ---
+  - { key: rating.no_expiry_date, kind: message, params: [] }
+  - { key: rating.no_expiry_date_manual, kind: message, params: [] }
+  - { key: rating.evaluation_failed, kind: message, params: [] }
+  - { key: rating.expired, kind: message, params: [] }
+  - { key: rating.expiring, kind: message, params: [days] }
+  - { key: rating.valid_until, kind: message, params: [] }
+  - { key: rating.window_not_open, kind: message, params: [date] }
+  - { key: rating.revalidation_not_met, kind: message, params: [] }
+  - { key: rating.revalidation_not_met_prof_check, kind: message, params: [] }
+  - { key: rating.revalidation_expiring_met, kind: message, params: [days] }
+  - { key: rating.revalidation_current, kind: message, params: [] }
+  - { key: rating.recency_not_met, kind: message, params: [] }
+  - { key: rating.recency_current, kind: message, params: [] }
+  - { key: rating.sfcl_tmg_exempt, kind: message, params: [] }
+  - { key: rating.ul_kind_required, kind: message, params: [] }
+  - { key: rating.ir_hours_and_check_not_met, kind: message, params: [] }
+  - { key: rating.ir_hours_not_met, kind: message, params: [] }
+  - { key: rating.ir_check_not_met, kind: message, params: [] }
+  - { key: rating.ir_current, kind: message, params: [] }
+  - { key: rating.ir_lapsed_safety_pilot, kind: message, params: [] }
+  - { key: rating.ir_expired_ipc, kind: message, params: [] }
+  - { key: rating.ir_not_applicable, kind: message, params: [] }
+  - { key: rating.pax_not_current, kind: message, params: [needed] }
+  - { key: rating.pax_day_current_night_not, kind: message, params: [needed] }
+  - { key: rating.pax_current_day_night, kind: message, params: [] }
+  - { key: rating.flight_review_glider_alternative, kind: message, params: [] }
+
+  # --- passenger messages ---
+  - { key: pax.evaluation_failed, kind: message, params: [] }
+  - { key: pax.not_current, kind: message, params: [needed] }
+  - { key: pax.current_day_no_night_privilege, kind: message, params: [] }
+  - { key: pax.current_day_night_ir_waived, kind: message, params: [] }
+  - { key: pax.current_day_night, kind: message, params: [] }
+  - { key: pax.day_current_night_not, kind: message, params: [needed] }
+  - { key: pax.current_day_privilege_separate, kind: message, params: [] }
+  - { key: pax.gpl_experience_not_met, kind: message, params: [needed] }
+  - { key: pax.ul_authorisation_missing, kind: message, params: [] }
+
+  # --- privilege messages ---
+  - { key: privilege.valid, kind: message, params: ["date?"] }
+  - { key: privilege.expired, kind: message, params: [date] }
+  - { key: privilege.recency_current, kind: message, params: ["date?"] }
+  - { key: privilege.recency_not_met, kind: message, params: ["date?"] }
+  - { key: privilege.evaluation_failed, kind: message, params: [] }
+
+  # --- flight review messages ---
+  - { key: flight_review.evaluation_failed, kind: message, params: [] }
+  - { key: flight_review.none_on_record, kind: message, params: [] }
+  - { key: flight_review.expired, kind: message, params: [date] }
+  - { key: flight_review.expiring, kind: message, params: [days, date] }
+  - { key: flight_review.current, kind: message, params: [date] }
+
+  # --- requirement messages ---
+  - { key: requirement.progress, kind: requirement_message, params: [] }
+  - { key: requirement.prof_check_completed, kind: requirement_message, params: [date] }
+  - { key: requirement.prof_check_missing, kind: requirement_message, params: [] }
+  - { key: requirement.untracked, kind: requirement_message, params: [] }
+  - { key: launch_method.progress, kind: requirement_message, params: [] }
+
+  # --- requirement names ---
+  - { key: requirement.total_time, kind: requirement_name, params: [] }
+  - { key: requirement.pic_time, kind: requirement_name, params: [] }
+  - { key: requirement.ifr_time, kind: requirement_name, params: [] }
+  - { key: requirement.landings, kind: requirement_name, params: [] }
+  - { key: requirement.day_landings, kind: requirement_name, params: [] }
+  - { key: requirement.night_landings, kind: requirement_name, params: [] }
+  - { key: requirement.refresher_training, kind: requirement_name, params: [] }
+  - { key: requirement.training_flight, kind: requirement_name, params: [] }
+  - { key: requirement.proficiency_check, kind: requirement_name, params: [] }
+  - { key: requirement.approaches, kind: requirement_name, params: [] }
+  - { key: requirement.holds, kind: requirement_name, params: [] }
+  - { key: requirement.route_sectors, kind: requirement_name, params: [] }
+  - { key: requirement.launches, kind: requirement_name, params: [] }
+  - { key: requirement.sep_land_time, kind: requirement_name, params: [] }
+  - { key: requirement.sep_land_landings, kind: requirement_name, params: [] }
+  - { key: requirement.sep_sea_time, kind: requirement_name, params: [] }
+  - { key: requirement.sep_sea_landings, kind: requirement_name, params: [] }
+  - { key: requirement.flight_time, kind: requirement_name, params: [] }
+  - { key: requirement.training_flights, kind: requirement_name, params: [] }
+  - { key: requirement.tmg_time, kind: requirement_name, params: [] }
+  - { key: requirement.tmg_landings, kind: requirement_name, params: [] }
+  - { key: requirement.tmg_training_flight, kind: requirement_name, params: [] }
+  - { key: requirement.flight_review, kind: requirement_name, params: [] }
+  - { key: requirement.tows, kind: requirement_name, params: [] }
+  - { key: requirement.towed_glider_flights, kind: requirement_name, params: [] }
+  - { key: requirement.cloud_flying_time, kind: requirement_name, params: [] }
+  - { key: requirement.cloud_flying_flights, kind: requirement_name, params: [] }
+  - { key: requirement.instruction_time, kind: requirement_name, params: [] }
+  - { key: requirement.instruction_launches, kind: requirement_name, params: [] }
+  - { key: requirement.fi_refresher, kind: requirement_name, params: [] }
+  - { key: requirement.pax_prerequisite_time, kind: requirement_name, params: [] }
+  - { key: requirement.pax_prerequisite_launches, kind: requirement_name, params: [] }
+  - { key: requirement.pax_competence_flight, kind: requirement_name, params: [] }
+  - { key: requirement.ul_xc_flights, kind: requirement_name, params: [] }
+  - { key: requirement.ul_xc_landing_flights, kind: requirement_name, params: [] }
+  - { key: requirement.ul_xc_distance, kind: requirement_name, params: [] }
+
+  # --- remedies ---
+  - { key: remedy.fly_more, kind: remedy, params: [missing, unit] }
+  - { key: remedy.training_flight, kind: remedy, params: [] }
+  - { key: remedy.proficiency_check, kind: remedy, params: [] }
+  - { key: remedy.launch_method_dual, kind: remedy, params: [method, missing] }
+  - { key: remedy.privilege_with_instructor, kind: remedy, params: [missing, unit] }
+
+  # --- rule descriptions ---
+  - { key: easa_sep_tmg, kind: rule_description, params: [] }
+  - { key: easa_mep_set, kind: rule_description, params: [] }
+  - { key: easa_ir, kind: rule_description, params: [] }
+  - { key: easa_lapl, kind: rule_description, params: [] }
+  - { key: easa_spl, kind: rule_description, params: [] }
+  - { key: easa_spl_tmg, kind: rule_description, params: [] }
+  - { key: easa_gpl, kind: rule_description, params: [] }
+  - { key: faa_pax_day_night, kind: rule_description, params: [] }
+  - { key: faa_ir, kind: rule_description, params: [] }
+  - { key: faa_flight_review, kind: rule_description, params: [] }
+  - { key: ul_luftpersv, kind: rule_description, params: [] }
+  - { key: ul_luftpersv_helicopter, kind: rule_description, params: [] }
+  - { key: ul_gyroplane, kind: rule_description, params: [] }
+  - { key: ul_trike_dulv, kind: rule_description, params: [] }
+  - { key: ul_trike_daec, kind: rule_description, params: [] }
+  - { key: ul_powered_paraglider, kind: rule_description, params: [] }
+  - { key: ul_sailplane, kind: rule_description, params: [] }
+  - { key: easa_pax, kind: rule_description, params: [] }
+  - { key: ul_pax, kind: rule_description, params: [] }
+  - { key: easa_spl_pax, kind: rule_description, params: [] }
+  - { key: easa_spl_tmg_pax, kind: rule_description, params: [] }
+  - { key: faa_glider, kind: rule_description, params: [] }
+  - { key: privilege_expiry, kind: rule_description, params: [] }
+  - { key: sfcl_155_launch_method, kind: rule_description, params: [] }
+  - { key: sfcl_205_towing, kind: rule_description, params: [] }
+  - { key: sfcl_205_banner_towing, kind: rule_description, params: [] }
+  - { key: faa_61_69_towing, kind: rule_description, params: [] }
+  - { key: sfcl_215_cloud_flying, kind: rule_description, params: [] }
+  - { key: sfcl_360_fi_s, kind: rule_description, params: [] }
+  - { key: dulv_ul_towing, kind: rule_description, params: [] }
+
+  # --- training ---
+  - { key: training.programme.spl, kind: training_title, params: [] }
+  - { key: training.programme.spl_tmg_extension, kind: training_title, params: [] }
+  - { key: training.programme.ul_three_axis, kind: training_title, params: [] }
+  - { key: training.programme.ul_weight_shift, kind: training_title, params: [] }
+  - { key: training.spl.instruction_time, kind: training_item, params: [] }
+  - { key: training.spl.dual_time, kind: training_item, params: [] }
+  - { key: training.spl.supervised_solo_time, kind: training_item, params: [] }
+  - { key: training.spl.launches, kind: training_item, params: [] }
+  - { key: training.spl.cross_country, kind: training_item, params: [] }
+  - { key: training.spl.credit_sfcl130b, kind: training_item, params: [] }
+  - { key: training.tmg.instruction_time, kind: training_item, params: [] }
+  - { key: training.tmg.dual_time, kind: training_item, params: [] }
+  - { key: training.tmg.solo_cross_country, kind: training_item, params: [] }
+  - { key: training.ul.total_time, kind: training_item, params: [] }
+  - { key: training.ul.dual_time, kind: training_item, params: [] }
+  - { key: training.ul.solo_time, kind: training_item, params: [] }
+  - { key: training.met, kind: training_message, params: [] }
+  - { key: training.not_met, kind: training_message, params: [] }
+  - { key: training.cross_country_distance_unknown, kind: training_message, params: [] }
+  - { key: training.credit_available, kind: training_message, params: [] }
+  - { key: training.credit_none, kind: training_message, params: [] }
+
+  # --- rating, further keys ---
+  - { key: rating.ir_tasks_not_logged, kind: message, params: [], notes: "FAA 61.57(c): approaches and holds met, intercepting and tracking not recorded." }
+  - { key: rating.revalidation_not_met_expired_check_required, kind: message, params: [], notes: "Rating expired; renewal requires a proficiency check (FCL.740(b))." }
+  - { key: rating.renewal_required, kind: message, params: [], notes: "Rating expired; renewal path applies." }
+  - { key: rating.not_applicable, kind: message, params: [], notes: "The rule does not apply to this rating." }
+
+  # --- passengers, further keys ---
+  - { key: pax.day_current, kind: message, params: [], notes: "Day passenger recency met (night evaluated by a separate rule)." }
+  - { key: pax.night_current, kind: message, params: [], notes: "Night passenger recency met." }
+  - { key: pax.night_not_current, kind: message, params: [needed], notes: "Night passenger recency short by needed." }
+  - { key: pax.night_waived_ir, kind: message, params: [], notes: "Night passenger recency waived: the pilot holds an IR (FCL.060(b)(2)(ii))." }
+  - { key: pax.night_no_privilege, kind: message, params: [], notes: "The licence has no night privilege." }
+  - { key: pax.prerequisite_not_met, kind: message, params: [needed], notes: "Passenger prerequisite since licence issue not met." }
+
+  # --- licence, further keys ---
+  - { key: licence.valid, kind: message, params: ["date?"], notes: "Licence valid." }
+  - { key: licence.expired, kind: message, params: [date], notes: "Licence past its expiry date." }
+  - { key: licence.recency_current, kind: message, params: [], notes: "Licence recency met." }
+  - { key: licence.recency_not_met, kind: message, params: [], notes: "Licence recency not met; privileges may not be exercised." }
+  - { key: licence.not_applicable, kind: message, params: [], notes: "Rule does not apply to this licence." }
+
+  # --- privilege, further keys ---
+  - { key: privilege.expiring, kind: message, params: [days, date], notes: "Privilege expiry approaching." }
+  - { key: privilege.revalidation_current, kind: message, params: ["date?"], notes: "Revalidation requirements met." }
+  - { key: privilege.revalidation_not_met, kind: message, params: ["date?"], notes: "Revalidation requirements not yet met." }
+  - { key: privilege.no_expiry_date, kind: message, params: [], notes: "No expiry date recorded or derivable." }
+  - { key: privilege.not_applicable, kind: message, params: [], notes: "Rule does not apply to this privilege." }
+
+  # --- credential, further keys ---
+  - { key: credential.valid, kind: message, params: ["date?"], notes: "Certificate valid; date is its expiry." }
+  - { key: credential.expiring, kind: message, params: [days, date], notes: "Certificate expiry approaching." }
+  - { key: credential.revalidation_window_open, kind: message, params: [days, date], notes: "Revalidation examination may be taken now (e.g. MED.A.045(b))." }
+  - { key: credential.expired, kind: message, params: [date], notes: "Certificate past its expiry date." }
+  - { key: credential.no_expiry_date, kind: message, params: [], notes: "Expiry neither recorded nor derivable." }
+  - { key: credential.date_of_birth_required, kind: message, params: [], notes: "Validity depends on age; the date of birth is not recorded." }
+  - { key: credential.not_applicable, kind: message, params: [], notes: "Rule does not apply to this certificate." }
+
+  # --- flight review, further keys ---
+  - { key: flight_review.substituted, kind: message, params: [date], notes: "A proficiency check, practical test or proficiency-program phase stands in for the flight review (61.56(d)/(e))." }
+  - { key: flight_review.not_applicable, kind: message, params: [], notes: "Flight review not required (e.g. student pilot, 61.56(g))." }
+
+  # --- type and variant, further keys ---
+  - { key: type.current, kind: message, params: [], notes: "Variant flown within the period." }
+  - { key: type.not_flown, kind: message, params: [], notes: "Variant not flown within the period; differences training, a proficiency check or refresher training is required (FCL.710(d))." }
+  - { key: type.unknown, kind: message, params: [], notes: "Variant flights not identifiable (no variant recorded)." }
+
+  # --- launch method, further keys ---
+  - { key: launch_method.current, kind: message, params: [], notes: "Launch method recency met (SFCL.155(c))." }
+  - { key: launch_method.lapsed, kind: message, params: [], notes: "Launch method recency not met; fly the missing launches dual or supervised (SFCL.155(d))." }
+
+  # --- training, further keys ---
+  - { key: training.all_met, kind: message, params: [], notes: "Every programme item met." }
+  - { key: training.in_progress, kind: message, params: [], notes: "Programme items still open." }
+
+  # --- requirement names, further keys ---
+  - { key: requirement.takeoffs, kind: requirement_name, params: [], notes: "Take-offs." }
+  - { key: requirement.night_takeoffs, kind: requirement_name, params: [], notes: "Take-offs at night." }
+  - { key: requirement.full_stop_landings, kind: requirement_name, params: [], notes: "Landings to a full stop." }
+  - { key: requirement.full_stop_night_landings, kind: requirement_name, params: [], notes: "Night landings to a full stop." }
+  - { key: requirement.takeoffs_and_landings, kind: requirement_name, params: [], notes: "Take-offs and landings (the smaller count)." }
+  - { key: requirement.night_takeoffs_and_landings, kind: requirement_name, params: [], notes: "Night take-offs and landings." }
+  - { key: requirement.intercept_track, kind: requirement_name, params: [], notes: "Intercepting and tracking courses." }
+  - { key: requirement.refresher_exemption, kind: requirement_name, params: [], notes: "A check, test or assessment that exempts from refresher training (FCL.740.A(b)(1)(ii)(C))." }
+  - { key: requirement.examiner_route_sector, kind: requirement_name, params: [], notes: "Route sector flown with an examiner." }
+  - { key: requirement.ipc, kind: requirement_name, params: [], notes: "Instrument proficiency check." }
+  - { key: requirement.skill_test, kind: requirement_name, params: [], notes: "Skill or practical test." }
+  - { key: requirement.practical_test, kind: requirement_name, params: [], notes: "Practical test." }
+  - { key: requirement.assessment_of_competence, kind: requirement_name, params: [], notes: "Assessment of competence." }
+  - { key: requirement.refresher_course, kind: requirement_name, params: [], notes: "Refresher course or seminar." }
+  - { key: requirement.instructor_refresher, kind: requirement_name, params: [], notes: "Instructor refresher training." }
+  - { key: requirement.examiner_refresher, kind: requirement_name, params: [], notes: "Examiner refresher course." }
+  - { key: requirement.supervised_instruction, kind: requirement_name, params: [], notes: "Instruction flight under supervision (assessment)." }
+  - { key: requirement.instruction_given, kind: requirement_name, params: [], notes: "Flight instruction given." }
+  - { key: requirement.instruction_sessions, kind: requirement_name, params: [], notes: "Instruction sessions given." }
+  - { key: requirement.variant_flown, kind: requirement_name, params: [], notes: "Flights on the variant." }
+  - { key: requirement.differences_training, kind: requirement_name, params: [], notes: "Differences training or familiarisation." }
+  - { key: requirement.basicmed_course, kind: requirement_name, params: [], notes: "BasicMed medical education course." }
+  - { key: requirement.basicmed_exam, kind: requirement_name, params: [], notes: "BasicMed comprehensive medical examination." }
+  - { key: requirement.proficiency_program, kind: requirement_name, params: [], notes: "Phase of an FAA-sponsored pilot proficiency program." }
+  - { key: requirement.tailwheel_full_stop_landings, kind: requirement_name, params: [], notes: "Full-stop landings in a tailwheel aeroplane." }
+  - { key: requirement.instrument_time, kind: requirement_name, params: [], notes: "Instrument time." }
+  - { key: requirement.night_time, kind: requirement_name, params: [], notes: "Night time." }
+  - { key: requirement.cross_country_flights, kind: requirement_name, params: [], notes: "Cross-country flights." }
+  - { key: requirement.pic_time_since_issue, kind: requirement_name, params: [], notes: "Time as PIC since licence issue." }
+  - { key: requirement.launches_as_pic, kind: requirement_name, params: [], notes: "Launches as PIC." }
+  - { key: requirement.tethered_flights, kind: requirement_name, params: [], notes: "Tethered balloon flights." }
+  - { key: requirement.mountain_landings, kind: requirement_name, params: [], notes: "Landings on designated mountain surfaces." }
+  - { key: requirement.flight_tests, kind: requirement_name, params: [], notes: "Flight tests." }
+  - { key: requirement.tests_conducted, kind: requirement_name, params: [], notes: "Tests or checks conducted as examiner." }
+  - { key: requirement.route_sector_cruise, kind: requirement_name, params: [], notes: "Route sectors (cruise of at least 15 minutes)." }
+
+  # --- remedies, further keys ---
+  - { key: remedy.ipc, kind: remedy, params: [], notes: "Take an instrument proficiency check." }
+  - { key: remedy.flight_review, kind: remedy, params: [], notes: "Complete a flight review." }
+  - { key: remedy.differences_training, kind: remedy, params: [], notes: "Complete differences training, a proficiency check or refresher training on the variant." }
+  - { key: remedy.refresher_training, kind: remedy, params: [], notes: "Complete refresher training with an instructor." }
+  - { key: remedy.renew_credential, kind: remedy, params: [], notes: "Renew the certificate." }
+
+  # --- easa-part-fcl ---
+  - { key: rating.route_sectors_not_logged, kind: message, params: [], notes: "FCL.740.A(a)(2): the proficiency check is passed but the route sectors cannot be counted, because the flights record no cruise time (a route sector needs a cruise of at least 15 minutes, FCL.010) or an examiner sector was flown in an FSTD of unknown type." }
+  - { key: rating.type_not_identifiable, kind: message, params: [], notes: "Type rating revalidation (FCL.740.H, FCL.740.PL, FCL.740.As) cannot be decided: the rating or its flights carry no type designator, or a route sector has no recorded cruise time or FSTD type, or (FCL.740.H(a)(2)) the flights record no engine count or maximum take-off mass." }
+  - { key: pax.prerequisite_exempt, kind: message, params: [], notes: "Passenger prerequisite not required: FCL.105.A(b)(2), the LAPL(A) holder previously held a PPL(A), CPL(A), ATPL(A) or MPL." }
+  - { key: privilege.underlying_certificate_invalid, kind: message, params: [], notes: "FCL.940.MI: the MI certificate is valid only while an FI, TRI or CRI certificate on the same licence is valid; none is." }
+  - { key: easa_lapl_h, kind: rule_description, params: [], notes: "EASA FCL.140.H: LAPL(H) recency per type, 6 hours with 6 take-offs and landings plus 1 hour refresher training, or a proficiency check, in the last 12 months." }
+  - { key: easa_mountain, kind: rule_description, params: [], notes: "EASA FCL.815(d): mountain rating recency, six landings on designated mountain surfaces or a proficiency check in the last 2 years." }
+  # --- easa-part-sfcl-bfcl ---
+  - { key: pax.prerequisite_met, kind: message, params: [], notes: "Passenger prerequisite since licence issue met (SFCL.115(a)(2): 10 h or 30 launches as PIC, or an FI(S) certificate; FCL.205.G(a)(2): 10 h as PIC on gyroplanes; FCL.105.A(b)(1): 10 h as PIC on aeroplanes or TMGs for a LAPL(A))." }
+  - { key: pax.prerequisite_unknown, kind: message, params: [], notes: "Passenger prerequisite since licence issue cannot be counted: the licence's issue date is not recorded (SFCL.115(a)(2), FCL.105.A(b), FCL.205.G(a)(2))." }
+  - { key: privilege.recency_credited, kind: message, params: ["date?"], notes: "Privilege recency fully credited by another qualification (SFCL.215(g): a BIR or an IR(A) credits the cloud flying recency); date is the privilege's expiry." }
+  - { key: requirement.flight_instruction, kind: requirement_name, params: [], notes: "Flight instruction received: dual plus supervised solo time (training programmes)." }
+  - { key: requirement.supervised_solo_time, kind: requirement_name, params: [], notes: "Supervised solo (SPIC) time (training programmes)." }
+  - { key: requirement.sfcl130b_credit, kind: requirement_name, params: [], notes: "SFCL.130(b) credit: 10 % of PIC time on other aircraft categories, at most 7 hours; informational." }
+  - { key: requirement.sailplane_instruction, kind: requirement_name, params: [], notes: "Flight instruction (dual plus supervised solo) in sailplanes excluding TMGs (SFCL.130(a)(2)(iv): at least 7 hours)." }
+  - { key: requirement.sailplane_dual, kind: requirement_name, params: [], notes: "Dual flight instruction in sailplanes excluding TMGs (SFCL.130(a)(2)(iv)(A): at least 3 hours)." }
+  - { key: training.distance_unknown, kind: message, params: [], notes: "Training programme: every other item met, but the qualifying cross-country flight has no recorded distance." }
+  - { key: training.credited, kind: message, params: [], notes: "Training programme fully credited by another qualification (SFCL.150(c): a Part-FCL TMG class rating credits the SPL TMG extension)." }
+  # --- easa-part-med ---
+  - { key: licence.medical_required, kind: message, params: [], notes: "MED.A.030(c): no valid medical certificate of the class the licence requires (or a higher class) is recorded; the recorded one is expired or of a lower class." }
+  - { key: licence.medical_not_recorded, kind: message, params: [], notes: "MED.A.030(c): no EASA medical certificate is recorded, so whether the licence may be exercised cannot be decided." }
+  # --- faa ---
+  - { key: pax.experience_not_logged, kind: message, params: [], notes: "Passenger recency cannot be decided because the flights do not record a required input: whether the pilot was sole manipulator of the controls (FAA 61.57(a), (b)) or pilot flying (EASA FCL.060(b)), full-stop landings, or a tailwheel airplane." }
+  - { key: pax.tailwheel_current, kind: message, params: [], notes: "FAA 61.57(a)(1)(ii): three full-stop landings in a tailwheel airplane within 90 days; passengers may be carried in a tailwheel airplane." }
+  - { key: pax.tailwheel_not_current, kind: message, params: [needed], notes: "FAA 61.57(a)(1)(ii): needed more full-stop landings in a tailwheel airplane before carrying passengers in one." }
+  - { key: pax.tailwheel_not_applicable, kind: message, params: [], notes: "FAA 61.57(a)(1)(ii): no tailwheel airplane flown in this class; the tailwheel condition does not apply." }
+  - { key: privilege.recency_not_logged, kind: message, params: [], notes: "Privilege recency cannot be decided because the flights do not record a required input (e.g. what a tow flight towed, 61.69)." }
+  - { key: privilege.cfi_reinstate_refresher, kind: message, params: [], notes: "FAA 61.197(c)/61.199(a)(1): flight instructor recent experience lapsed at most 3 calendar months ago; an approved refresher course or a practical test reinstates the privileges." }
+  - { key: privilege.cfi_reinstate_practical_test, kind: message, params: [], notes: "FAA 61.197(c)/61.199(a)(2): flight instructor recent experience lapsed more than 3 calendar months ago; only a flight instructor practical test reinstates the privileges." }
+  - { key: credential.basicmed_not_met, kind: message, params: [], notes: "FAA 61.23(c)(3): BasicMed course (24 calendar months) or comprehensive examination (48 calendar months) not current; the rows say which." }
+  - { key: credential.drivers_license_required, kind: message, params: [], notes: "FAA 61.113(i): BasicMed needs a valid U.S. driver's license; none is recorded." }
+  - { key: credential.drivers_license_expired, kind: message, params: [], notes: "FAA 61.113(i): the recorded U.S. driver's license has expired; BasicMed privileges may not be used." }
+  - { key: requirement.tailwheel_flights, kind: requirement_name, params: [], notes: "Flights in a tailwheel airplane (ever)." }
+  - { key: requirement.instructor_endorsement, kind: requirement_name, params: [], notes: "Endorsement from an authorized instructor (61.217(d), 61.101(g))." }
+  - { key: requirement.ground_instruction_activity, kind: requirement_name, params: [], notes: "Employment or activity as a ground instructor (61.217(a)); not recorded, shown as an untracked row." }
+  - { key: requirement.solo_endorsement, kind: requirement_name, params: [], notes: "Student pilot solo endorsement (61.87(n))." }
+  - { key: faa_medical_atp, kind: rule_description, params: [], notes: "FAA 61.23(d)(1)(i)-(ii): first-class medical duration for ATP privileges (12 months under 40, 6 months from 40)." }
+  - { key: faa_medical_commercial, kind: rule_description, params: [], notes: "FAA 61.23(d)(1)(iii), (d)(2)(i): first- or second-class medical duration for commercial privileges (12 months)." }
+  - { key: faa_medical_private, kind: rule_description, params: [], notes: "FAA 61.23(d): medical duration for private, recreational, student, sport and instructor privileges (60 months under 40, 24 months from 40)." }
+  - { key: faa_basicmed, kind: rule_description, params: [], notes: "FAA 61.23(c)(3), 61.113(i), Part 68: BasicMed course every 24 and examination every 48 calendar months, with a valid U.S. driver's license." }
+  - { key: faa_cfi, kind: rule_description, params: [], notes: "FAA 61.19(d), 61.197, 61.199: flight instructor certificate expiry (issued before 1 Dec 2024) or recent experience within 24 calendar months (issued since)." }
+  - { key: faa_ground_instructor, kind: rule_description, params: [], notes: "FAA 61.217: ground instructor recent experience within 12 calendar months." }
+  - { key: faa_cat_ii_iii, kind: rule_description, params: [], notes: "FAA 61.21: Category II/III pilot authorization expires at the end of the 6th calendar month after issue or renewal." }
+  - { key: faa_student_solo, kind: rule_description, params: [], notes: "FAA 61.87(n): student solo endorsement within the preceding 90 days." }
+  - { key: faa_recreational, kind: rule_description, params: [], notes: "FAA 61.101(g): recreational pilot under 400 hours needs PIC time within 180 days or an instructor's endorsement." }
+  # --- de ---
+  - { key: rating.ul_flights_kind_unknown, kind: message, params: [], notes: "German ultralight recency (LuftPersV § 45, association rules under § 45(4)): the only ultralight flights in the window have no ultralight kind recorded, so the recency cannot be determined; set the aircraft's kind." }
+  - { key: requirement.safety_training, kind: requirement_name, params: [], notes: "Safety or performance training named by the DAeC recency rule for weight-shift ultralights; not recorded, shown as an untracked row." }
+  - { key: requirement.solo_time, kind: requirement_name, params: [], notes: "Solo time: PIC plus supervised solo (training programmes)." }
+  - { key: requirement.dual_time, kind: requirement_name, params: [], notes: "Dual instruction received (training programmes)." }

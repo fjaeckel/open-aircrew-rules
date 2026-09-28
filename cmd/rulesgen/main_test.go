@@ -1,0 +1,68 @@
+package main
+
+import (
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+)
+
+// TestGenerate runs the generator on a copy of the module's vocabulary, keys and one
+// credential and checks what it writes.
+func TestGenerate(t *testing.T) {
+	root := t.TempDir()
+	cp := func(from string) {
+		b, err := os.ReadFile(filepath.Join("../..", from))
+		if err != nil {
+			t.Fatal(err)
+		}
+		to := filepath.Join(root, from)
+		if err := os.MkdirAll(filepath.Dir(to), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(to, b, 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	cp("vocabulary.yaml")
+	cp("messages/keys.yaml")
+	cp("credentials/easa/medicals/class-2.yaml")
+	stale := filepath.Join(root, "gen", "credential_gone_test.go")
+	if err := os.MkdirAll(filepath.Dir(stale), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(stale, []byte("package gen_test\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(root, "engine"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := generate(root); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(stale); !os.IsNotExist(err) {
+		t.Error("stale generated test not removed")
+	}
+	read := func(p string) string {
+		b, err := os.ReadFile(filepath.Join(root, p))
+		if err != nil {
+			t.Fatal(err)
+		}
+		return string(b)
+	}
+	if s := read("gen/constants.go"); !strings.Contains(s, "CredentialEasaMedicalClass2") || !strings.Contains(s, `"easa.medical.class-2#validity"`) {
+		t.Errorf("constants:\n%s", s)
+	}
+	if s := read("gen/credential_easa_medical_class_2_test.go"); !strings.Contains(s, `runCredentialExamples(t, "easa.medical.class-2")`) {
+		t.Errorf("credential test:\n%s", s)
+	}
+	if s := read("engine/zz_metrics_gen.go"); !strings.Contains(s, "flightMetricFuncs") {
+		t.Errorf("metrics:\n%s", s)
+	}
+	if err := generate(t.TempDir()); err == nil {
+		t.Error("a root without vocabulary must fail")
+	}
+	if err := write(filepath.Join(root, "bad.go"), []byte("package")); err == nil {
+		t.Error("unformattable source must fail")
+	}
+}

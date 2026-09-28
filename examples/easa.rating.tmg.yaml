@@ -1,0 +1,79 @@
+credential: easa.rating.tmg
+examples:
+  - name: revalidation-sep-sea-not-pooled-with-tmg
+    evaluation: revalidation
+    says: SEP(sea) and TMG do not pool; each class counts only its own flights.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      ratings:
+        - {id: r-sea, licenceId: l-ppl, class: SEP_SEA, expires: 2026-10-31}
+        - {id: r-tmg, licenceId: l-ppl, class: TMG, expires: 2026-10-31}
+      flights:
+        - {date: 2026-03-10, class: SEP_SEA, minutes: {total: 300, pic: 300}, takeoffs: {day: 5}, landings: {day: 5}}
+        - {date: 2026-05-20, class: TMG, minutes: {total: 60, dual: 60}, takeoffs: {day: 2}, landings: {day: 2}}
+        - {date: 2026-06-12, class: TMG, minutes: {total: 360, pic: 60, dual: 300}, takeoffs: {day: 5}, landings: {day: 5}}
+    expect: { status: expiring, message: rating.revalidation_not_met }
+  - name: revalidation-pooled-with-sep-land
+    evaluation: revalidation
+    shows: [pooling-same-licence]
+    says: With SEP land and TMG ratings on the same licence, SEP land flights revalidate the TMG rating too.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      ratings:
+        - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-03-31}
+        - {id: r-tmg, licenceId: l-ppl, class: TMG, expires: 2027-03-31}
+      flights:
+        - {date: 2026-09-01, class: SEP_LAND, minutes: {total: 720, pic: 660, dual: 60}, takeoffs: {day: 12}, landings: {day: 12}}
+    expect: { subject: { kind: rating, id: r-tmg }, status: current, message: rating.revalidation_current }
+  - name: passengers-day-current
+    evaluation: passengers_day
+    says: Three take-offs and landings as pilot flying in the class within 90 days.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      ratings:
+        - {id: r-tmg, licenceId: l-ppl, class: TMG, expires: 2027-06-30}
+      flights:
+        - {date: 2026-08-20, class: TMG, minutes: {total: 60, pic: 60}, takeoffs: {day: 3}, landings: {day: 3}, pilotFlying: true}
+    expect: { status: current, message: pax.day_current }
+  - name: passengers-day-one-short
+    evaluation: passengers_day
+    says: Two take-offs and landings are one short.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      ratings:
+        - {id: r-tmg, licenceId: l-ppl, class: TMG, expires: 2027-06-30}
+      flights:
+        - {date: 2026-08-20, class: TMG, minutes: {total: 60, pic: 60}, takeoffs: {day: 2}, landings: {day: 2}, pilotFlying: true}
+    expect: { status: expired, message: pax.not_current, params: { needed: 1 } }
+  - name: passengers-night-current
+    evaluation: passengers_night
+    says: One night take-off and landing as pilot flying in the class within 90 days.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      ratings:
+        - {id: r-tmg, licenceId: l-ppl, class: TMG, expires: 2027-06-30}
+      flights:
+        - {date: 2026-08-20, class: TMG, minutes: {total: 60, pic: 60}, takeoffs: {night: 1}, landings: {night: 1}, pilotFlying: true}
+    expect: { status: current, message: pax.night_current }
+  - name: passengers-night-day-only
+    evaluation: passengers_night
+    says: Day take-offs and landings do not count for night passengers.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      ratings:
+        - {id: r-tmg, licenceId: l-ppl, class: TMG, expires: 2027-06-30}
+      flights:
+        - {date: 2026-08-20, class: TMG, minutes: {total: 60, pic: 60}, takeoffs: {day: 3}, landings: {day: 3}, pilotFlying: true}
+    expect: { status: expired, message: pax.night_not_current }

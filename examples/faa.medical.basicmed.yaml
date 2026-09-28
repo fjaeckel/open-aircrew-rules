@@ -1,0 +1,28 @@
+credential: faa.medical.basicmed
+examples:
+  - name: course-and-examination-current
+    evaluation: course_and_examination
+    says: A BasicMed course in February 2025 and an examination in May 2023, with a valid driver's license, allow PIC under 61.113(i) through 28 February 2027, when the course leaves its 24 calendar months.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-ppl, authority: FAA, type: PRIVATE}
+      credentials:
+        - {id: c-dl, type: US_DRIVERS_LICENSE, issued: 2022-01-01, expires: 2030-01-01}
+        - {id: c-bm, type: FAA_BASICMED, issued: 2023-05-01}
+      events:
+        - {date: 2023-05-01, kind: basicmed_exam}
+        - {date: 2025-02-10, kind: basicmed_course}
+    expect: { status: current, message: credential.valid }
+  - name: course-and-examination-course-lapsed
+    evaluation: course_and_examination
+    says: A course on 31 July 2024 is outside the 24 calendar months on 16 August 2026 (they start on 1 August 2024); an examination on 1 August 2022 is just inside the 48.
+    asOf: 2026-08-16
+    record:
+      credentials:
+        - {id: c-dl, type: US_DRIVERS_LICENSE, expires: 2030-01-01}
+        - {id: c-bm, type: FAA_BASICMED}
+      events:
+        - {date: 2022-08-01, kind: basicmed_exam}
+        - {date: 2024-07-31, kind: basicmed_course}
+    expect: { status: lapsed, message: credential.basicmed_not_met }

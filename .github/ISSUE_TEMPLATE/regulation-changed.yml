@@ -1,0 +1,30 @@
+name: A regulation changed
+description: An amendment, new article or new effective date that the catalogue does not reflect yet.
+labels: [regulation-change]
+body:
+  - type: input
+    id: instrument
+    attributes:
+      label: Regulation and articles
+      description: e.g. Commission Implementing Regulation (EU) 2026/123 amending FCL.060, or 14 CFR 61.57
+    validations:
+      required: true
+  - type: input
+    id: effective
+    attributes:
+      label: Effective date
+      description: The date the amended text applies from.
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Official source
+      description: EUR-Lex / Official Journal, Federal Register or eCFR, Bundesgesetzblatt or gesetze-im-internet.de.
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: What changes
+      description: Which credentials and evaluations are affected, if you know.

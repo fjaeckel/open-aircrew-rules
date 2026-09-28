@@ -1,0 +1,69 @@
+credential: faa.medical.first-class
+examples:
+  - name: private-privileges-step-down-first-class
+    evaluation: private_privileges
+    says: An ATP aged 45 examined on 10 January 2025 keeps third-class (private) privileges from the first-class medical through 31 January 2027, long after the ATP and commercial privileges ended.
+    asOf: 2026-08-16
+    record:
+      holder: {dateOfBirth: 1980-01-01}
+      licences:
+        - {id: l-atp, authority: FAA, type: ATP}
+      credentials:
+        - {id: c-1, type: FAA_CLASS1_MEDICAL, issued: 2025-01-10}
+    expect: { status: current, message: credential.valid }
+  - name: commercial-privileges-twelve-months
+    evaluation: commercial_privileges
+    says: For commercial privileges a second-class medical of 20 August 2025 runs through 31 August 2026 and a first-class one of 1 December 2025 through 31 December 2026, whatever the pilot's age.
+    asOf: 2026-08-16
+    record:
+      holder: {dateOfBirth: 1960-01-01}
+      licences:
+        - {id: l-cpl, authority: FAA, type: COMMERCIAL}
+      credentials:
+        - {id: c-2, type: FAA_CLASS2_MEDICAL, issued: 2025-08-20}
+        - {id: c-1, type: FAA_CLASS1_MEDICAL, issued: 2025-12-01}
+    expect: { status: current, message: credential.valid }
+  - name: atp-privileges-under-40
+    evaluation: atp_privileges
+    says: An ATP aged 35 at the examination on 10 February 2026 holds first-class privileges through 28 February 2027, the end of the 12th month after the month of the examination.
+    asOf: 2026-08-16
+    record:
+      holder: {dateOfBirth: 1990-05-01}
+      licences:
+        - {id: l-atp, authority: FAA, type: ATP}
+      credentials:
+        - {id: c-med, type: FAA_CLASS1_MEDICAL, issued: 2026-02-10}
+    expect: { status: current, message: credential.valid }
+  - name: atp-privileges-expired-day-after
+    evaluation: atp_privileges
+    says: On 1 October the first-class privileges for ATP operations have ended; the entered expiry date of 2027 does not extend them.
+    asOf: 2026-10-01
+    record:
+      holder: {dateOfBirth: 1970-01-01}
+      licences:
+        - {id: l-atp, authority: FAA, type: ATP}
+      credentials:
+        - {id: c-med, type: FAA_CLASS1_MEDICAL, issued: 2026-03-02, expires: 2027-03-31}
+    expect: { status: expired, message: credential.expired }
+  - name: commercial-privileges-expired
+    evaluation: commercial_privileges
+    says: For commercial privileges a first-class certificate runs to the end of the 12th month after the examination, whatever the age.
+    asOf: 2026-09-15
+    record:
+      holder: { dateOfBirth: 1990-04-02 }
+      licences:
+        - {id: l-com, authority: FAA, type: Commercial}
+      credentials:
+        - {id: m1, type: FAA_CLASS1_MEDICAL, issued: 2025-01-10}
+    expect: { status: expired, message: credential.expired, expiresOn: 2026-01-31 }
+  - name: private-privileges-expired-over-40
+    evaluation: private_privileges
+    says: Examined at 45, the certificate supports private privileges for 24 calendar months.
+    asOf: 2026-09-15
+    record:
+      holder: { dateOfBirth: 1978-06-01 }
+      licences:
+        - {id: l-ppl, authority: FAA, type: Private}
+      credentials:
+        - {id: m1, type: FAA_CLASS1_MEDICAL, issued: 2024-01-10}
+    expect: { status: expired, message: credential.expired, expiresOn: 2026-01-31 }
