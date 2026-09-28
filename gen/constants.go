@@ -114,6 +114,7 @@ const (
 	EvaluationDeRatingUlWeightShiftRecencyDulv                  = "de.rating.ul-weight-shift#recency_dulv"
 	EvaluationEasaEndorsementLanguageProficiencyLevel4          = "easa.endorsement.language-proficiency#level_4"
 	EvaluationEasaEndorsementLanguageProficiencyLevel5          = "easa.endorsement.language-proficiency#level_5"
+	EvaluationEasaEndorsementLanguageProficiencyLevel6          = "easa.endorsement.language-proficiency#level_6"
 	EvaluationEasaExaminerFclExaminerRevalidation               = "easa.examiner.fcl-examiner#revalidation"
 	EvaluationEasaExaminerFeSRevalidation                       = "easa.examiner.fe-s#revalidation"
 	EvaluationEasaInstructorCriRevalidation                     = "easa.instructor.cri#revalidation"

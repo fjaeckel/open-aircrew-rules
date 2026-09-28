@@ -16,7 +16,7 @@ examples:
     expect: { message: credential.expired }
   - name: commercial-privileges-expired-day-after
     evaluation: commercial_privileges
-    says: From 1 September 2026 the medical no longer covers commercial privileges (it may still cover private ones, see faa.14cfr61.61-23-d.private).
+    says: From 1 September 2026 the medical no longer covers commercial privileges (it may still cover private ones, see faa.medical.second-class#private_privileges).
     asOf: 2026-09-01
     record:
       licences:

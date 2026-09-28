@@ -350,3 +350,16 @@ examples:
         - { date: 2026-04-10, class: POWERED_LIFT, variant: STANDARD, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, typeDesignator: AW609 }
     outcome: lapsed
     expect: { subject: { kind: type, id: v-1 }, message: type.not_flown, requirements: { variant_flown: { current: 0, met: false, remedyKey: remedy.differences_training } } }
+  - name: composite-on-mpl-unknown
+    composite: true
+    shows: [part-fcl-type-ratings]
+    says: FCL.720.PL names a CPL or ATPL as the licence for a powered-lift type rating; recorded on an MPL the rating finds no required licence and the answer is unknown.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: MPL }
+      ratings:
+        - { id: r-type, licenceId: l-1, class: POWERED_LIFT, typeDesignator: AW609, expires: 2027-12-31 }
+      flights: []
+    outcome: unknown
+    expect: { subject: { kind: rating, id: r-type }, decidedBy: { evaluation: licence } }

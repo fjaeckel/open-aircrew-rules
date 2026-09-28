@@ -16,7 +16,7 @@ articles:
   - article: "easa:FCL.050"
     not_evaluated: 'Not a currency or validity rule: FCL.050 is the obligation to keep the logbook itself.'
   - article: "easa:FCL.055"
-    evaluations: [easa.endorsement.language-proficiency#level_4, easa.endorsement.language-proficiency#level_5]
+    evaluations: [easa.endorsement.language-proficiency#level_4, easa.endorsement.language-proficiency#level_5, easa.endorsement.language-proficiency#level_6]
   - article: "easa:FCL.060"
     evaluations: [easa.rating.sep-land#passengers_day, easa.rating.sep-sea#passengers_day, easa.rating.tmg#passengers_day, easa.rating.sep-land#passengers_night, easa.rating.sep-sea#passengers_night, easa.rating.tmg#passengers_night, easa.licence.gpl#passengers_day, easa.licence.gpl#passengers_night, easa.rating.mep-land#passengers_day, easa.rating.mep-land#passengers_night, easa.rating.mep-sea#passengers_day, easa.rating.mep-sea#passengers_night, easa.rating.set-land#passengers_day, easa.rating.set-land#passengers_night, easa.rating.set-sea#passengers_day, easa.rating.set-sea#passengers_night, easa.rating.helicopter-type#passengers_day, easa.rating.helicopter-type#passengers_night, easa.rating.powered-lift-type#passengers_day, easa.rating.powered-lift-type#passengers_night, easa.rating.airship-type#passengers_day, easa.rating.airship-type#passengers_night, easa.licence.lapl-a#passengers_day, easa.licence.lapl-a#passengers_night, easa.licence.lapl-h#passengers_day, easa.licence.lapl-h#passengers_night]
   - article: "easa:FCL.065"

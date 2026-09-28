@@ -92,6 +92,12 @@ catalogue changes are grouped by authority and name the credential or evaluation
   `easa.shared.medical-certificate`, `easa.shared.sfcl-passenger-prerequisite`,
   `easa.shared.variants` (variant not flown within 2 years, FCL.710(d), FCL.140.A(c)),
   `easa.shared.instructor-certificate-validity`.
+- Verbatim texts of Part-FCL FCL.720.PL, FCL.1000 and FCL.1020 (EUR-Lex consolidated
+  version 30.04.2026) under `sources/easa/`, the evidence for the powered-lift licence
+  prerequisite and the examiner readings.
+- `easa.endorsement.language-proficiency#level_6`: an expert level (6) endorsement is now
+  selected and reported valid (it is never re-evaluated) unless a recorded validity date has
+  passed.
 
 #### FAA
 
@@ -142,6 +148,15 @@ catalogue changes are grouped by authority and name the credential or evaluation
   `faa.shared.passengers-night`, `faa.shared.passengers-tailwheel`,
   `faa.shared.passengers-glider`, `faa.shared.medical-duration-private`,
   `faa.shared.medical-duration-commercial`.
+- `faa.privilege.glider-towing`: composite examples for a towing privilege on an airline
+  transport pilot certificate with a helicopter rating (current) and on a certificate with
+  only a glider rating (unknown, no powered category).
+- Sources: 14 CFR 61.67 and 61.68 (Category II and III pilot authorization requirements),
+  and excerpts (dates and amendatory instructions) of the final rules 89 FR 80020
+  (flight instructor certificates, effective 1 December 2024) and 90 FR 35034 (sport pilot
+  night privileges, effective 22 October 2025).
+- Review of every FAA instructor, privilege, rating and medical interpretation:
+  `reviews/faa-instructors-privileges-ratings-medicals.md`.
 
 #### Germany
 
@@ -161,6 +176,14 @@ catalogue changes are grouped by authority and name the credential or evaluation
 - `de.instructor.ul-instructor` ultralight instructor rating: three years from valid-from,
   extended by two of instruction given, a refresher course and an assessment of competence
   in the last three years (§ 96(1), (4)), and its licence.
+- Verbatim sources for the review of the German ultralight licence, privileges and instructor
+  rating: LuftPersV § 95a (instructor rating) and § 122 (repealed, referred to by § 84a(2)),
+  BGB §§ 187 and 188 and VwVfG § 31 (how periods are counted).
+- `reviews/de-ul-licence-privileges-instructor.md`: first-pass review of the 25
+  interpretations of `de.licence.ul`, `de.instructor.ul-instructor`,
+  `de.privilege.ul-passenger-authorisation`, `de.privilege.ul-towing` and
+  `de.shared.ul-passengers` (15 supported, 10 needing a decision, none contradicted; no
+  evaluation result changed).
 
 #### Tools and format
 
@@ -202,6 +225,19 @@ catalogue changes are grouped by authority and name the credential or evaluation
   cloud-flying privileges on those licences.
 - Ratings and privileges name the licence they need (`requires_any` / `requires_all`); the
   PPL(A) no longer lists its class ratings and the SPL no longer lists its privileges.
+- `easa.endorsement.language-proficiency`: a licence whose holder has only a level 6
+  endorsement recorded was reported unknown (endorsement not held); it now meets the
+  language requirement (FCL.055(c)).
+- `easa.examiner.fe-s#revalidation`: the demonstration of examiner ability counts only an
+  assessment of competence recorded for the rating FE_S; an assessment of competence as a
+  pilot or instructor no longer revalidates the FE(S) certificate (SFCL.460(b)(2)).
+- `easa.rating.powered-lift-type#licence`: the rating requires a CPL or ATPL (aeroplanes or
+  helicopters), the licences FCL.720.PL names; an MPL no longer satisfies it, and the
+  interpretation `part-fcl-type-ratings` now cites FCL.720.PL instead of being marked
+  unverified.
+- `easa.examiner.fcl-examiner`: interpretation `not-applied` cites FCL.1025(b) (where the
+  combined revalidation of several examiner categories is written) instead of
+  FCL.1025(b)(3)(ii).
 
 #### FAA
 
@@ -211,6 +247,16 @@ catalogue changes are grouped by authority and name the credential or evaluation
 - The student solo endorsement, the flight instructor practical test and refresher course and
   the ground instructor refresher course and endorsement are counted with their own count
   words instead of stand-ins; no result changes.
+- `faa.instructor.flight-instructor#recent_experience`: interpretation `other-means-not-recorded`
+  now reads 61.197(a)(1) as it is written (the 24 calendar months may start from the month
+  the FAA issued the certificate, whatever led to the issue) and says that the recorded
+  issue date is not counted, so a certificate issued in the last 24 calendar months reads
+  lapsed until the test or refresher course behind it is recorded. Three worked examples
+  that reported a certificate issued in December 2024 as lapsed or expiring in 2026 (when
+  61.197(a)(1) keeps it current through 31 December 2026) now use dates in 2027; their
+  outcomes are unchanged.
+- Worked examples of `faa.instructor.flight-instructor` and `faa.medical.second-class` name
+  evaluations by their current ids instead of retired rule ids.
 
 #### EASA and Germany
 

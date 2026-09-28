@@ -115,3 +115,42 @@ examples:
         - {date: 2026-05-10, class: SEP_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 3}, landings: {day: 3}, towKind: glider, towedGliders: 3, flags: {towFlight: true, accompanied: true}}
     outcome: current
     expect: { message: privilege.recency_current }
+  - name: composite-atp-helicopter
+    composite: true
+    shows: [powered-certificate]
+    says: A towing privilege on an airline transport pilot certificate with a helicopter rating, a first-class medical certificate, a flight review and three accompanied tows may be exercised; the rotorcraft category is a powered category.
+    asOf: 2026-08-16
+    record:
+      holder: {dateOfBirth: 1990-01-01}
+      licences:
+        - {id: l-faa, authority: FAA, type: ATP}
+      ratings:
+        - {id: r-heli, licenceId: l-faa, class: HELICOPTER}
+      privileges:
+        - {id: p-tow, licenceId: l-faa, kind: SAILPLANE_TOWING}
+      credentials:
+        - {id: c-med, type: FAA_CLASS1_MEDICAL, issued: 2026-03-01}
+      events:
+        - {date: 2025-09-01, kind: flight_review}
+      flights:
+        - {date: 2026-05-10, class: HELICOPTER, minutes: {total: 60, pic: 60}, takeoffs: {day: 3}, landings: {day: 3}, towKind: glider, towedGliders: 3, flags: {towFlight: true, accompanied: true}}
+    outcome: current
+    expect: { subject: { kind: privilege, id: p-tow } }
+  - name: composite-glider-certificate-only
+    composite: true
+    shows: [powered-certificate]
+    says: A towing privilege recorded on a certificate with only a glider category rating has no powered category behind it; with no powered-category credential held, whether it may be exercised is unknown.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: GLIDER}
+      ratings:
+        - {id: r-gl, licenceId: l-faa, class: GLIDER}
+      privileges:
+        - {id: p-tow, licenceId: l-faa, kind: SAILPLANE_TOWING}
+      events:
+        - {date: 2025-09-01, kind: flight_review}
+      flights:
+        - {date: 2026-05-10, class: SEP_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 3}, landings: {day: 3}, towKind: glider, towedGliders: 3, flags: {towFlight: true, accompanied: true}}
+    outcome: unknown
+    expect: { subject: { kind: privilege, id: p-tow }, decidedBy: { evaluation: certificate } }

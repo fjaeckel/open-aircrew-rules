@@ -18,7 +18,7 @@ examples:
   - name: expiry-new-regime
     evaluation: certificate_expiry
     shows: [regime-by-recorded-expiry]
-    says: A flight instructor certificate issued on or after 1 December 2024 has no expiration date; this rule does not apply (recent experience is faa.14cfr61.61-197.cfi-recent-experience). EASA instructor privileges are not evaluated.
+    says: A flight instructor certificate issued on or after 1 December 2024 has no expiration date; this rule does not apply (recent experience is faa.instructor.flight-instructor#recent_experience). EASA instructor privileges are not evaluated.
     asOf: 2026-08-16
     record:
       licences:
@@ -88,7 +88,7 @@ examples:
       params: { date: 2026-09-30 }
   - name: recent-experience-old-regime-before
     evaluation: recent_experience
-    says: Certificates carrying an expiration date were issued before 1 December 2024 and follow faa.14cfr61.61-19-d.cfi-expiry, whether before, on or after their expiry date.
+    says: Certificates carrying an expiration date were issued before 1 December 2024 and follow faa.instructor.flight-instructor#certificate_expiry, whether before, on or after their expiry date.
     asOf: 2026-08-16
     record:
       licences:
@@ -103,7 +103,7 @@ examples:
       message: privilege.not_applicable
   - name: recent-experience-old-regime-on
     evaluation: recent_experience
-    says: Certificates carrying an expiration date were issued before 1 December 2024 and follow faa.14cfr61.61-19-d.cfi-expiry, whether before, on or after their expiry date.
+    says: Certificates carrying an expiration date were issued before 1 December 2024 and follow faa.instructor.flight-instructor#certificate_expiry, whether before, on or after their expiry date.
     asOf: 2026-08-16
     record:
       licences:
@@ -117,7 +117,7 @@ examples:
       subject: { kind: privilege, id: p-on }
   - name: recent-experience-old-regime-after
     evaluation: recent_experience
-    says: Certificates carrying an expiration date were issued before 1 December 2024 and follow faa.14cfr61.61-19-d.cfi-expiry, whether before, on or after their expiry date.
+    says: Certificates carrying an expiration date were issued before 1 December 2024 and follow faa.instructor.flight-instructor#certificate_expiry, whether before, on or after their expiry date.
     asOf: 2026-08-16
     record:
       licences:
@@ -132,15 +132,15 @@ examples:
   - name: recent-experience-practical-test-reinstatement
     evaluation: recent_experience
     shows: [reinstatement-window]
-    says: Recent experience ended on 30 April 2026; May, June and July have passed, so in August only a flight instructor practical test reinstates the privileges.
-    asOf: 2026-08-16
+    says: The certificate issued in December 2024 started a period running through 31 December 2026; the refresher course of February 2025 carried recent experience through 28 February 2027. March, April and May have passed, so in June only a flight instructor practical test reinstates the privileges.
+    asOf: 2027-06-16
     record:
       licences:
         - { id: l-faa, authority: FAA, type: ATP }
       privileges:
         - { id: p-cfi, licenceId: l-faa, kind: CFI, issued: 2024-12-05 }
       events:
-        - { date: 2024-04-10, kind: instructor_refresher }
+        - { date: 2025-02-10, kind: instructor_refresher }
     outcome: lapsed
     expect:
       subject: { kind: privilege, id: p-cfi }
@@ -171,31 +171,31 @@ examples:
         refresher_course: { current: 1, met: true }
   - name: recent-experience-refresher-reinstatement
     evaluation: recent_experience
-    says: The practical test of 31 July 2024 carried recent experience through 31 July 2026. In August, within 3 calendar months after that last month, a refresher course or a practical test reinstates the privileges.
-    asOf: 2026-08-16
+    says: The practical test of 31 March 2025 carried recent experience through 31 March 2027 (later than the period the December 2024 issue started). In April, within 3 calendar months after that last month, a refresher course or a practical test reinstates the privileges.
+    asOf: 2027-04-16
     record:
       licences:
         - { id: l-faa, authority: FAA, type: COMMERCIAL }
       privileges:
         - { id: p-cfi, licenceId: l-faa, kind: CFI, issued: 2024-12-05 }
       events:
-        - { date: 2024-07-31, kind: practical_test, rating: CFI }
+        - { date: 2025-03-31, kind: practical_test, rating: CFI }
     outcome: lapsed
     expect:
       subject: { kind: privilege, id: p-cfi }
       message: privilege.cfi_reinstate_refresher
   - name: recent-experience-window-first-day
     evaluation: recent_experience
-    says: A flight instructor practical test on 1 August 2024 (the certificate was reissued without expiration later) still counts on 16 August 2026, through 31 August.
-    asOf: 2026-08-16
+    says: A flight instructor practical test on 1 April 2025 still counts on 16 April 2027, through 30 April.
+    asOf: 2027-04-16
     record:
       licences:
         - { id: l-faa, authority: FAA, type: COMMERCIAL }
       privileges:
         - { id: p-cfi, licenceId: l-faa, kind: CFI, issued: 2024-12-05 }
       events:
-        - { date: 2024-08-01, kind: practical_test, rating: CFII }
+        - { date: 2025-04-01, kind: practical_test, rating: CFII }
     outcome: current
     expect:
       subject: { kind: privilege, id: p-cfi }
-      params: { date: 2026-08-31 }
+      params: { date: 2027-04-30 }

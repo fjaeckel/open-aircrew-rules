@@ -36,3 +36,33 @@ examples:
         - {id: c-lang, type: LANG_ICAO_LEVEL5, issued: 2023-04-15}
     outcome: expired
     expect: { message: credential.expired }
+  - name: level-6-no-expiry
+    evaluation: level_6
+    shows: [level-6-not-evaluated]
+    says: An expert level (6) endorsement is not re-evaluated; without a recorded expiry date it stays valid.
+    asOf: 2026-09-15
+    record:
+      credentials:
+        - {id: c-lang, type: LANG_ICAO_LEVEL6, issued: 2012-04-15}
+    outcome: current
+    expect: { message: credential.valid }
+  - name: level-6-recorded-expiry-passed
+    evaluation: level_6
+    shows: [level-6-not-evaluated]
+    says: A validity date recorded on a level 6 endorsement still ends it the day after.
+    asOf: 2026-09-15
+    record:
+      credentials:
+        - {id: c-lang, type: LANG_ICAO_LEVEL6, issued: 2012-04-15, expires: 2026-09-14}
+    outcome: expired
+    expect: { message: credential.expired, params: { date: 2026-09-14 } }
+  - name: composite-level-6
+    composite: true
+    shows: [level-6-not-evaluated]
+    says: A level 6 endorsement is a held, valid language endorsement, so a licence requiring one is not left unknown.
+    asOf: 2026-09-15
+    record:
+      credentials:
+        - {id: c-lang, type: LANG_ICAO_LEVEL6, issued: 2012-04-15}
+    outcome: current
+    expect: { subject: { kind: credential, id: c-lang } }
