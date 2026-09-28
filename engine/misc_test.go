@@ -192,6 +192,7 @@ func TestMetricsAllImplemented(t *testing.T) {
 		Takeoffs: DayNight{Day: 1, Night: 2}, Landings: DayNight{Day: 3, Night: 4},
 		FullStopLandings: &two, FullStopNightLandings: &one, Launches: 5, Approaches: 6, Holds: 7,
 		InterceptAndTrack: &yes, CruiseMinutes: &two, MountainLandings: &three, Flags: Flags{TowFlight: true},
+		NightPeriodTakeoffs: &one,
 	}
 	want := map[string]float64{
 		"flights": 1, "route_sectors": 0, "minutes.total": 1, "minutes.pic": 2, "minutes.dual": 3, "minutes.spic": 4,
@@ -200,6 +201,7 @@ func TestMetricsAllImplemented(t *testing.T) {
 		"takeoffs.total": 3, "takeoffs.night": 2, "landings.total": 7, "landings.night": 4, "mountain_landings": 3,
 		"takeoffs_and_landings": 3, "full_stop_landings": 2, "full_stop_night_landings": 1, "launches": 5, "approaches": 6,
 		"holds": 7, "intercept_and_track": 1, "not_recorded": 0, "training_flights": 1, "longest_training_flight_minutes": 1, "tows": 1,
+		"takeoffs.night_period": 1, "longest_flight_minutes": 1,
 	}
 	for name, fn := range flightMetricFuncs {
 		got := fn(f)
@@ -212,6 +214,9 @@ func TestMetricsAllImplemented(t *testing.T) {
 		if flightMetricFuncs[name](empty).known {
 			t.Errorf("%s of an empty flight must be unknown", name)
 		}
+	}
+	if !flightMetricFuncs["takeoffs.night_period"](empty).known || flightMetricFuncs["takeoffs.night_period"](&Flight{Takeoffs: DayNight{Night: 1}}).known {
+		t.Error("takeoffs.night_period: 0 without night take-offs, unknown with them and no period count")
 	}
 	if flightMetricFuncs["tows"](empty).v != 0 || flightMetricFuncs["tows"](&Flight{TowedGliders: &two, Flags: Flags{TowFlight: true}}).v != 2 {
 		t.Error("tows")

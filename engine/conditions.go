@@ -3,6 +3,7 @@ package engine
 import (
 	"math"
 	"slices"
+	"strings"
 )
 
 // cond evaluates a stage or requirement condition on d; root is the tree state on asOf.
@@ -40,6 +41,13 @@ func (e *evalCtx) cond(c *Condition, d Date, root tri) bool {
 		return e.holds(c.Holds, d)
 	case "missing":
 		return c.Ref == "date_of_birth" && e.p.rec.Holder.DateOfBirth == nil
+	case "seeks":
+		for _, t := range e.p.rec.Trainings {
+			if strings.EqualFold(t.Programme, e.subj.Detail) && slices.ContainsFunc(t.Seeks, func(s string) bool { return slices.Contains(c.Seeks, s) }) {
+				return true
+			}
+		}
+		return false
 	case "all":
 		for _, s := range c.List {
 			if !e.cond(s, d, root) {
@@ -61,9 +69,14 @@ func (e *evalCtx) cond(c *Condition, d Date, root tri) bool {
 }
 
 // ImplementedConditions lists the stage conditions cond understands.
-var ImplementedConditions = []string{"always", "all_met", "undetermined", "met", "unmet", "expired", "no_expiry", "expires_within", "valid_until_within", "before_window", "met_within", "holds", "missing", "all", "any", "not"}
+var ImplementedConditions = []string{"always", "all_met", "undetermined", "met", "unmet", "expired", "no_expiry", "expires_within", "valid_until_within", "before_window", "met_within", "holds", "missing", "seeks", "all", "any", "not"}
 
 func (e *evalCtx) leafByID(id string, d Date) (leafState, bool) {
+	for _, n := range e.sums {
+		if n.ID == id {
+			return e.evalSum(n, d, nil, false), true
+		}
+	}
 	for n, lf := range e.leaves {
 		if n.ID == id {
 			return e.evalLeaf(lf, d), true
@@ -74,8 +87,16 @@ func (e *evalCtx) leafByID(id string, d Date) (leafState, bool) {
 
 // holds tests what the holder holds on d.
 func (e *evalCtx) holds(h *Holds, d Date) bool {
-	valid := func(exp *Date) bool { return !h.Valid || exp == nil || !d.After(*exp) }
+	valid := func(exp *Date) bool {
+		return (!h.ExpiryRecorded || exp != nil) && (!h.Valid || exp == nil || !d.After(*exp))
+	}
 	onLicence := func(id string) bool {
+		if len(h.Authorities) > 0 {
+			l := e.p.licenceOf(id)
+			if l == nil || !containsFold(h.Authorities, l.Authority) {
+				return false
+			}
+		}
 		return !h.SameLicence || (e.subj.licence != nil && e.subj.licence.ID == id)
 	}
 	var found []string
@@ -91,6 +112,9 @@ func (e *evalCtx) holds(h *Holds, d Date) bool {
 			if len(h.LicenceKinds) > 0 && !slices.Contains(h.LicenceKinds, e.p.licenceKind[r.LicenceID]) {
 				continue
 			}
+			if h.SameCategory && (e.subj.category == "" || e.p.ratingCategory(&r) != e.subj.category) {
+				continue
+			}
 			found = append(found, r.Class)
 		}
 		return holdsResult(h.Every, h.Classes, found)
@@ -103,7 +127,7 @@ func (e *evalCtx) holds(h *Holds, d Date) bool {
 		return holdsResult(h.Every, h.LicenceKinds, found)
 	case len(h.Privileges) > 0:
 		for _, pv := range e.p.rec.Privileges {
-			if slices.Contains(h.Privileges, pv.Kind) && onLicence(pv.LicenceID) && valid(pv.Expires) {
+			if slices.Contains(h.Privileges, pv.Kind) && onLicence(pv.LicenceID) && valid(pv.Expires) && e.detailMatches(h.Details, pv.Detail) {
 				found = append(found, pv.Kind)
 			}
 		}
@@ -115,6 +139,36 @@ func (e *evalCtx) holds(h *Holds, d Date) bool {
 			}
 		}
 		return holdsResult(h.Every, h.Credentials, found)
+	}
+	return false
+}
+
+// detailMatches tests a privilege detail against holds.details: none matches an empty
+// detail, $subject the subject's ultralight kind (else class), other words themselves.
+func (e *evalCtx) detailMatches(want []string, detail string) bool {
+	if len(want) == 0 {
+		return true
+	}
+	words := strings.FieldsFunc(detail, func(r rune) bool { return strings.ContainsRune(",;/+ \t", r) })
+	for _, w := range want {
+		switch w {
+		case "none":
+			if len(words) == 0 {
+				return true
+			}
+		case subjectToken:
+			subj := e.subj.ULKind
+			if subj == "" {
+				subj = e.subj.Class
+			}
+			if subj != "" && slices.ContainsFunc(words, func(x string) bool { return strings.EqualFold(x, subj) }) {
+				return true
+			}
+		default:
+			if slices.ContainsFunc(words, func(x string) bool { return strings.EqualFold(x, w) }) {
+				return true
+			}
+		}
 	}
 	return false
 }
@@ -187,14 +241,21 @@ func (e *evalCtx) derivedExpiry(v *Validity) *Date {
 	if anchor == nil {
 		return nil
 	}
+	ageAt := anchor
+	switch v.AgeOn {
+	case "issued":
+		ageAt = e.subj.issued
+	case "valid_from":
+		ageAt = e.subj.validFrom
+	}
 	dob := e.p.rec.Holder.DateOfBirth
 	for _, p := range v.Periods {
 		ok := true
 		for c, n := range p.When {
-			if dob == nil {
+			if dob == nil || ageAt == nil {
 				return nil
 			}
-			age := dob.YearsBetween(*anchor)
+			age := dob.YearsBetween(*ageAt)
 			switch c {
 			case "age_under":
 				ok = ok && age < n
@@ -215,6 +276,7 @@ func (e *evalCtx) derivedExpiry(v *Validity) *Date {
 			}
 			end = minDate(end, dob.AddMonths(12**p.CapAtAge))
 		}
+		end = end.AddDays(v.EndOffsetDays)
 		return &end
 	}
 	return nil

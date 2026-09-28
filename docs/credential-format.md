@@ -19,6 +19,7 @@ credentials/<authority>/endorsements/<name>.yaml    kind: endorsement
 credentials/<authority>/instructors/<name>.yaml     kind: instructor_certificate
 credentials/<authority>/examiners/<name>.yaml       kind: examiner_certificate
 credentials/<authority>/medicals/<name>.yaml        kind: medical
+credentials/<authority>/documents/<name>.yaml       kind: document (a driver's license)
 credentials/<authority>/shared/<name>.yaml          parameterised evaluations used by several credentials
 examples/<credential id>.yaml                       worked examples of one credential
 policies.yaml                                       every policy (convention with no legal text) cited as policy:<id>
@@ -135,8 +136,9 @@ An evaluation is one of three things.
    whichever credentials list it.
 3. **A requirement**: `requires_all: [credential ids]` (every one of them) and/or
    `requires_any: [credential ids]` (at least one) say that this credential needs others
-   (the licence's medical and language endorsement, the rating's licence). The entry has
-   only `id`, `asks` and these two keys. It compiles to no rule; each required credential
+   (the licence's medical and language endorsement, the rating's licence). An id may name
+   one level of the credential, `<credential id>@<level>` (below). The entry has only
+   `id`, `asks`, these two keys and optionally `level` or `limits`. It compiles to no rule; each required credential
    evaluates itself, and the requirement takes part in this credential's **composite**
    (below). Requirements point from the dependent credential to the one it depends on (a
    rating names its licence; a licence does not list its ratings); a cycle is an error.
@@ -167,6 +169,21 @@ licence), the composite combines:
   credential the record does not hold is `unknown` (reason `not_held`); `requires_any` is
   the best of the listed credentials the record holds, and `unknown` when it holds none.
 
+**Levels and limitations.** Any entry (an evaluation or a requirement) may carry
+`level: <name>` or `limits: <scope>`:
+
+- `level` puts the entry in a named level of the credential's privileges. The composite
+  lists `levels: [{ level, status, decidedBy }]`, each decided by the members of that level
+  and those without one; its own status still takes every member. A requirement
+  `<credential id>@<level>` counts that credential by the level's status. A class 1 medical
+  with `level: class_1`, `class_2` and `lapl` evaluations (AMC1 MED.A.030) is required as
+  `easa.medical.class-1@class_2` by a PPL.
+- `limits` reports the entry under `limitations` with `scope: <scope>`, never deciding. The
+  scopes are declared in `credential_vocabulary.limitation_scopes`. A CPL with a class 2
+  medical: `requires_any: [easa.medical.class-2, easa.medical.class-1@class_2]` decides
+  (private privileges), and `requires_any: [easa.medical.class-1]` with
+  `limits: commercial_privileges` says whether the commercial privileges may be used.
+
 The composite status is the worst member status, in the order expired or lapsed, unknown,
 expiring, current; `decidedBy` names the first member in file order with that status
 (`evaluation`, `kind`, and for a requirement the deciding `credential`). `not_applicable`
@@ -178,16 +195,17 @@ evaluations), not only the part the requiring credential needs.
 | Key | Meaning |
 | --- | --- |
 | `about` | The subject: `self` (default; the credential's own record part, the licence for kind licence), `rating`, `passengers` (one result per class and authority), `launch_methods` (one per launch method used), `licence`, `training` (a programme), `pilot` (one result per pilot), `variants` (one per variant recorded on a selected rating). |
-| `only_for` | Narrows the subjects: `authorities`, `not_authorities`, `licence_kinds`, `not_licence_kinds`, `classes`, `not_classes`, `ul_kinds`, `credential_types`, `privilege_kinds`, `launch_methods`, `type_rated`, `programme`, `when_holding` (engine `holds`), `ref`. |
+| `only_for` | Narrows the subjects: `authorities`, `not_authorities`, `licence_kinds`, `not_licence_kinds`, `classes`, `not_classes`, `ul_kinds`, `categories` (the subject's aircraft category), `credential_types`, `privilege_kinds`, `launch_methods`, `type_rated`, `different_engine_type` (variants), `programme`, `when_holding` (engine `holds`), `if_missing`, `ref`. With `if_missing: unknown` an item that lacks the data of `type_rated: true`, `ul_kinds`, `categories` or `different_engine_type` is reported `unknown` (`selection.input_missing`, param `input`) instead of being skipped (P1). |
 | `scope` | Replaces `selects` for this evaluation (same keys as `only_for`). |
-| `relevant_class` | `pooled_with_held: [classes]` with `ref`: `in_class` then also counts the pool's classes the holder rates on the same licence. |
+| `relevant_class` | `pooled_with_held: [classes]` with `ref`: `in_class` then also counts the pool's classes the holder rates on the same licence. Or `class_group: <set>` (vocabulary `class_groups`): `in_class` counts the subject's whole group, and `about: passengers` gives one result per group (subject `group`). |
 | `counting` | Qualifiers for every count of the evaluation (window and filters); the window here is also the period the outcomes speak of. |
 | `passes_if` | The requirement tree (below). May be absent when the outcomes decide on holdings or dates alone. |
 | `restored_by` | Events that make the tree count as met for the evaluation's period: `- { ipc: { simulator: include }, ref: faa:61.57(d)(1) }`. |
 | `effective_from`, `effective_to` | The dates the evaluation applies to, both inclusive (`YYYY-MM-DD`). When a regulation changes, the old evaluation gets `effective_to` and its successor (a new id, e.g. `revalidation_2027`) `effective_from`; outside its period an evaluation reports nothing. A `uses:` evaluation may set its own. |
-| `valid_for` | A derived expiry: `counted_from` (`issue` or `valid_from`), `periods` of `{ age_under?, age_from?, months, ends_at_age?, end_of_month?, ref }`; the first period whose ages hold applies, the earlier of the derived and a recorded expiry wins. |
+| `valid_for` | A derived expiry: `counted_from` (`issue` or `valid_from`), `age_on` (`issue` or `valid_from`: the date the age is taken on, default `counted_from`; `issue` is the examination date of a medical), `recorded_expiry_wins` (the derived end applies only without a recorded expiry), `periods` of `{ age_under?, age_from?, months, ends_at_age?, end_of_month?, ref }`; the first period whose ages hold applies, the earlier of the derived and a recorded expiry wins. An authority convention may move the derived end (below). |
 | `outcomes` | Status and message stages (below). |
 | `description_key` | Rule description key from `messages/keys.yaml`. |
+| `level`, `limits` | The composite level of the entry, or the limitation scope it reports (above). |
 | `on_fail` | What the holder does when it fails (`what`, `ref`), for readers. |
 
 ## passes_if
@@ -209,8 +227,13 @@ all_of: [ ... ]           # or any_of: [ ... ], or n_of: { n: 2, of: [ ... ] }
 `supervised_solo_time`, `instruction_time` (dual + supervised solo), `pic_dual_or_solo_time`,
 `refresher` (dual in the class), `cloud_flying_time` (sailplane cloud flying), `ifr_time`
 (IFR minutes), `cloud_flights`,
-`longest_training_flight`, `flights`, `training_flights`, `takeoffs`, `landings`,
+`longest_training_flight`, `longest_flight` (the longest counted flight; the qualifiers
+say which: `any_flight_of: [{ as: [dual] }, { flagged: { instructorOnBoard: true } }]`),
+`flights`, `training_flights`, `takeoffs`, `landings`,
 `takeoffs_and_landings` (the smaller of the two), `night_takeoffs`, `night_landings`,
+`night_period_takeoffs` (take-offs from 1 hour after sunset to 1 hour before sunrise,
+record `nightPeriodTakeoffs`; 0 on a flight without night take-offs, unknown on a night
+flight without the field),
 `full_stop_landings`, `full_stop_night_landings`, `launches`, `approaches`, `holds`,
 `intercept_and_track`, `tows`, `route_sectors` (flights with a cruise of at least 15
 minutes), `solo_time` (PIC + supervised solo), `instruction_given_time`,
@@ -219,35 +242,68 @@ holds: always untracked), and the events `proficiency_check`, `skill_test`, `pra
 `assessment_of_competence`, `instructor_refresher`, `examiner_refresher`,
 `supervised_instruction`, `differences_training`, `solo_endorsement`,
 `instructor_endorsement`, `flight_review`, `proficiency_program_phase`, `basicmed_course`,
-`basicmed_exam` (each counts events of its own kind; `also:` adds kinds). Each has a default row id,
+`basicmed_exam`, `passenger_training_flight`, `safety_training` (each counts events of its
+own kind; `also:` adds kinds). Each has a default row id,
 name key, unit and remedy key (the requirement rows consumers already display); override
 with `id`, `name`, `unit`, `remedy` (`remedy: none` drops it).
 
-Amounts: `min` for counts (default 1), `min_hours` or `min_minutes` for times.
+Amounts: `min` for counts (default 1), `min_hours` or `min_minutes` for times. `max`,
+`max_hours` or `max_minutes` cap the value a count contributes (a credit of at most 7
+hours).
+
+**Sums.** `sum_of: [counts]` adds the values of counts of one unit; the node is itself a
+requirement row with `id` (required), `min` / `min_hours` / `min_minutes` (required) and
+optional `name`, `unit`, `remedy` (defaults from its first count). Its counts have no
+minimum. SFCL.130(b):
+
+```yaml
+- id: flight_instruction
+  ref: easa:SFCL.130(a)(2)
+  min_hours: 15
+  sum_of:
+    - instruction_time: { classes: [GLIDER, TMG], ref: easa:SFCL.130(a)(2) }
+    - pic_time: { classes: [SEP_LAND, HELICOPTER], credit: sfcl-130b-credit, max_hours: 7, ref: easa:SFCL.130(b) }
+```
 
 **Qualifiers** (`credential_vocabulary.qualifiers`), on a count, a combinator, in
 `counting` or on a `restored_by` event:
 
 | Qualifier | Counts |
 | --- | --- |
-| `within_days: n`, `within_months: n`, `within_calendar_months: n` | the period before the date evaluated, both ends included |
+| `within_days: n`, `within_months: n`, `within_calendar_months: n` | the period before the date evaluated, both ends included; `within_calendar_months` is also the month-end anchoring of "n months counted from the end of the month" (AMC1 SFCL.160(a)(1)(ii)(d): a flight on 10 March 2024 counts through 31 March 2026 with `within_calendar_months: 24`) |
 | `within_months_before_expiry: n`, `within_validity_period: true` | periods anchored on the credential's expiry |
 | `since_licence_issue: true`, `since_issue: true`, `ever: true` | since an issue date, or everything |
 | `in_class: true`, `classes`, `excluding_classes`, `categories`, `ul_kinds` | where it was flown |
 | `ul_credit: { CLASS: [ultralight kinds], ref }`, `{ CLASS: { ul_kinds: [...], min_mtom_kg: n }, ref }` | ultralight time credited to a class; with `min_mtom_kg` only from a recorded mass of n kg (a flight without one is unknown input, never credited) |
 | `in_type: true` | in the type of the rating evaluated |
+| `in_category: true` | in the subject's aircraft category: the rating's recorded `category`, else its class's, else its licence kind's (an FI on a PPL(H): helicopters) |
+| `in_ul_kind: true` | in the rating's ultralight kind, or the kinds a privilege's `detail` names |
 | `launch_methods`, `by_this_launch_method: true` | how a sailplane was launched |
 | `as: pilot_flying`, `as: sole_manipulator`, `as: [pic, dual, spic, ...]` | the pilot's role |
 | `with_time: [ifr, crossCountry, ...]`, `without_time` | flights with or without time of a kind |
 | `simulator: include \| only`, `fstd: [FFS]` | simulator sessions (excluded by default) |
 | `tailwheel`, `min_distance_km`, `min_landings`, `max_engines`, `max_mtom_kg`, `tow_kinds` | aircraft and flight properties |
+| `by_this_tow_kind: true`, `by_this_tow_take_up: true` | tow flights of the kind (`glider`, `banner`, `ul_glider`, `hang_glider`) or take-up (`ground`, `pick_up`) the privilege's `detail` names |
 | `flagged: { <flight flag>: true \| false }` | flights with these flags set or unset (`examinerOnBoard`, `towFlight` ...) |
 | `in_variant: true` | in the variant evaluated (`about: variants`) |
-| `for_rating`, `also: [event kinds]` | events for a rating; further event kinds that count |
+| `for_rating`, `also: [event kinds]` | events for a rating (the event's `rating` or any of its `ratings`); further event kinds that count |
+| `excluding_ratings: [IR, BIR]` | leaves out events recorded only for these ratings (one without a rating, or also for another, stays) |
+| `by_authority: [FAA]` | events conducted under one of these authorities (event `authority`, flight `checkAuthority`); an event without one is unknown |
 | `any_flight_of: [ {qualifiers}, ... ]` | a flight counts when it matches any set |
 | `with: examiner` | who conducts it. **Not evaluated**; the gate requires an interpretation that says so |
 
-**Modifiers of a count**: `waived_by: { events: [...], <qualifiers>, ref }` (the count or
+A qualifier that takes the subject's value (`in_class`, `in_type`, `in_category`,
+`in_ul_kind`, `by_this_launch_method`, `by_this_tow_kind` ...) makes every item unknown input
+when the subject cannot supply the value, never a silent non-match (P1).
+
+`ul_credit` mapping form: `{ CLASS: { ul_kinds: [...], min_mtom_kg: n, fixed_engine: true } }`
+with `min_mtom_kg`, `fixed_engine` or both; `fixed_engine` credits only flights recorded
+with `fixedEngine: true` (an integrally mounted, non-retractable engine and propeller,
+FCL.010 TMG).
+
+**Modifiers of a count**: `unknown_if_none: true` (while nothing is counted the row is
+untracked, so the result is unknown rather than not met: a training flight the text
+requires but earlier history may lack, P1), `waived_by: { events: [...], <qualifiers>, ref }` (the count or
 one of these events; compiles to `any_of` named after the count), `only_if: { <engine
 condition>, ref }` (the row exists only while the condition holds), `informational: true`
 (shown, never decides), `credit: <escape hatch>`, `messages: { met, unmet, untracked }`.
@@ -257,7 +313,14 @@ condition>, ref }` (the row exists only while the condition holds), `information
 `outcomes: <preset>` or `{ preset, ... }` picks a standard stage list; `outcomes: [stages]`
 writes them out. Each stage is `{ id?, when, status, message, params?, ref }`, `when` being
 an engine stage condition (`all_met`, `undetermined`, `{ unmet: <row> }`, `{ holds: ... }`,
-`{ met_within: ... }`, `all`, `any`, `not`, ...). Keys come from `messages/keys.yaml`.
+`{ met_within: ... }`, `{ seeks: [TMG] }`, `all`, `any`, `not`, ...). Keys come from
+`messages/keys.yaml`. `holds` takes `classes`, `ulKinds`, `licenceKinds`, `privileges`,
+`credentials`, `sameLicence`, `valid`, `every`, and `expiryRecorded` (only items with a
+recorded expiry), `sameCategory` (ratings of the subject's aircraft category: an IR of the
+category), `details` (privileges whose detail names `$subject`, the subject's ultralight
+kind or class, or `none` for no detail) and `authorities` (items on licences of these
+authorities). `seeks` holds when a recorded training programme (`trainings: [{ programme,
+seeks }]`) of the subject's programme seeks one of the privileges.
 
 | Preset | Stages (id: condition -> status, message) |
 | --- | --- |
@@ -289,6 +352,12 @@ Every evaluation using the preset cites these policies (the gate counts and reso
 A file that overrides such a status cites the policy of its own convention, e.g. FAA
 passenger recency: `statuses: { not_met: { status: lapsed, ref: policy:recency-lapsed } }`.
 Written stages carry their own `ref`, a `policy:` one when the status is a convention.
+
+**Authority conventions.** `credential_vocabulary.authority_conventions` sets, per
+credential `authority`, how derived periods end: `DE: { validity_ends: day_before, ref: [...] }`
+ends every `valid_for` period of a German credential on the day before the day that
+corresponds to its start (§§ 186, 187(2), 188(2) BGB): valid from 10 January 2024 for 36
+months is valid through 9 January 2027. It is not set per file.
 
 ## References
 
@@ -326,14 +395,19 @@ names the paragraph it interprets. A ref is `<prefix>:<article><paragraph labels
   reading: The text does not say when an exempting check must have been passed; it counts when passed within the 12 months before expiry.
   ref: easa:FCL.740.A(b)(1)(ii)(C)
   affects: [revalidation]            # evaluation ids of this file ("evaluation" in a shared file; "*" for all)
+  principle: P3                      # optional: the principle it follows (DESIGN.md section 14)
   approved_by: null                  # who signed the reading off
   approved_on: null                  # YYYY-MM-DD
 ```
 
 Every judgement call is one: what a word is read to mean, what is taken as met because the
 record cannot show it, what part of an article is not applied. There are no free-text notes
-in credential files. The gate lists unapproved interpretations (report only) and fails on
-one without `ref`, `reading` or `affects`.
+in credential files. Judgement calls follow the interpretation principles of DESIGN.md
+section 14 (P1 missing data is unknown, P2 only a check for this credential counts, P3 count
+within the validity period, P4 devices only where the text permits, P5 presentation-only
+rows keep the current choice); a new interpretation names the one it follows in
+`principle`, if any. The gate lists unapproved interpretations (report only) and fails on
+one without `ref`, `reading` or `affects`, or with a `principle` other than P1 to P5.
 
 ## Worked examples
 

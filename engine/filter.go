@@ -1,6 +1,9 @@
 package engine
 
-import "slices"
+import (
+	"slices"
+	"strings"
+)
 
 // match is a tri-state filter result.
 type match int
@@ -42,44 +45,83 @@ type resolvedFilter struct {
 	classes map[string]bool
 	credit  map[string]ULCredit
 	anyOf   []*resolvedFilter
+	// unresolved names the filters whose $subject the subject cannot supply: every item is
+	// then unknown for them, never silently excluded.
+	unresolved []string
 }
 
 const subjectToken = "$subject"
 
-func (e *evalCtx) resolveList(l []string, subject string) []string {
+// resolveList replaces $subject in l by vals; ok is false when l has $subject and vals is empty.
+func resolveList(l []string, vals ...string) ([]string, bool) {
 	out := make([]string, 0, len(l))
+	ok := true
 	for _, v := range l {
-		if v == subjectToken {
-			if subject != "" {
-				out = append(out, subject)
-			}
+		if v != subjectToken {
+			out = append(out, v)
 			continue
 		}
-		out = append(out, v)
+		n := len(out)
+		for _, x := range vals {
+			if x != "" {
+				out = append(out, x)
+			}
+		}
+		ok = ok && len(out) > n
+	}
+	return out, ok
+}
+
+// detailTokens returns the words of a privilege detail that belong to domain, spelled as
+// the domain spells them ("THREE_AXIS, weight_shift" -> THREE_AXIS, WEIGHT_SHIFT).
+func detailTokens(detail string, domain []string) []string {
+	var out []string
+	for _, w := range strings.FieldsFunc(detail, func(r rune) bool { return strings.ContainsRune(",;/+ \t", r) }) {
+		for _, d := range domain {
+			if strings.EqualFold(w, d) && !slices.Contains(out, d) {
+				out = append(out, d)
+			}
+		}
 	}
 	return out
 }
 
-// resolveFilter replaces $subject and expands class pools.
+// resolveFilter replaces $subject and expands class pools and groups.
 func (e *evalCtx) resolveFilter(f *Filter) *resolvedFilter {
 	if f == nil {
 		f = &Filter{}
 	}
 	c := *f
-	c.Classes = e.resolveList(f.Classes, e.subj.Class)
-	ul := e.subj.ULKind
-	if ul == "" {
-		ul = e.subj.Detail
-	}
-	c.ULKinds = e.resolveList(f.ULKinds, ul)
-	c.LaunchMethods = e.resolveList(f.LaunchMethods, e.subj.Detail)
-	c.TypeDesignators = e.resolveList(f.TypeDesignators, e.subj.typeDesignator)
-	c.Variants = e.resolveList(f.Variants, e.subj.variant)
 	r := &resolvedFilter{Filter: &c}
+	resolve := func(name string, l []string, vals ...string) []string {
+		out, ok := resolveList(l, vals...)
+		if !ok {
+			r.unresolved = append(r.unresolved, name)
+		}
+		return out
+	}
+	c.Classes = resolve("classes", f.Classes, e.subj.Class)
+	ul := []string{e.subj.ULKind}
+	if e.subj.ULKind == "" {
+		ul = detailTokens(e.subj.Detail, e.v.ULKinds)
+	}
+	c.ULKinds = resolve("ulKinds", f.ULKinds, ul...)
+	c.LaunchMethods = resolve("launchMethods", f.LaunchMethods, e.subj.Detail)
+	c.TypeDesignators = resolve("typeDesignators", f.TypeDesignators, e.subj.typeDesignator)
+	c.Variants = resolve("variants", f.Variants, e.subj.variant)
+	c.Categories = resolve("categories", f.Categories, e.subj.category)
+	c.TowKinds = resolve("towKinds", f.TowKinds, detailTokens(e.subj.Detail, e.v.TowKinds)...)
+	c.TowTakeUps = resolve("towTakeUps", f.TowTakeUps, detailTokens(e.subj.Detail, e.v.TowTakeUps)...)
 	if f.Has("classes") {
 		r.classes = map[string]bool{}
 		for _, cl := range c.Classes {
 			r.classes[cl] = true
+			if f.ClassGroup != "" {
+				_, members := e.v.ClassGroup(f.ClassGroup, cl)
+				for _, m := range members {
+					r.classes[m] = true
+				}
+			}
 		}
 		held := e.heldClassesOnLicence()
 		for _, pool := range f.HeldClassPools {
@@ -126,6 +168,9 @@ func (e *evalCtx) heldClassesOnLicence() map[string]bool {
 // matchFlight applies a resolved filter to a flight.
 func (e *evalCtx) matchFlight(f *resolvedFilter, fl *Flight) *matcher {
 	m := newMatcher()
+	for _, u := range f.unresolved {
+		m.unknownBy(u)
+	}
 	switch f.Simulator {
 	case "only":
 		m.check(fl.IsSimulator)
@@ -204,6 +249,16 @@ func (e *evalCtx) matchFlight(f *resolvedFilter, fl *Flight) *matcher {
 			m.check(slices.Contains(f.TowKinds, fl.TowKind))
 		}
 	}
+	if len(f.TowTakeUps) > 0 {
+		switch {
+		case !fl.Flags.TowFlight:
+			m.no()
+		case fl.TowTakeUp == "":
+			m.unknownBy("towTakeUps")
+		default:
+			m.check(slices.Contains(f.TowTakeUps, fl.TowTakeUp))
+		}
+	}
 	if len(f.anyOf) > 0 {
 		e.matchAny(m, f.anyOf, func(sub *resolvedFilter) *matcher { return e.matchFlight(sub, fl) })
 	}
@@ -230,6 +285,11 @@ func (e *evalCtx) matchFlightClass(f *resolvedFilter, fl *Flight, m *matcher) {
 				best, unknownBy = matchUnknown, "ulCredit"
 			}
 		case uc.MinMTOMKg != nil && *fl.MTOMKg < *uc.MinMTOMKg:
+		case uc.FixedEngine && fl.FixedEngine == nil:
+			if best != matchYes {
+				best, unknownBy = matchUnknown, "ulCredit"
+			}
+		case uc.FixedEngine && !*fl.FixedEngine:
 		default:
 			best = matchYes
 		}
@@ -303,6 +363,9 @@ func boolFilter(m *matcher, name string, want, got *bool) {
 // matchEvent applies a resolved filter to an event.
 func (e *evalCtx) matchEvent(f *resolvedFilter, ev *Event) *matcher {
 	m := newMatcher()
+	for _, u := range f.unresolved {
+		m.unknownBy(u)
+	}
 	switch f.Simulator {
 	case "only":
 		m.check(ev.IsSimulator)
@@ -313,8 +376,26 @@ func (e *evalCtx) matchEvent(f *resolvedFilter, ev *Event) *matcher {
 	if len(f.EventKinds) > 0 {
 		m.check(slices.Contains(f.EventKinds, ev.Kind))
 	}
+	rs := ev.ratings()
 	if len(f.EventRatings) > 0 {
-		m.check(ev.Rating != "" && slices.Contains(f.EventRatings, ev.Rating))
+		m.check(slices.ContainsFunc(rs, func(r string) bool { return slices.Contains(f.EventRatings, r) }))
+	}
+	if len(f.ExcludeEventRatings) > 0 && len(rs) > 0 {
+		m.check(slices.ContainsFunc(rs, func(r string) bool { return !slices.Contains(f.ExcludeEventRatings, r) }))
+	}
+	if len(f.EventAuthorities) > 0 {
+		if ev.Authority == "" {
+			m.unknownBy("eventAuthorities")
+		} else {
+			m.check(containsFold(f.EventAuthorities, ev.Authority))
+		}
+	}
+	if len(f.FSTDTypes) > 0 && ev.IsSimulator {
+		if ev.FSTDType == "" {
+			m.unknownBy("fstdTypes")
+		} else {
+			m.check(slices.Contains(f.FSTDTypes, ev.FSTDType))
+		}
 	}
 	if f.classes != nil {
 		if ev.Class == "" {
@@ -327,10 +408,14 @@ func (e *evalCtx) matchEvent(f *resolvedFilter, ev *Event) *matcher {
 		m.check(!slices.Contains(f.ExcludeClasses, ev.Class))
 	}
 	if len(f.Categories) > 0 {
-		if ev.Class == "" {
+		cat := ev.Category
+		if cat == "" {
+			cat = e.v.Category(ev.Class)
+		}
+		if cat == "" {
 			m.unknownBy("categories")
 		} else {
-			m.check(slices.Contains(f.Categories, e.v.Category(ev.Class)))
+			m.check(slices.Contains(f.Categories, cat))
 		}
 	}
 	if f.Has("ulKinds") {

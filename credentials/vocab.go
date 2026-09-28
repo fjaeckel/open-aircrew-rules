@@ -19,6 +19,19 @@ type Vocab struct {
 	Counts         map[string]CountDef        `yaml:"counts"`
 	Qualifiers     map[string]QualifierDef    `yaml:"qualifiers"`
 	OutcomePresets map[string]PresetDef       `yaml:"outcome_presets"`
+	// LimitationScopes are the scopes a requirement or evaluation may limit (limits:).
+	LimitationScopes map[string]string `yaml:"limitation_scopes"`
+	// AuthorityConventions are conventions every evaluation of an authority's credentials
+	// follows, keyed by credential authority.
+	AuthorityConventions map[string]AuthorityConvention `yaml:"authority_conventions"`
+}
+
+// AuthorityConvention is how one authority counts periods.
+type AuthorityConvention struct {
+	// ValidityEnds is same_day (default) or day_before: a derived validity period ends the
+	// day before the day that corresponds to its start (§§ 187(2), 188(2) BGB).
+	ValidityEnds string  `yaml:"validity_ends"`
+	Ref          RefList `yaml:"ref"`
 }
 
 // PresetDef is one outcome preset: its description and, per stage id, the policy ref behind

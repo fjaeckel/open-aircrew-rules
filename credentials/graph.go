@@ -39,10 +39,10 @@ func (cat *Catalogue) Dependencies() Dependencies {
 	for _, c := range cat.Credentials {
 		for _, e := range c.Evaluations {
 			for _, to := range e.RequiresAll {
-				d.Requires = append(d.Requires, Requirement{From: c.ID, Evaluation: e.ID, To: to})
+				d.Requires = append(d.Requires, Requirement{From: c.ID, Evaluation: e.ID, To: credentialOf(to)})
 			}
 			for _, to := range e.RequiresAny {
-				d.Requires = append(d.Requires, Requirement{From: c.ID, Evaluation: e.ID, To: to, Any: true})
+				d.Requires = append(d.Requires, Requirement{From: c.ID, Evaluation: e.ID, To: credentialOf(to), Any: true})
 			}
 		}
 	}

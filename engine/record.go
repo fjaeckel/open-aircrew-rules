@@ -15,6 +15,13 @@ type Record struct {
 	Variants    []Variant    `yaml:"variants,omitempty" json:"variants,omitempty"`
 	Events      []Event      `yaml:"events,omitempty" json:"events,omitempty"`
 	Flights     []Flight     `yaml:"flights,omitempty" json:"flights,omitempty"`
+	Trainings   []Training   `yaml:"trainings,omitempty" json:"trainings,omitempty"`
+}
+
+// Training is a training programme the holder follows and the privileges it seeks.
+type Training struct {
+	Programme string   `yaml:"programme" json:"programme"`
+	Seeks     []string `yaml:"seeks,omitempty" json:"seeks,omitempty"`
 }
 
 // Holder describes the pilot.
@@ -40,10 +47,13 @@ type Rating struct {
 	Class          string `yaml:"class" json:"class"`
 	ULKind         string `yaml:"ulKind,omitempty" json:"ulKind,omitempty"`
 	TypeDesignator string `yaml:"typeDesignator,omitempty" json:"typeDesignator,omitempty"`
-	Issued         *Date  `yaml:"issued,omitempty" json:"issued,omitempty"`
-	ValidFrom      *Date  `yaml:"validFrom,omitempty" json:"validFrom,omitempty"`
-	Expires        *Date  `yaml:"expires,omitempty" json:"expires,omitempty"`
-	Notes          string `yaml:"notes,omitempty" json:"notes,omitempty"`
+	// Category is the aircraft category of a rating that does not name one by its class
+	// (an instrument rating); absent means the licence kind's category, if it has one.
+	Category  string `yaml:"category,omitempty" json:"category,omitempty"`
+	Issued    *Date  `yaml:"issued,omitempty" json:"issued,omitempty"`
+	ValidFrom *Date  `yaml:"validFrom,omitempty" json:"validFrom,omitempty"`
+	Expires   *Date  `yaml:"expires,omitempty" json:"expires,omitempty"`
+	Notes     string `yaml:"notes,omitempty" json:"notes,omitempty"`
 }
 
 // Privilege is one licence privilege.
@@ -72,6 +82,8 @@ type Variant struct {
 	RatingID string `yaml:"ratingId" json:"ratingId"`
 	Name     string `yaml:"name" json:"name"`
 	Issued   *Date  `yaml:"issued,omitempty" json:"issued,omitempty"`
+	// DifferentEngineType says whether the variant differs by its type of engine (FCL.710(da)).
+	DifferentEngineType *bool `yaml:"differentEngineType,omitempty" json:"differentEngineType,omitempty"`
 }
 
 // Event is a dated occurrence that is not a flight row: a check, test, course or review.
@@ -84,7 +96,20 @@ type Event struct {
 	TypeDesignator string `yaml:"typeDesignator,omitempty" json:"typeDesignator,omitempty"`
 	Variant        string `yaml:"variant,omitempty" json:"variant,omitempty"`
 	Rating         string `yaml:"rating,omitempty" json:"rating,omitempty"`
-	IsSimulator    bool   `yaml:"isSimulator,omitempty" json:"isSimulator,omitempty"`
+	// Ratings are further ratings a combined check was recorded for.
+	Ratings     []string `yaml:"ratings,omitempty" json:"ratings,omitempty"`
+	Category    string   `yaml:"category,omitempty" json:"category,omitempty"`
+	Authority   string   `yaml:"authority,omitempty" json:"authority,omitempty"`
+	IsSimulator bool     `yaml:"isSimulator,omitempty" json:"isSimulator,omitempty"`
+	FSTDType    string   `yaml:"fstdType,omitempty" json:"fstdType,omitempty"`
+}
+
+// ratings returns every rating the event was recorded for.
+func (ev *Event) ratings() []string {
+	if ev.Rating == "" {
+		return ev.Ratings
+	}
+	return append([]string{ev.Rating}, ev.Ratings...)
 }
 
 // Flight is one logbook row.
@@ -115,6 +140,10 @@ type Flight struct {
 	SoleManipulator       *bool    `yaml:"soleManipulator,omitempty" json:"soleManipulator,omitempty"`
 	PilotFlying           *bool    `yaml:"pilotFlying,omitempty" json:"pilotFlying,omitempty"`
 	TowKind               string   `yaml:"towKind,omitempty" json:"towKind,omitempty"`
+	TowTakeUp             string   `yaml:"towTakeUp,omitempty" json:"towTakeUp,omitempty"`
+	FixedEngine           *bool    `yaml:"fixedEngine,omitempty" json:"fixedEngine,omitempty"`
+	NightPeriodTakeoffs   *int     `yaml:"nightPeriodTakeoffs,omitempty" json:"nightPeriodTakeoffs,omitempty"`
+	CheckAuthority        string   `yaml:"checkAuthority,omitempty" json:"checkAuthority,omitempty"`
 	TowedGliders          *int     `yaml:"towedGliders,omitempty" json:"towedGliders,omitempty"`
 	DistanceKm            *float64 `yaml:"distanceKm,omitempty" json:"distanceKm,omitempty"`
 	CheckRating           string   `yaml:"checkRating,omitempty" json:"checkRating,omitempty"`
@@ -254,6 +283,7 @@ func flagEvents(fl []Flight) []Event {
 				Date: f.Date, Kind: kind, Class: f.Class, ULKind: f.ULKind,
 				TypeDesignator: f.TypeDesignator, Variant: f.Variant,
 				Rating: f.CheckRating, IsSimulator: f.IsSimulator,
+				FSTDType: f.FSTDType, Authority: f.CheckAuthority,
 			})
 		}
 		if f.Flags.ProficiencyCheck {
@@ -272,6 +302,7 @@ func flagEvents(fl []Flight) []Event {
 // prepared is a record indexed for evaluation.
 type prepared struct {
 	rec         *Record
+	v           *Vocabulary
 	flights     []Flight
 	events      []Event
 	licences    map[string]*Licence
@@ -280,7 +311,7 @@ type prepared struct {
 }
 
 func prepare(rec *Record, v *Vocabulary) *prepared {
-	p := &prepared{rec: rec, licences: map[string]*Licence{}, licenceKind: map[string]string{}}
+	p := &prepared{rec: rec, v: v, licences: map[string]*Licence{}, licenceKind: map[string]string{}}
 	p.flights = append([]Flight(nil), rec.Flights...)
 	sort.SliceStable(p.flights, func(i, j int) bool { return p.flights[i].Date.Before(p.flights[j].Date) })
 	p.events = append(append([]Event(nil), rec.Events...), flagEvents(p.flights)...)

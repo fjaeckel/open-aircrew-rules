@@ -4,7 +4,7 @@ examples:
     evaluation: extension
     shows: [renewal-not-evaluated]
     says: The day after the three years end the rating is expired; renewal is not evaluated.
-    asOf: 2027-01-11
+    asOf: 2027-01-10
     record:
       licences:
         - { id: l-ul, authority: DULV, type: UL }
@@ -14,13 +14,13 @@ examples:
     expect:
       subject: { kind: privilege, id: p-fi }
       message: privilege.expired
-      params: { date: "2027-01-10" }
-      expiresOn: 2027-01-10
+      params: { date: "2027-01-09" }
+      expiresOn: 2027-01-09
 
   - name: met-by-instruction-and-course
     evaluation: extension
     shows: [three-years-from-valid-from, instruction-as-instructor-or-examiner, refresher-course-event]
-    says: 'Rating valid from 10 January 2024, so valid until 10 January 2027. Sixty take-offs and landings instructing on ultralights (the first flight on the first day of the three years) and a refresher course on the first day of the validity meet two of the three items; PIC time and instruction in an SEP aeroplane do not count.'
+    says: 'Rating valid from 10 January 2024, so valid until 9 January 2027 (§§ 187(2), 188(2) BGB). Sixty take-offs and landings instructing on ultralights (the first flight on the first day of the three years) and a refresher course on the first day of the validity meet two of the three items; PIC time and instruction in an SEP aeroplane do not count.'
     asOf: 2026-09-15
     record:
       licences:
@@ -38,8 +38,8 @@ examples:
     expect:
       subject: { kind: privilege, id: p-fi }
       message: privilege.revalidation_current
-      params: { date: "2027-01-10" }
-      expiresOn: 2027-01-10
+      params: { date: "2027-01-09" }
+      expiresOn: 2027-01-09
       requirements:
         instruction_takeoffs_landings: { current: 60, met: true }
         instruction_time: { current: 300, met: false }
@@ -49,7 +49,7 @@ examples:
   - name: met-by-time-and-assessment
     evaluation: extension
     shows: [befaehigungspruefung-event, last-three-years-before-expiry]
-    says: Ten hours of instruction and examining on ultralights and an assessment of competence on 10 January 2026, the first day of the 12 months before expiry, meet two items; the assessment of the day before does not count toward the 12 months.
+    says: Ten hours of instruction and examining on ultralights and an assessment of competence on 9 January 2026, the first day of the 12 months before expiry, meet two items; the assessment of the day before does not count toward the 12 months.
     asOf: 2026-09-15
     record:
       licences:
@@ -57,8 +57,8 @@ examples:
       privileges:
         - { id: p-fi, licenceId: l-ul, kind: UL_INSTRUCTOR, issued: 2021-01-10, validFrom: 2024-01-10 }
       events:
+        - { date: 2026-01-08, kind: assessment_of_competence }
         - { date: 2026-01-09, kind: assessment_of_competence }
-        - { date: 2026-01-10, kind: assessment_of_competence }
       flights:
         - { date: 2025-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 480, dualGiven: 480 }, takeoffs: { day: 10 }, landings: { day: 10 } }
         - { date: 2025-06-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 120, examiner: 120 }, takeoffs: { day: 2 }, landings: { day: 2 } }
@@ -123,7 +123,7 @@ examples:
 
   - name: window-day-before
     evaluation: extension
-    says: The instruction flight and the refresher course of 9 January 2024, the day before the rating's validity began, count toward nothing; the assessment alone is one item, not two, so the extension is not met yet.
+    says: The instruction flight and the refresher course of 8 January 2024, the day before the 36 months before expiry began, count toward nothing; the assessment alone is one item, not two, so the extension is not met yet.
     asOf: 2026-09-15
     record:
       licences:
@@ -131,16 +131,16 @@ examples:
       privileges:
         - { id: p-fi, licenceId: l-ul, kind: UL_INSTRUCTOR, issued: 2024-01-10 }
       events:
-        - { date: 2024-01-09, kind: instructor_refresher }
+        - { date: 2024-01-08, kind: instructor_refresher }
         - { date: 2026-03-01, kind: assessment_of_competence }
       flights:
-        - { date: 2024-01-09, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 120, dualGiven: 120 }, takeoffs: { day: 20 }, landings: { day: 20 } }
+        - { date: 2024-01-08, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 120, dualGiven: 120 }, takeoffs: { day: 20 }, landings: { day: 20 } }
         - { date: 2025-05-01, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 180, dualGiven: 180 }, takeoffs: { day: 40 }, landings: { day: 40 } }
     outcome: expiring
     expect:
       subject: { kind: privilege, id: p-fi }
       message: privilege.revalidation_not_met
-      params: { date: "2027-01-10" }
+      params: { date: "2027-01-09" }
       requirements:
         instruction_takeoffs_landings: { current: 40, met: false, remedyParams: { missing: 20, unit: landings } }
         refresher_course: { current: 0, met: false }

@@ -56,6 +56,16 @@ type AppliesTo struct {
 	TypeRated           *bool    `yaml:"typeRated"`
 	Programme           string   `yaml:"programme"`
 	Holds               *Holds   `yaml:"holds"`
+	// Categories narrows to subjects whose aircraft category (subjectCategory) is listed.
+	Categories []string `yaml:"categories"`
+	// DifferentEngineType narrows variants to those recorded as differing (or not) by engine type.
+	DifferentEngineType *bool `yaml:"differentEngineType"`
+	// ClassGroup makes passengers subjects one per group of vocabulary class_groups.
+	ClassGroup string `yaml:"classGroup"`
+	// UnknownWhenMissing lists the criteria (typeRated, ulKinds, categories,
+	// differentEngineType) for which a selected item that lacks the data is evaluated as
+	// unknown (selection.input_missing) instead of being skipped.
+	UnknownWhenMissing []string `yaml:"unknownWhenMissing"`
 }
 
 // Window is one window kind with its parameter.
@@ -121,9 +131,15 @@ type Filter struct {
 	SoleManipulator *bool           `yaml:"soleManipulator"`
 	PilotFlying     *bool           `yaml:"pilotFlying"`
 	TowKinds        []string        `yaml:"towKinds"`
+	TowTakeUps      []string        `yaml:"towTakeUps"`
+	ClassGroup      string          `yaml:"classGroup"`
 	EventKinds      []string        `yaml:"eventKinds"`
 	EventRatings    []string        `yaml:"eventRatings"`
-	Any             []*Filter       `yaml:"any"`
+	// ExcludeEventRatings drops events recorded only for these ratings; an event recorded
+	// without a rating, or also for another rating, stays.
+	ExcludeEventRatings []string  `yaml:"excludeEventRatings"`
+	EventAuthorities    []string  `yaml:"eventAuthorities"`
+	Any                 []*Filter `yaml:"any"`
 
 	keys map[string]bool
 }
@@ -133,6 +149,8 @@ type ULCredit struct {
 	Class     string   `yaml:"class"`
 	ULKinds   []string `yaml:"ulKinds"`
 	MinMTOMKg *int     `yaml:"minMtomKg"`
+	// FixedEngine credits only flights recorded with a fixed engine and propeller.
+	FixedEngine bool `yaml:"fixedEngine"`
 }
 
 type filterAlias Filter
@@ -202,13 +220,19 @@ type Node struct {
 	RemedyKey     string       `yaml:"remedyKey"`
 	Messages      *ReqMessages `yaml:"messages"`
 	Informational bool         `yaml:"informational"`
-	EscapeHatch   string       `yaml:"escape_hatch"`
-	Window        *Window      `yaml:"window"`
-	Filter        *Filter      `yaml:"filter"`
-	When          *Condition   `yaml:"when"`
-	AllOf         []*Node      `yaml:"all_of"`
-	AnyOf         []*Node      `yaml:"any_of"`
-	NOf           *NOf         `yaml:"n_of"`
+	// Max caps a leaf's value (the credit it contributes to a sum_of).
+	Max *float64 `yaml:"max"`
+	// UnknownIfNone makes an unmet leaf with nothing counted untracked rather than unmet.
+	UnknownIfNone bool       `yaml:"unknownIfNone"`
+	EscapeHatch   string     `yaml:"escape_hatch"`
+	Window        *Window    `yaml:"window"`
+	Filter        *Filter    `yaml:"filter"`
+	When          *Condition `yaml:"when"`
+	AllOf         []*Node    `yaml:"all_of"`
+	AnyOf         []*Node    `yaml:"any_of"`
+	NOf           *NOf       `yaml:"n_of"`
+	// SumOf adds its children's values; the node is met when the sum reaches Min.
+	SumOf []*Node `yaml:"sum_of"`
 }
 
 // NOf is "at least n of".
@@ -225,7 +249,9 @@ type ReqMessages struct {
 }
 
 // IsLeaf reports whether n is a metric row.
-func (n *Node) IsLeaf() bool { return n.AllOf == nil && n.AnyOf == nil && n.NOf == nil }
+func (n *Node) IsLeaf() bool {
+	return n.AllOf == nil && n.AnyOf == nil && n.NOf == nil && n.SumOf == nil
+}
 
 // Combinator returns all_of, any_of, n_of or "".
 func (n *Node) Combinator() string {
@@ -236,6 +262,8 @@ func (n *Node) Combinator() string {
 		return "any_of"
 	case n.NOf != nil:
 		return "n_of"
+	case n.SumOf != nil:
+		return "sum_of"
 	}
 	return ""
 }
@@ -249,6 +277,8 @@ func (n *Node) Children() []*Node {
 		return n.AnyOf
 	case n.NOf != nil:
 		return n.NOf.Of
+	case n.SumOf != nil:
+		return n.SumOf
 	}
 	return nil
 }
@@ -310,6 +340,8 @@ type Condition struct {
 	Holds *Holds
 	List  []*Condition
 	Not   *Condition
+	// Seeks lists privileges a recorded training programme seeks (condition seeks).
+	Seeks []string
 }
 
 // UnmarshalYAML reads a name or a single-key map.
@@ -327,6 +359,12 @@ func (c *Condition) UnmarshalYAML(n *yaml.Node) error {
 	switch c.Op {
 	case "met", "unmet", "missing":
 		c.Ref = v.Value
+	case "seeks":
+		if v.Kind == yaml.ScalarNode {
+			c.Seeks = []string{v.Value}
+			return nil
+		}
+		return v.Decode(&c.Seeks)
 	case "expires_within", "valid_until_within":
 		var d struct {
 			Days int `yaml:"days"`
@@ -374,6 +412,15 @@ type Holds struct {
 	SameLicence  bool     `yaml:"sameLicence"`
 	Valid        bool     `yaml:"valid"`
 	Every        bool     `yaml:"every"`
+	// ExpiryRecorded counts only items with a recorded expiry date.
+	ExpiryRecorded bool `yaml:"expiryRecorded"`
+	// SameCategory counts only ratings of the subject's aircraft category.
+	SameCategory bool `yaml:"sameCategory"`
+	// Details narrows privileges by their detail: $subject is the subject's ultralight kind
+	// (else class), none a privilege recorded without a detail.
+	Details []string `yaml:"details"`
+	// Authorities narrows to items on licences of these authorities.
+	Authorities []string `yaml:"authorities"`
 }
 
 // EventHook is a restored_by entry.
@@ -386,6 +433,12 @@ type EventHook struct {
 type Validity struct {
 	From    string   `yaml:"from"`
 	Periods []Period `yaml:"periods"`
+	// AgeOn is the anchor the holder's age is taken on (issued or valid_from); default From.
+	AgeOn string `yaml:"age_on"`
+	// RecordedWins uses the derived expiry only when no expiry is recorded.
+	RecordedWins bool `yaml:"recorded_wins"`
+	// EndOffsetDays moves the derived end (-1: the day before, §§ 187(2), 188(2) BGB).
+	EndOffsetDays int `yaml:"end_offset_days"`
 }
 
 // Period is one validity period; the first whose conditions hold applies.

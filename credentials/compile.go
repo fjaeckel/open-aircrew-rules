@@ -19,6 +19,8 @@ type compiler struct {
 	errs     []string
 	usesWith bool
 	pool     []string
+	group    string
+	inSum    bool
 }
 
 func (cp *compiler) fail(n *yaml.Node, format string, a ...any) {
@@ -127,9 +129,19 @@ func (cat *Catalogue) compileEvaluation(c *Credential, e *Evaluation, id string)
 	}
 	if e.RelevantClass != nil {
 		cp.pool = e.RelevantClass.PooledWithHeld
+		cp.group = e.RelevantClass.ClassGroup
+		if (len(cp.pool) > 0) == (cp.group != "") {
+			cp.errs = append(cp.errs, cp.where+": relevant_class names pooled_with_held or class_group")
+		}
+		if _, ok := cat.ev.ClassGroups[cp.group]; cp.group != "" && !ok {
+			cp.errs = append(cp.errs, fmt.Sprintf("%s: relevant_class.class_group %q is not in the vocabulary", cp.where, cp.group))
+		}
 		cp.refList(e.RelevantClass.Ref, "relevant_class", e.Line, true)
 	}
 	r.AppliesTo = cp.appliesTo(c, e)
+	if cp.group != "" && r.AppliesTo.Subject == "passengers" {
+		r.AppliesTo.ClassGroup = cp.group
+	}
 	if !empty(&e.Counting) {
 		w, f := cp.qualifiers(&e.Counting, pairs(&e.Counting), true)
 		r.Window, r.Filter = w, f
@@ -142,6 +154,9 @@ func (cat *Catalogue) compileEvaluation(c *Credential, e *Evaluation, id string)
 	}
 	if e.ValidFor != nil {
 		r.Validity = cp.validity(e.ValidFor, e.Line)
+		if conv, ok := cat.Vocab.AuthorityConventions[c.Authority]; ok && conv.ValidityEnds == "day_before" {
+			r.Validity.EndOffsetDays = -1
+		}
 	}
 	if e.OnFail != nil {
 		cp.refList(e.OnFail.Ref, "on_fail", e.Line, true)
@@ -205,7 +220,7 @@ func (cp *compiler) appliesTo(c *Credential, e *Evaluation) engine.AppliesTo {
 	}
 	switch {
 	case e.Scope != nil:
-		applyScope(&a, e.Scope)
+		cp.applyScope(&a, e.Scope)
 		cp.refList(e.Scope.Ref, "scope", e.Line, false)
 	case part == nil:
 		cp.errs = append(cp.errs, fmt.Sprintf("%s: the credential selects no %s part for an evaluation about %s; give the evaluation a scope", cp.where, partName, about))
@@ -225,10 +240,32 @@ func (cp *compiler) appliesTo(c *Credential, e *Evaluation) engine.AppliesTo {
 		}
 	}
 	if e.OnlyFor != nil {
-		applyScope(&a, e.OnlyFor)
+		cp.applyScope(&a, e.OnlyFor)
 		cp.refList(e.OnlyFor.Ref, "only_for", e.Line, false)
 	}
 	return a
+}
+
+func (cp *compiler) applyScope(a *engine.AppliesTo, s *Scope) {
+	switch s.IfMissing {
+	case "":
+	case "unknown":
+		for criterion, given := range map[string]bool{
+			"typeRated": s.TypeRated != nil && *s.TypeRated, "ulKinds": len(s.ULKinds) > 0,
+			"categories": len(s.Categories) > 0, "differentEngineType": s.DifferentEngineType != nil,
+		} {
+			if given {
+				a.UnknownWhenMissing = append(a.UnknownWhenMissing, criterion)
+			}
+		}
+		sort.Strings(a.UnknownWhenMissing)
+		if len(a.UnknownWhenMissing) == 0 {
+			cp.errs = append(cp.errs, cp.where+": if_missing needs type_rated: true, ul_kinds, categories or different_engine_type beside it")
+		}
+	default:
+		cp.errs = append(cp.errs, fmt.Sprintf("%s: if_missing is unknown, not %q", cp.where, s.IfMissing))
+	}
+	applyScope(a, s)
 }
 
 func applyScope(a *engine.AppliesTo, s *Scope) {
@@ -250,6 +287,10 @@ func applyScope(a *engine.AppliesTo, s *Scope) {
 	if s.TypeRated != nil {
 		a.TypeRated = s.TypeRated
 	}
+	set(&a.Categories, s.Categories)
+	if s.DifferentEngineType != nil {
+		a.DifferentEngineType = s.DifferentEngineType
+	}
 	if s.Programme != "" {
 		a.Programme = s.Programme
 	}
@@ -258,7 +299,7 @@ func applyScope(a *engine.AppliesTo, s *Scope) {
 	}
 }
 
-var nodeKeys = []string{"id", "ref", "only_if", "informational", "all_of", "any_of", "n_of"}
+var nodeKeys = []string{"id", "ref", "only_if", "informational", "all_of", "any_of", "n_of", "sum_of", "min", "min_hours", "min_minutes", "name", "unit", "remedy"}
 
 // node compiles a combinator or a single-count item.
 func (cp *compiler) node(n *yaml.Node, path string) *engine.Node {
@@ -270,7 +311,7 @@ func (cp *compiler) node(n *yaml.Node, path string) *engine.Node {
 	}
 	var comb string
 	for _, p := range ps {
-		if k := p[0].Value; k == "all_of" || k == "any_of" || k == "n_of" {
+		if k := p[0].Value; k == "all_of" || k == "any_of" || k == "n_of" || k == "sum_of" {
 			if comb != "" {
 				cp.fail(p[0], "%s: more than one combinator", path)
 			}
@@ -287,9 +328,35 @@ func (cp *compiler) node(n *yaml.Node, path string) *engine.Node {
 	out := &engine.Node{}
 	var quals [][2]*yaml.Node
 	var hasRef bool
+	min := -1.0
 	for _, p := range ps {
 		k, v := p[0].Value, p[1]
+		if comb != "sum_of" && slices.Contains([]string{"min", "min_hours", "min_minutes", "name", "unit", "remedy"}, k) {
+			cp.fail(p[0], "%s: %s belongs to a count or a sum_of", path, k)
+			continue
+		}
 		switch k {
+		case "min", "min_minutes":
+			_ = v.Decode(&min)
+		case "min_hours":
+			var h float64
+			_ = v.Decode(&h)
+			min = h * 60
+		case "name":
+			out.NameKey = v.Value
+		case "unit":
+			out.Unit = v.Value
+		case "remedy":
+			out.RemedyKey = v.Value
+		case "sum_of":
+			for i, c := range v.Content {
+				if kid := cp.sumItem(c, fmt.Sprintf("%s.sum_of[%d]", path, i)); kid != nil {
+					out.SumOf = append(out.SumOf, kid)
+				}
+			}
+			if len(out.SumOf) == 0 {
+				out.SumOf = []*engine.Node{}
+			}
 		case "id":
 			out.ID = v.Value
 		case "ref":
@@ -333,11 +400,66 @@ func (cp *compiler) node(n *yaml.Node, path string) *engine.Node {
 	if !hasRef {
 		cp.fail(n, "%s: %s has no ref", path, comb)
 	}
+	if comb == "sum_of" {
+		cp.sumDefaults(n, out, min, path)
+	}
 	out.Window, out.Filter = cp.qualifiers(n, quals, true)
 	return out
 }
 
-var leafKeys = []string{"min", "min_hours", "min_minutes", "id", "name", "unit", "remedy", "messages", "informational", "only_if", "credit", "ref", "waived_by"}
+// sumItem compiles one count of a sum_of: a count word without a minimum.
+func (cp *compiler) sumItem(n *yaml.Node, path string) *engine.Node {
+	ps := pairs(n)
+	if len(ps) != 1 || cp.v.Counts[ps[0][0].Value].Metric == "" {
+		cp.fail(n, "%s: a sum_of item is one count word", path)
+		return nil
+	}
+	for _, p := range pairs(ps[0][1]) {
+		if k := p[0].Value; k == "min" || k == "min_hours" || k == "min_minutes" || k == "waived_by" {
+			cp.fail(p[0], "%s: a sum_of item has no %s; the sum_of has the minimum", path, k)
+		}
+	}
+	cp.inSum = true
+	defer func() { cp.inSum = false }()
+	return cp.leaf(ps[0][0], ps[0][1], path)
+}
+
+// sumDefaults checks a sum_of's id and minimum and takes unit, name and remedy from its
+// first item when not given.
+func (cp *compiler) sumDefaults(n *yaml.Node, out *engine.Node, min float64, path string) {
+	if out.ID == "" {
+		cp.fail(n, "%s: a sum_of needs an id (it is a requirement row)", path)
+	}
+	if min < 0 {
+		cp.fail(n, "%s: a sum_of needs min, min_hours or min_minutes", path)
+		min = 0
+	}
+	out.Min = &min
+	if len(out.SumOf) == 0 {
+		cp.fail(n, "%s: a sum_of adds at least one count", path)
+		return
+	}
+	first := out.SumOf[0]
+	for _, c := range out.SumOf[1:] {
+		if c.Unit != first.Unit {
+			cp.fail(n, "%s: sum_of items have one unit (%s, %s)", path, first.Unit, c.Unit)
+		}
+	}
+	if out.Unit == "" {
+		out.Unit = first.Unit
+	}
+	if out.NameKey == "" {
+		out.NameKey = first.NameKey
+	}
+	switch out.RemedyKey {
+	case "":
+		out.RemedyKey = first.RemedyKey
+	case "none":
+		out.RemedyKey = ""
+	}
+}
+
+var leafKeys = []string{"min", "min_hours", "min_minutes", "max", "max_hours", "max_minutes", "unknown_if_none", "id", "name", "unit", "remedy", "messages", "informational", "only_if", "credit", "ref", "waived_by"}
 
 // leaf compiles one count word with its parameters.
 func (cp *compiler) leaf(key, val *yaml.Node, path string) *engine.Node {
@@ -368,6 +490,17 @@ func (cp *compiler) leaf(key, val *yaml.Node, path string) *engine.Node {
 			min = h * 60
 		case "min_minutes":
 			_ = v.Decode(&min)
+		case "max", "max_minutes", "max_hours":
+			var x float64
+			if err := v.Decode(&x); err != nil {
+				cp.fail(v, "%s.%s needs a number", path, k)
+			}
+			if k == "max_hours" {
+				x *= 60
+			}
+			out.Max = &x
+		case "unknown_if_none":
+			out.UnknownIfNone = v.Value == "true"
 		case "id":
 			out.ID = v.Value
 		case "name":
@@ -400,7 +533,10 @@ func (cp *compiler) leaf(key, val *yaml.Node, path string) *engine.Node {
 	if !hasRef {
 		cp.fail(key, "%s has no ref", path)
 	}
-	if min < 0 {
+	switch {
+	case cp.inSum:
+		min = 0
+	case min < 0:
 		if def.Amount == "time" {
 			cp.fail(key, "%s: give min_hours or min_minutes", path)
 		}
@@ -523,6 +659,9 @@ func (cp *compiler) filterQualifier(k string, def QualifierDef, v *yaml.Node, m 
 		if len(cp.pool) > 0 {
 			m["heldClassPools"] = [][]string{cp.pool}
 		}
+		if cp.group != "" {
+			m["classGroup"] = cp.group
+		}
 	case "ul_credit":
 		var credits []map[string]any
 		for _, p := range pairs(v) {
@@ -533,15 +672,27 @@ func (cp *compiler) filterQualifier(k string, def QualifierDef, v *yaml.Node, m 
 			credit := map[string]any{"class": p[0].Value}
 			if p[1].Kind == yaml.MappingNode {
 				var c struct {
-					ULKinds   []string `yaml:"ul_kinds"`
-					MinMTOMKg *int     `yaml:"min_mtom_kg"`
+					ULKinds     []string `yaml:"ul_kinds"`
+					MinMTOMKg   *int     `yaml:"min_mtom_kg"`
+					FixedEngine *bool    `yaml:"fixed_engine"`
 				}
-				if err := p[1].Decode(&c); err != nil || len(c.ULKinds) == 0 || c.MinMTOMKg == nil || len(pairs(p[1])) != 2 {
-					cp.fail(p[1], "ul_credit.%s: want { ul_kinds: [...], min_mtom_kg: n }", p[0].Value)
+				err := p[1].Decode(&c)
+				extra := 0
+				if c.MinMTOMKg != nil {
+					extra++
+				}
+				if c.FixedEngine != nil {
+					extra++
+				}
+				if err != nil || len(c.ULKinds) == 0 || extra == 0 || len(pairs(p[1])) != 1+extra || (c.FixedEngine != nil && !*c.FixedEngine) {
+					cp.fail(p[1], "ul_credit.%s: want { ul_kinds: [...], min_mtom_kg: n, fixed_engine: true } (min_mtom_kg or fixed_engine or both)", p[0].Value)
 				}
 				credit["ulKinds"] = c.ULKinds
 				if c.MinMTOMKg != nil {
 					credit["minMtomKg"] = *c.MinMTOMKg
+				}
+				if c.FixedEngine != nil && *c.FixedEngine {
+					credit["fixedEngine"] = true
 				}
 			} else {
 				var kinds []string
@@ -680,13 +831,22 @@ func (cp *compiler) restoredBy(n *yaml.Node) []engine.EventHook {
 }
 
 func (cp *compiler) validity(v *ValidFor, line int) *engine.Validity {
-	out := &engine.Validity{From: "issued"}
+	out := &engine.Validity{From: "issued", RecordedWins: v.RecordedExpiryWins}
 	switch v.CountedFrom {
 	case "", "issue":
 	case "valid_from":
 		out.From = "valid_from"
 	default:
 		cp.errs = append(cp.errs, fmt.Sprintf("%s: valid_for.counted_from is issue or valid_from", cp.where))
+	}
+	switch v.AgeOn {
+	case "":
+	case "issue":
+		out.AgeOn = "issued"
+	case "valid_from":
+		out.AgeOn = "valid_from"
+	default:
+		cp.errs = append(cp.errs, fmt.Sprintf("%s: valid_for.age_on is issue or valid_from", cp.where))
 	}
 	cp.refList(v.Ref, "valid_for", line, false)
 	for i, p := range v.Periods {

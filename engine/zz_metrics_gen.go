@@ -14,6 +14,7 @@ type metricImpl interface {
 	metricLandingsNight(*Flight) mv
 	metricLandingsTotal(*Flight) mv
 	metricLaunches(*Flight) mv
+	metricLongestFlightMinutes(*Flight) mv
 	metricLongestTrainingFlightMinutes(*Flight) mv
 	metricMinutesDual(*Flight) mv
 	metricMinutesDualGiven(*Flight) mv
@@ -29,6 +30,7 @@ type metricImpl interface {
 	metricNotRecorded(*Flight) mv
 	metricRouteSectors(*Flight) mv
 	metricTakeoffsNight(*Flight) mv
+	metricTakeoffsNightPeriod(*Flight) mv
 	metricTakeoffsTotal(*Flight) mv
 	metricTakeoffsAndLandings(*Flight) mv
 	metricTows(*Flight) mv
@@ -48,6 +50,7 @@ var flightMetricFuncs = map[string]func(*Flight) mv{
 	"landings.night":                  metrics{}.metricLandingsNight,
 	"landings.total":                  metrics{}.metricLandingsTotal,
 	"launches":                        metrics{}.metricLaunches,
+	"longest_flight_minutes":          metrics{}.metricLongestFlightMinutes,
 	"longest_training_flight_minutes": metrics{}.metricLongestTrainingFlightMinutes,
 	"minutes.dual":                    metrics{}.metricMinutesDual,
 	"minutes.dualGiven":               metrics{}.metricMinutesDualGiven,
@@ -63,6 +66,7 @@ var flightMetricFuncs = map[string]func(*Flight) mv{
 	"not_recorded":                    metrics{}.metricNotRecorded,
 	"route_sectors":                   metrics{}.metricRouteSectors,
 	"takeoffs.night":                  metrics{}.metricTakeoffsNight,
+	"takeoffs.night_period":           metrics{}.metricTakeoffsNightPeriod,
 	"takeoffs.total":                  metrics{}.metricTakeoffsTotal,
 	"takeoffs_and_landings":           metrics{}.metricTakeoffsAndLandings,
 	"tows":                            metrics{}.metricTows,

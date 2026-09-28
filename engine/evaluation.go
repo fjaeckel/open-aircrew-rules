@@ -22,6 +22,8 @@ type Subject struct {
 	Class  string `yaml:"class,omitempty" json:"class,omitempty"`
 	ULKind string `yaml:"ulKind,omitempty" json:"ulKind,omitempty"`
 	Detail string `yaml:"detail,omitempty" json:"detail,omitempty"`
+	// Group is the class group a passengers subject stands for (applies_to classGroup).
+	Group string `yaml:"group,omitempty" json:"group,omitempty"`
 }
 
 // RequirementResult is one requirement row.

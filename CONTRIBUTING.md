@@ -65,6 +65,14 @@ and show it in a worked example.
 
 ## Interpretations and sign-off
 
+Every new or changed interpretation follows the interpretation principles of DESIGN.md
+section 14 (P1 missing data is unknown, P2 only a check for this credential counts, P3 count
+within the validity period, P4 devices only where the text permits, P5 presentation-only
+rows keep the current choice). It names the principle it follows with `principle: P1` ...
+`P5`, or none when the wording of the text decides alone; a reading that departs from a
+principle says why.
+
+
 An interpretation is approved when a qualified reviewer agrees that the reading is the right
 one. Qualified means one of: a current holder of the credential or a higher one that
 includes it, an instructor or examiner for it, or someone who confirmed the reading with the

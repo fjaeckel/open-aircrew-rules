@@ -62,12 +62,15 @@ type ValidityNote struct {
 
 // Interpretation is a reading of the text that the evaluations depend on.
 type Interpretation struct {
-	ID         string   `yaml:"id"`
-	Reading    string   `yaml:"reading"`
-	Ref        RefList  `yaml:"ref"`
-	Affects    []string `yaml:"affects"`
-	ApprovedBy *string  `yaml:"approved_by"`
-	ApprovedOn *string  `yaml:"approved_on"`
+	ID      string   `yaml:"id"`
+	Reading string   `yaml:"reading"`
+	Ref     RefList  `yaml:"ref"`
+	Affects []string `yaml:"affects"`
+	// Principle names the interpretation principle (P1 to P5, DESIGN.md section 14) the
+	// reading follows, if any.
+	Principle  string  `yaml:"principle"`
+	ApprovedBy *string `yaml:"approved_by"`
+	ApprovedOn *string `yaml:"approved_on"`
 }
 
 // RefList is one reference or a list of them.
@@ -97,8 +100,15 @@ type Evaluation struct {
 	With      yaml.Node `yaml:"with"`
 	// RequiresAll and RequiresAny name the credentials this one needs: every one of
 	// RequiresAll and at least one of RequiresAny (see Composite).
-	RequiresAll    []string  `yaml:"requires_all"`
-	RequiresAny    []string  `yaml:"requires_any"`
+	// An id may name a level of the credential: <credential id>@<level>.
+	RequiresAll []string `yaml:"requires_all"`
+	RequiresAny []string `yaml:"requires_any"`
+	// Level puts the entry in a named level of the credential's privileges; a requirement
+	// naming <credential id>@<level> counts only that level's entries (and those without one).
+	Level string `yaml:"level"`
+	// Limits reports the entry as a limitation of the named scope (limitation_scopes), never
+	// deciding the composite.
+	Limits         string    `yaml:"limits"`
 	About          string    `yaml:"about"`
 	OnlyFor        *Scope    `yaml:"only_for"`
 	Scope          *Scope    `yaml:"scope"`
@@ -122,33 +132,47 @@ type Evaluation struct {
 
 // Scope narrows (only_for) or replaces (scope) the subjects an evaluation selects.
 type Scope struct {
-	Authorities     []string      `yaml:"authorities"`
-	NotAuthorities  []string      `yaml:"not_authorities"`
-	LicenceKinds    []string      `yaml:"licence_kinds"`
-	NotLicenceKinds []string      `yaml:"not_licence_kinds"`
-	Classes         []string      `yaml:"classes"`
-	NotClasses      []string      `yaml:"not_classes"`
-	ULKinds         []string      `yaml:"ul_kinds"`
-	CredentialTypes []string      `yaml:"credential_types"`
-	PrivilegeKinds  []string      `yaml:"privilege_kinds"`
-	LaunchMethods   []string      `yaml:"launch_methods"`
-	TypeRated       *bool         `yaml:"type_rated"`
-	Programme       string        `yaml:"programme"`
-	WhenHolding     *engine.Holds `yaml:"when_holding"`
-	Ref             RefList       `yaml:"ref"`
+	Authorities     []string `yaml:"authorities"`
+	NotAuthorities  []string `yaml:"not_authorities"`
+	LicenceKinds    []string `yaml:"licence_kinds"`
+	NotLicenceKinds []string `yaml:"not_licence_kinds"`
+	Classes         []string `yaml:"classes"`
+	NotClasses      []string `yaml:"not_classes"`
+	ULKinds         []string `yaml:"ul_kinds"`
+	CredentialTypes []string `yaml:"credential_types"`
+	PrivilegeKinds  []string `yaml:"privilege_kinds"`
+	LaunchMethods   []string `yaml:"launch_methods"`
+	TypeRated       *bool    `yaml:"type_rated"`
+	Categories      []string `yaml:"categories"`
+	// DifferentEngineType narrows variants to those recorded as differing by engine type.
+	DifferentEngineType *bool `yaml:"different_engine_type"`
+	// IfMissing: unknown evaluates a selected item that lacks the data of type_rated,
+	// ul_kinds, categories or different_engine_type as unknown instead of skipping it.
+	IfMissing   string        `yaml:"if_missing"`
+	Programme   string        `yaml:"programme"`
+	WhenHolding *engine.Holds `yaml:"when_holding"`
+	Ref         RefList       `yaml:"ref"`
 }
 
 // PoolDef makes in_class count the classes of a pool the holder rates on the same licence.
 type PoolDef struct {
 	PooledWithHeld []string `yaml:"pooled_with_held"`
-	Ref            RefList  `yaml:"ref"`
+	// ClassGroup names a vocabulary class_groups set: in_class counts the subject's whole
+	// group, and passengers results are one per group.
+	ClassGroup string  `yaml:"class_group"`
+	Ref        RefList `yaml:"ref"`
 }
 
 // ValidFor derives an expiry date.
 type ValidFor struct {
-	CountedFrom string       `yaml:"counted_from"`
-	Periods     []PeriodSpec `yaml:"periods"`
-	Ref         RefList      `yaml:"ref"`
+	CountedFrom string `yaml:"counted_from"`
+	// AgeOn is the date the holder's age is taken on (issue or valid_from); default
+	// counted_from.
+	AgeOn string `yaml:"age_on"`
+	// RecordedExpiryWins uses the derived end only when no expiry is recorded.
+	RecordedExpiryWins bool         `yaml:"recorded_expiry_wins"`
+	Periods            []PeriodSpec `yaml:"periods"`
+	Ref                RefList      `yaml:"ref"`
 }
 
 // PeriodSpec is one validity period; the first whose ages hold applies.

@@ -235,6 +235,27 @@ catalogue changes are grouped by authority and name the credential or evaluation
   statutes and ordinances.
 - `reviews/README.md`: an index of the review files and the owner's list of every
   interpretation that needs a decision; the README gives the review status per authority.
+- Interpretation principles P1 to P5 (DESIGN.md section 14), confirmed by the owner on
+  2026-09-28; interpretations may name theirs (`principle:`).
+- Format words for the owner decisions of 2026-09-28 (DESIGN.md section 15;
+  `docs/decisions-2026-09-28.md` maps each decision to them): `if_missing: unknown`
+  (a held item lacking selection data is unknown, `selection.input_missing`); rating and
+  event `category` with `in_category` and `only_for.categories`; event `authority`,
+  `ratings`, `fstdType` with `by_authority` and `excluding_ratings`; `class_groups` and
+  `relevant_class.class_group` (FAA single-engine land and sea); FAA powered-parachute and
+  weight-shift-control classes; record fields `nightPeriodTakeoffs`, `fixedEngine`,
+  `towTakeUp`, `checkAuthority`, variant `differentEngineType`, `trainings`; counts
+  `night_period_takeoffs`, `longest_flight`, `passenger_training_flight`,
+  `safety_training`; `sum_of`, `max_hours`, `unknown_if_none`; `in_ul_kind`,
+  `by_this_tow_kind`, `by_this_tow_take_up`; `holds` `details`, `expiryRecorded`,
+  `sameCategory`, `authorities`; condition `seeks`; `valid_for.age_on` and
+  `recorded_expiry_wins`; composite `level`, `<credential>@<level>` and `limits`; credential
+  kind `document`. A `$subject` filter the subject cannot supply now makes items unknown
+  instead of excluding them.
+- `authority_conventions`: derived validity periods of German credentials end on the day
+  before the corresponding day (§§ 186, 187(2), 188(2) BGB; `sources/de/bgb-186.md` added).
+  `de.instructor.ul-instructor#extension` computes its three years this way; its worked
+  examples moved by one day and keep their outcomes.
 
 ### Changed
 

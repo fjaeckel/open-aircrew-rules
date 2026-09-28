@@ -103,3 +103,17 @@ func (metrics) metricTows(f *Flight) mv {
 func (metrics) metricNotRecorded(*Flight) mv { return mv{} }
 
 func (metrics) metricEvents(*Event) mv { return known(1) }
+
+// metricTakeoffsNightPeriod counts take-offs in the 61.57(b) period; a flight with night
+// take-offs but no nightPeriodTakeoffs cannot be placed and is unknown.
+func (metrics) metricTakeoffsNightPeriod(f *Flight) mv {
+	switch {
+	case f.NightPeriodTakeoffs != nil:
+		return known(*f.NightPeriodTakeoffs)
+	case f.Takeoffs.Night == 0:
+		return known(0)
+	}
+	return mv{}
+}
+
+func (metrics) metricLongestFlightMinutes(f *Flight) mv { return known(f.Minutes.Total) }

@@ -10,37 +10,40 @@ import (
 
 // Vocabulary is vocabulary.yaml.
 type Vocabulary struct {
-	Version           int                        `yaml:"version"`
-	SourceOrigins     map[string]SourceOriginDef `yaml:"source_origins"`
-	SourceForbidden   []string                   `yaml:"source_forbidden_markers"`
-	RecordAuthorities []string                   `yaml:"record_authorities"`
-	Categories        []string                   `yaml:"categories"`
-	Classes           map[string]ClassDef        `yaml:"classes"`
-	ULKinds           []string                   `yaml:"ul_kinds"`
-	LaunchMethods     []string                   `yaml:"launch_methods"`
-	FSTDTypes         []string                   `yaml:"fstd_types"`
-	TowKinds          []string                   `yaml:"tow_kinds"`
-	LicenceKinds      map[string]LicenceKindDef  `yaml:"licence_kinds"`
-	PrivilegeKinds    []string                   `yaml:"privilege_kinds"`
-	CredentialTypes   []string                   `yaml:"credential_types"`
-	FlightFlags       []string                   `yaml:"flight_flags"`
-	EventKinds        map[string]EventKindDef    `yaml:"event_kinds"`
-	RecordFields      map[string]RecordFieldDef  `yaml:"record_fields"`
-	MinuteFields      []string                   `yaml:"minute_fields"`
-	Subjects          map[string]SubjectDef      `yaml:"subjects"`
-	Statuses          map[string]string          `yaml:"statuses"`
-	Units             []string                   `yaml:"units"`
-	Metrics           map[string]MetricDef       `yaml:"metrics"`
-	Filters           map[string]FilterDef       `yaml:"filters"`
-	Roles             []string                   `yaml:"roles"`
-	Windows           map[string]WindowDef       `yaml:"windows"`
-	Combinators       map[string]string          `yaml:"combinators"`
-	StageConditions   map[string]string          `yaml:"stage_conditions"`
-	MissingInputs     []string                   `yaml:"missing_inputs"`
-	RuleEvents        map[string]string          `yaml:"rule_events"`
-	ParamSources      map[string]string          `yaml:"param_sources"`
-	Validity          ValidityDef                `yaml:"validity"`
-	Hatches           map[string]string          `yaml:"hatches"`
+	Version           int                            `yaml:"version"`
+	SourceOrigins     map[string]SourceOriginDef     `yaml:"source_origins"`
+	SourceForbidden   []string                       `yaml:"source_forbidden_markers"`
+	RecordAuthorities []string                       `yaml:"record_authorities"`
+	Categories        []string                       `yaml:"categories"`
+	Classes           map[string]ClassDef            `yaml:"classes"`
+	ULKinds           []string                       `yaml:"ul_kinds"`
+	LaunchMethods     []string                       `yaml:"launch_methods"`
+	FSTDTypes         []string                       `yaml:"fstd_types"`
+	TowKinds          []string                       `yaml:"tow_kinds"`
+	TowTakeUps        []string                       `yaml:"tow_take_ups"`
+	ClassGroups       map[string]map[string][]string `yaml:"class_groups"`
+	SoughtPrivileges  []string                       `yaml:"sought_privileges"`
+	LicenceKinds      map[string]LicenceKindDef      `yaml:"licence_kinds"`
+	PrivilegeKinds    []string                       `yaml:"privilege_kinds"`
+	CredentialTypes   []string                       `yaml:"credential_types"`
+	FlightFlags       []string                       `yaml:"flight_flags"`
+	EventKinds        map[string]EventKindDef        `yaml:"event_kinds"`
+	RecordFields      map[string]RecordFieldDef      `yaml:"record_fields"`
+	MinuteFields      []string                       `yaml:"minute_fields"`
+	Subjects          map[string]SubjectDef          `yaml:"subjects"`
+	Statuses          map[string]string              `yaml:"statuses"`
+	Units             []string                       `yaml:"units"`
+	Metrics           map[string]MetricDef           `yaml:"metrics"`
+	Filters           map[string]FilterDef           `yaml:"filters"`
+	Roles             []string                       `yaml:"roles"`
+	Windows           map[string]WindowDef           `yaml:"windows"`
+	Combinators       map[string]string              `yaml:"combinators"`
+	StageConditions   map[string]string              `yaml:"stage_conditions"`
+	MissingInputs     []string                       `yaml:"missing_inputs"`
+	RuleEvents        map[string]string              `yaml:"rule_events"`
+	ParamSources      map[string]string              `yaml:"param_sources"`
+	Validity          ValidityDef                    `yaml:"validity"`
+	Hatches           map[string]string              `yaml:"hatches"`
 	aliasIndex        map[string]string
 }
 
@@ -60,6 +63,8 @@ type ClassDef struct {
 // LicenceKindDef lists the licence type spellings of a kind.
 type LicenceKindDef struct {
 	Aliases []string `yaml:"aliases"`
+	// Category is the aircraft category of a licence for one category.
+	Category string `yaml:"category"`
 }
 
 // EventKindDef describes an event kind.
@@ -112,6 +117,7 @@ type ValidityDef struct {
 	Anchors          []string `yaml:"anchors"`
 	PeriodConditions []string `yaml:"period_conditions"`
 	PeriodFields     []string `yaml:"period_fields"`
+	Options          []string `yaml:"options"`
 }
 
 // LoadVocabulary reads vocabulary.yaml.
@@ -159,4 +165,19 @@ func (v *Vocabulary) Category(class string) string {
 		return c.Category
 	}
 	return ""
+}
+
+// LicenceCategory returns the aircraft category of a licence kind, "" when it has none.
+func (v *Vocabulary) LicenceCategory(kind string) string { return v.LicenceKinds[kind].Category }
+
+// ClassGroup returns the group of a vocabulary class_groups set that contains class.
+func (v *Vocabulary) ClassGroup(set, class string) (string, []string) {
+	for name, classes := range v.ClassGroups[set] {
+		for _, c := range classes {
+			if c == class {
+				return name, classes
+			}
+		}
+	}
+	return "", nil
 }

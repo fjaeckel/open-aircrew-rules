@@ -209,6 +209,9 @@ keys:
   - { key: flight_review.substituted, kind: message, params: [date], notes: "A proficiency check, practical test or proficiency-program phase stands in for the flight review (61.56(d)/(e))." }
   - { key: flight_review.not_applicable, kind: message, params: [], notes: "Flight review not required (e.g. student pilot, 61.56(g))." }
 
+  # --- selection ---
+  - { key: selection.input_missing, kind: message, params: [input], notes: "The credential is held, but the record lacks what decides whether this evaluation applies (input: typeRated, ulKinds, categories or differentEngineType); record it." }
+
   # --- type and variant, further keys ---
   - { key: type.current, kind: message, params: [], notes: "Variant flown within the period." }
   - { key: type.not_flown, kind: message, params: [], notes: "Variant not flown within the period; differences training, a proficiency check or refresher training is required (FCL.710(d))." }
@@ -258,6 +261,7 @@ keys:
   - { key: requirement.flight_tests, kind: requirement_name, params: [], notes: "Flight tests." }
   - { key: requirement.tests_conducted, kind: requirement_name, params: [], notes: "Tests or checks conducted as examiner." }
   - { key: requirement.route_sector_cruise, kind: requirement_name, params: [], notes: "Route sectors (cruise of at least 15 minutes)." }
+  - { key: requirement.passenger_training_flight, kind: requirement_name, params: [], notes: "Training flight on carrying passengers (SFCL.115(a)(2)(ii)(A))." }
 
   # --- remedies, further keys ---
   - { key: remedy.ipc, kind: remedy, params: [], notes: "Take an instrument proficiency check." }
@@ -313,6 +317,6 @@ keys:
   - { key: faa_recreational, kind: rule_description, params: [], notes: "FAA 61.101(g): recreational pilot under 400 hours needs PIC time within 180 days or an instructor's endorsement." }
   # --- de ---
   - { key: rating.ul_flights_kind_unknown, kind: message, params: [], notes: "German ultralight recency (LuftPersV § 45, association rules under § 45(4)): the only ultralight flights in the window have no ultralight kind recorded, so the recency cannot be determined; set the aircraft's kind." }
-  - { key: requirement.safety_training, kind: requirement_name, params: [], notes: "Safety or performance training named by the DAeC recency rule for weight-shift ultralights; not recorded, shown as an untracked row." }
+  - { key: requirement.safety_training, kind: requirement_name, params: [], notes: "Safety or performance training named by an association recency rule (DAeC weight-shift); an event of kind safety_training when recorded." }
   - { key: requirement.solo_time, kind: requirement_name, params: [], notes: "Solo time: PIC plus supervised solo (training programmes)." }
   - { key: requirement.dual_time, kind: requirement_name, params: [], notes: "Dual instruction received (training programmes)." }

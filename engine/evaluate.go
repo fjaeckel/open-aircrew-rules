@@ -8,6 +8,10 @@ import (
 	"github.com/fjaeckel/open-aircrew-rules/engine/hatches"
 )
 
+// InputMissingKey is the message of an evaluation whose selected item lacks the data a
+// criterion of applies_to needs (AppliesTo.UnknownWhenMissing); param input names it.
+const InputMissingKey = "selection.input_missing"
+
 // tri is a three-valued requirement state.
 type tri int
 
@@ -29,6 +33,7 @@ type evalCtx struct {
 	// validUntil is the evaluation's validUntil on asOf, set before the stages run.
 	validUntil *Date
 	leaves     map[*Node]*leaf
+	sums       []*Node
 	restore    []hookDate
 	trace      *Trace
 }
@@ -96,7 +101,7 @@ func Evaluate(c *Catalogue, rec *Record, asOf Date) []Evaluation {
 }
 
 func subjectKey(s Subject) string {
-	return s.Kind + "|" + s.ID + "|" + s.Class + "|" + s.ULKind + "|" + s.Detail
+	return s.Kind + "|" + s.ID + "|" + s.Class + "|" + s.ULKind + "|" + s.Detail + "|" + s.Group
 }
 
 // EvaluateRule evaluates one rule for every subject it applies to, with a trace of what each
@@ -121,6 +126,14 @@ func EvaluateRule(c *Catalogue, r *Rule, rec *Record, asOf Date) ([]Evaluation, 
 
 func (e *evalCtx) run() Evaluation {
 	r := e.rule
+	if e.subj.missing != "" {
+		e.trace.Stage = "input_missing"
+		return Evaluation{
+			RuleID: r.ID, Subject: e.subj.Subject, Status: "unknown",
+			MessageKey: InputMissingKey, MessageParams: map[string]any{"input": e.subj.missing},
+			RuleDescriptionKey: r.RuleDescriptionKey, Citations: r.Citations, Requirements: []RequirementResult{},
+		}
+	}
 	e.expiry = e.effectiveExpiry()
 	e.restore = e.hookDates(r.RestoredBy)
 	e.buildLeaves()
@@ -173,7 +186,7 @@ func (e *evalCtx) run() Evaluation {
 // effectiveExpiry returns the earlier of the recorded and the derived expiry.
 func (e *evalCtx) effectiveExpiry() *Date {
 	exp := e.subj.expires
-	if e.rule.Validity == nil {
+	if e.rule.Validity == nil || (exp != nil && e.rule.Validity.RecordedWins) {
 		return exp
 	}
 	if d := e.derivedExpiry(e.rule.Validity); d != nil && (exp == nil || d.Before(*exp)) {
@@ -212,6 +225,9 @@ func (e *evalCtx) buildLeaves() {
 			w = n.Window
 		}
 		f = MergeFilter(f, n.Filter)
+		if n.SumOf != nil {
+			e.sums = append(e.sums, n)
+		}
 		if !n.IsLeaf() {
 			for _, c := range n.Children() {
 				walk(c, w, f)
@@ -293,7 +309,52 @@ func (e *evalCtx) evalLeaf(lf *leaf, d Date) leafState {
 			st.tracked = false
 		}
 	}
+	if lf.node.Max != nil {
+		st.current = math.Min(st.current, *lf.node.Max)
+	}
 	st.met = st.tracked && st.current >= required(lf.node)
+	if !st.met && lf.node.UnknownIfNone && st.last == nil {
+		st.tracked = false
+	}
+	return st
+}
+
+// evalSum adds the values of a sum_of node's children on d.
+func (e *evalCtx) evalSum(n *Node, d Date, rows *[]RequirementResult, record bool) leafState {
+	st := leafState{tracked: true}
+	for _, c := range n.SumOf {
+		if c.When != nil && !e.cond(c.When, d, triUnknown) {
+			continue
+		}
+		lf := e.leaves[c]
+		cs := e.evalLeaf(lf, d)
+		if record {
+			*rows = append(*rows, e.row(lf, cs))
+			e.trace.leaf(lf, cs, e.v)
+		}
+		st.current += cs.current
+		st.tracked = st.tracked && cs.tracked
+		if cs.last != nil && (st.last == nil || cs.last.After(*st.last)) {
+			st.last = cs.last
+		}
+	}
+	st.met = st.current >= required(n)
+	st.tracked = st.tracked || st.met
+	if record {
+		r := RequirementResult{
+			ID: n.ID, NameKey: n.NameKey, Metric: "sum_of", Unit: n.Unit,
+			Current: st.current, Required: required(n), Met: st.met, Tracked: st.tracked, LastDate: st.last,
+		}
+		if st.tracked && !st.met && n.RemedyKey != "" {
+			r.RemedyKey = n.RemedyKey
+			r.RemedyParams = e.remedyParams(n, st)
+		}
+		*rows = append(*rows, r)
+		e.trace.Requirements[n.ID] = map[bool]string{true: "met", false: "unmet"}[st.met]
+		if !st.tracked {
+			e.trace.Requirements[n.ID] = "untracked"
+		}
+	}
 	return st
 }
 
@@ -322,6 +383,16 @@ func (e *evalCtx) evalRoot(d Date, rows *[]RequirementResult, record bool) tri {
 }
 
 func (e *evalCtx) evalNode(n *Node, d Date, rows *[]RequirementResult, record bool) tri {
+	if n.SumOf != nil {
+		st := e.evalSum(n, d, rows, record)
+		switch {
+		case st.met:
+			return triMet
+		case !st.tracked:
+			return triUnknown
+		}
+		return triUnmet
+	}
 	if n.IsLeaf() {
 		lf := e.leaves[n]
 		st := e.evalLeaf(lf, d)

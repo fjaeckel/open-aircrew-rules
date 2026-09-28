@@ -38,6 +38,7 @@ func (f *Findings) Problems() int {
 var kindDirs = map[string]string{
 	"licence": "licences", "rating": "ratings", "privilege": "privileges", "endorsement": "endorsements",
 	"instructor_certificate": "instructors", "examiner_certificate": "examiners", "medical": "medicals",
+	"document": "documents",
 }
 
 var idShape = regexp.MustCompile(`^[a-z]+\.[a-z_]+\.[a-z0-9-]+$`)
@@ -271,6 +272,9 @@ func (f *Findings) checkExamples(cat *Catalogue, files []*ExampleFile) {
 	sort.Strings(f.ExampleErrs)
 }
 
+// Principles are the interpretation principles of DESIGN.md section 14.
+var Principles = []string{"P1", "P2", "P3", "P4", "P5"}
+
 // compositeKey collects the classes of composite examples across the catalogue.
 const compositeKey = "(composite)"
 
@@ -293,6 +297,9 @@ func (f *Findings) checkInterpretations(cat *Catalogue) {
 			}
 			if len(i.Ref) == 0 {
 				f.Interpret = append(f.Interpret, where+": no ref to the paragraph it interprets")
+			}
+			if i.Principle != "" && !slices.Contains(Principles, i.Principle) {
+				f.Interpret = append(f.Interpret, fmt.Sprintf("%s: principle %q is not one of P1 to P5 (DESIGN.md section 14)", where, i.Principle))
 			}
 			for _, r := range i.Ref {
 				if err := cat.Resolver.Resolve(r); err != nil {

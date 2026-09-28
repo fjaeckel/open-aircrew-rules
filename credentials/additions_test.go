@@ -88,7 +88,7 @@ evaluations:
 	}
 	report := strings.Join(all, "\n")
 	for _, want := range []string{
-		"ul_credit.SEP_LAND: want { ul_kinds: [...], min_mtom_kg: n }",
+		"ul_credit.SEP_LAND: want { ul_kinds: [...], min_mtom_kg: n, fixed_engine: true }",
 		`selects.ratings: ul_kinds "BOGUS" is not an ultralight kind`,
 		`easa.rating.uw#one: ul_kinds "NOPE" is not an ultralight kind`,
 		"association document not declared in associations.yaml",

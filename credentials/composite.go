@@ -2,6 +2,7 @@ package credentials
 
 import (
 	"fmt"
+	"regexp"
 	"slices"
 	"strings"
 
@@ -18,8 +19,18 @@ type Composite struct {
 	DecidedBy *Member  `yaml:"decidedBy,omitempty" json:"decidedBy,omitempty"`
 	Members   []Member `yaml:"members" json:"members"`
 	// Limitations are evaluations of part of the privileges (passengers, a launch method, a
-	// variant, a training programme): reported, never deciding.
+	// variant, a training programme) and entries with limits: reported, never deciding.
 	Limitations []Member `yaml:"limitations,omitempty" json:"limitations,omitempty"`
+	// Levels answers the question per named level of the credential (level:), each from
+	// that level's members and those without a level.
+	Levels []Level `yaml:"levels,omitempty" json:"levels,omitempty"`
+}
+
+// Level is a composite restricted to one named level of a credential's privileges.
+type Level struct {
+	Level     string  `yaml:"level" json:"level"`
+	Status    string  `yaml:"status" json:"status"`
+	DecidedBy *Member `yaml:"decidedBy,omitempty" json:"decidedBy,omitempty"`
 }
 
 // Member is one part of a composite: an own evaluation or a requirement group.
@@ -37,6 +48,26 @@ type Member struct {
 	// not_held when the record holds none that fits.
 	Credential string `yaml:"credential,omitempty" json:"credential,omitempty"`
 	Reason     string `yaml:"reason,omitempty" json:"reason,omitempty"`
+	// Level is the entry's level; Scope the privileges a limitation (limits:) concerns.
+	Level string `yaml:"level,omitempty" json:"level,omitempty"`
+	Scope string `yaml:"scope,omitempty" json:"scope,omitempty"`
+}
+
+// credentialOf returns the credential id of a requirement id (<credential id>[@<level>]).
+func credentialOf(id string) string {
+	c, _, _ := strings.Cut(id, "@")
+	return c
+}
+
+// levels returns the distinct levels of a credential's entries, in file order.
+func levels(c *Credential) []string {
+	var out []string
+	for _, e := range c.Evaluations {
+		if e.Level != "" && !slices.Contains(out, e.Level) {
+			out = append(out, e.Level)
+		}
+	}
+	return out
 }
 
 // Result is everything a record evaluates to: one evaluation per compiled rule and subject,
@@ -59,9 +90,13 @@ func (cat *Catalogue) checkRequirement(key string, e *Evaluation) {
 	if e.Uses != "" || e.Source != "" || !empty(&e.PassesIf) || !empty(&e.Outcomes) {
 		cat.Errors = append(cat.Errors, fmt.Sprintf("%s: an evaluation with requires_all or requires_any has only id, asks and those", key))
 	}
-	for _, id := range append(slices.Clone(e.RequiresAll), e.RequiresAny...) {
-		if _, ok := cat.byID[id]; !ok {
+	for _, ref := range append(slices.Clone(e.RequiresAll), e.RequiresAny...) {
+		id, level, _ := strings.Cut(ref, "@")
+		c, ok := cat.byID[id]
+		if !ok {
 			cat.Errors = append(cat.Errors, fmt.Sprintf("%s: requires %s, which is no credential", key, id))
+		} else if level != "" && !slices.Contains(levels(c), level) {
+			cat.Errors = append(cat.Errors, fmt.Sprintf("%s: requires %s, but %s has no level %q", key, ref, id, level))
 		}
 		if e.Owner != nil && id == e.Owner.ID {
 			cat.Errors = append(cat.Errors, fmt.Sprintf("%s: requires the credential itself", key))
@@ -73,11 +108,31 @@ func (cat *Catalogue) checkRequirement(key string, e *Evaluation) {
 func requires(c *Credential) []string {
 	var out []string
 	for _, e := range c.Evaluations {
-		out = append(out, e.RequiresAll...)
-		out = append(out, e.RequiresAny...)
+		for _, id := range append(slices.Clone(e.RequiresAll), e.RequiresAny...) {
+			out = append(out, credentialOf(id))
+		}
 	}
 	return out
 }
+
+// checkLevelsAndLimits reports malformed level names and limitation scopes the vocabulary
+// lacks.
+func (cat *Catalogue) checkLevelsAndLimits(c *Credential) {
+	for _, e := range c.Evaluations {
+		where := c.ID + "#" + e.ID
+		if e.Level != "" && !levelName.MatchString(e.Level) {
+			cat.Errors = append(cat.Errors, fmt.Sprintf("%s: level %q is not a lower-case name", where, e.Level))
+		}
+		if _, ok := cat.Vocab.LimitationScopes[e.Limits]; e.Limits != "" && !ok {
+			cat.Errors = append(cat.Errors, fmt.Sprintf("%s: limits %q is not a limitation scope of the vocabulary", where, e.Limits))
+		}
+		if e.Limits != "" && e.Level != "" {
+			cat.Errors = append(cat.Errors, where+": an entry has a level or limits, not both")
+		}
+	}
+}
+
+var levelName = regexp.MustCompile(`^[a-z][a-z0-9_]*$`)
 
 // checkRequirementCycles reports credentials that require themselves through others.
 func (cat *Catalogue) checkRequirementCycles() {
@@ -243,13 +298,22 @@ func (cm *composer) composite(id string, item engine.Subject) *Composite {
 	cm.memo[key] = out // a cycle (refused by Load) would read unknown
 	c := cm.cat.byID[id]
 	self := itemKey(item.Kind, item.ID)
+	add := func(e *Evaluation, m Member) {
+		m.Level = e.Level
+		if e.Limits != "" {
+			m.Scope = e.Limits
+			out.Limitations = append(out.Limitations, m)
+			return
+		}
+		out.Members = append(out.Members, m)
+	}
 	for _, e := range c.Evaluations {
 		if e.isRequirement() {
 			if m, ok := cm.group(e.ID, "requires_all", e.RequiresAll, item); ok {
-				out.Members = append(out.Members, m)
+				add(e, m)
 			}
 			if m, ok := cm.group(e.ID, "requires_any", e.RequiresAny, item); ok {
-				out.Members = append(out.Members, m)
+				add(e, m)
 			}
 			continue
 		}
@@ -266,13 +330,42 @@ func (cm *composer) composite(id string, item engine.Subject) *Composite {
 		subj := worst.Subject
 		m := Member{Evaluation: e.ID, Kind: "evaluation", Status: worst.Status, RuleID: rule, Subject: &subj, MessageKey: worst.MessageKey}
 		if limitation(subj.Kind) {
+			m.Level = e.Level
 			out.Limitations = append(out.Limitations, m)
 			continue
 		}
-		out.Members = append(out.Members, m)
+		add(e, m)
 	}
 	out.Status, out.DecidedBy = decide(out.Members, false)
+	for _, l := range levels(c) {
+		st, d := decide(levelMembers(out.Members, l), false)
+		out.Levels = append(out.Levels, Level{Level: l, Status: st, DecidedBy: d})
+	}
 	return out
+}
+
+// levelMembers returns the members of one level and those without a level.
+func levelMembers(ms []Member, level string) []Member {
+	var out []Member
+	for _, m := range ms {
+		if m.Level == "" || m.Level == level {
+			out = append(out, m)
+		}
+	}
+	return out
+}
+
+// status returns a composite's status, or that of one of its levels.
+func (c *Composite) status(level string) string {
+	if level == "" {
+		return c.Status
+	}
+	for _, l := range c.Levels {
+		if l.Level == level {
+			return l.Status
+		}
+	}
+	return "unknown"
 }
 
 // decide returns the worst status of the members (the best with best) and the first member
@@ -306,20 +399,21 @@ func (cm *composer) group(eval, kind string, ids []string, item engine.Subject) 
 	}
 	lic := licenceOf(cm.rec, item)
 	var parts []Member
-	for _, id := range ids {
+	for _, ref := range ids {
+		id, level, _ := strings.Cut(ref, "@")
 		var cands []Member
 		for _, h := range cm.holdings(id) {
 			if l := licenceOf(cm.rec, h); lic != "" && l != "" && l != lic {
 				continue
 			}
-			st := cm.composite(id, h).Status
+			st := cm.composite(id, h).status(level)
 			if st == "not_applicable" {
 				st = "current"
 			}
-			cands = append(cands, Member{Status: st, Credential: id})
+			cands = append(cands, Member{Status: st, Credential: ref})
 		}
 		if len(cands) == 0 {
-			parts = append(parts, Member{Status: "unknown", Credential: id, Reason: "not_held"})
+			parts = append(parts, Member{Status: "unknown", Credential: ref, Reason: "not_held"})
 			continue
 		}
 		_, b := decide(cands, true)

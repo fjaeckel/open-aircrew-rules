@@ -15,7 +15,7 @@ func Implemented() map[string][]string {
 		"metrics":          implementedMetrics(),
 		"filters":          implementedFilters(),
 		"windows":          {"rolling_days", "rolling_months", "calendar_months", "before_expiry_months", "validity_period", "since_issue", "lifetime"},
-		"combinators":      {"all_of", "any_of", "n_of"},
+		"combinators":      {"all_of", "any_of", "n_of", "sum_of"},
 		"stage_conditions": ImplementedConditions,
 		"rule_events":      {"restored_by"},
 		"param_sources":    ImplementedParamSources,

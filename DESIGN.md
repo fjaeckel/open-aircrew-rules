@@ -45,7 +45,7 @@ docs/                                            format reference, AMC/GM notes,
 ```
 
 Kind directories: `licences`, `ratings`, `privileges`, `endorsements`, `instructors`,
-`examiners`, `medicals`. Authority directories: `easa`, `faa`, `de`.
+`examiners`, `medicals`, `documents`. Authority directories: `easa`, `faa`, `de`.
 
 ## 3. Credentials
 
@@ -119,18 +119,20 @@ authoritative definition:
 ```yaml
 holder:      { dateOfBirth? }
 licences:    [{ id, authority, type, kind?, issued?, expires? }]
-ratings:     [{ id, licenceId, class, ulKind?, typeDesignator?, issued?, validFrom?, expires? }]
+ratings:     [{ id, licenceId, class, ulKind?, typeDesignator?, category?, issued?, validFrom?, expires? }]
 privileges:  [{ id, licenceId, kind, detail?, issued?, validFrom?, expires? }]
 credentials: [{ id, type, issued?, validFrom?, expires? }]      # medicals, language, radio
-variants:    [{ id, ratingId, name }]
-events:      [{ date, kind, class?, ... }]                        # checks, tests, courses
+variants:    [{ id, ratingId, name, differentEngineType? }]
+events:      [{ date, kind, class?, category?, rating?, ratings?, authority?, fstdType?, ... }]
+trainings:   [{ programme, seeks? }]                              # privileges a course seeks
 flights:
   - date, class, ulKind?, typeDesignator?, variant?, launchMethod?, isSimulator, fstdType?
     minutes: { total, pic, dual, spic, picus, sic, dualGiven, examiner, multiPilot, night,
                ifr, actualInstrument, simulatedInstrument, crossCountry }
     takeoffs: { day, night }   landings: { day, night }
     optional inputs: fullStopNightLandings, interceptAndTrack, pilotFlying, soleManipulator,
-    tailwheel, mtomKg, engines, towKind, cruiseMinutes, mountainLandings, ...
+    tailwheel, mtomKg, engines, towKind, towTakeUp, fixedEngine, nightPeriodTakeoffs,
+    checkAuthority, cruiseMinutes, mountainLandings, ...
     flags: { proficiencyCheck, flightReview, ipc, trainingFlight, towFlight, ... }
 ```
 
@@ -156,8 +158,9 @@ date?":
 
 ```yaml
 credential, subject, status, decidedBy?: { evaluation, kind, status, credential?, reason? }
-members:     [{ evaluation, kind: evaluation | requires_all | requires_any, status, ... }]
-limitations: [{ evaluation, kind: evaluation, status, ... }]
+members:     [{ evaluation, kind: evaluation | requires_all | requires_any, status, level?, ... }]
+limitations: [{ evaluation, kind, status, scope?, ... }]
+levels:      [{ level, status, decidedBy? }]                      # section 15
 ```
 
 - Members are the credential's own evaluation results for that item (the worst when several
@@ -221,8 +224,9 @@ interprets), `affects` (the evaluations it changes) and `approved_by` / `approve
 what a word is read to mean, what is taken as met because the record cannot show it, what
 part of an article is not applied. There are no free-text notes in credential files. The
 gate lists unapproved interpretations and does not fail on them; an evaluation that uses a
-documentation-only qualifier (`with: examiner`) must have one. Sign-off follows
-CONTRIBUTING.md.
+documentation-only qualifier (`with: examiner`) must have one. An interpretation names the
+principle of section 14 it follows (`principle: P1` ... `P5`), if any; the gate fails on any
+other value. Sign-off follows CONTRIBUTING.md.
 
 ## 8. Worked examples
 
@@ -337,3 +341,79 @@ vocabulary or the format, the compiler or resolver, the schema and a worked exam
   `PPL_AS`, `CPL_AS` are added, so that each helicopter and airship licence is a credential
   with its own medical and ratings name the licence they are held on.
 
+
+## 14. Interpretation principles
+
+Five principles decide the judgement calls the text leaves open. They were proposed with the
+recommendations in `reviews/recommendations-*.md` and confirmed by Frederic Jung on
+2026-09-28. An interpretation that follows one names it (`principle: P1` ... `P5`, section
+7); one that the wording of the text decides alone names none. A new interpretation that
+departs from a principle says why in its reading.
+
+- **P1 Missing data is unknown.** When the record lacks data that decides whether the
+  pilot may fly (the category of a rating, the kind a privilege covers, a training flight
+  the text requires, whether a variant differs by its engine), the result is `unknown` with
+  a message that says what to record. It is never counted as met, and never as unmet merely
+  because nothing was recorded. This sharpens decision 4 of section 11: an item that cannot
+  be placed is unknown input, and a requirement no recorded item can show is untracked.
+- **P2 Only a check for this credential counts.** A proficiency check, assessment or test
+  counts toward a credential only when it is recorded for that credential (its rating, its
+  class or type, its authority). A check recorded for another rating, another credential or
+  under another authority does not stand in for it, however similar its content; a combined
+  check counts for each credential it is recorded for.
+- **P3 Count within the validity period.** Where the text asks for experience, instruction
+  or events "before the expiry date" or "within the last n years" without an anchor, they
+  count within the validity period being revalidated (the n months before expiry), not at
+  any time before expiry, and never from an earlier period.
+- **P4 Devices only where the text permits.** A simulator or other training device (FFS,
+  FTD, FNPT) counts only where the text, or the regulation it points to, expressly allows
+  it, and only of the kind it allows. Otherwise device sessions are left out, including
+  where the text's own conditions for a device (an approved course, a representative
+  device) cannot be seen in the record.
+- **P5 Presentation-only rows keep the current choice.** Where a choice changes only a
+  message or an informational row, never a status, the catalogue keeps what it does and
+  fixes only the wording where the wording is wrong.
+
+## 15. Format additions of the decisions of 2026-09-28
+
+The owner decisions of 2026-09-28 (every recommendation of `reviews/recommendations-*.md`
+accepted, the findings beyond the options to be fixed) asked for these words; each is in
+the vocabulary or the format, the compiler or engine, the schema, docs/credential-format.md
+and a test. [docs/decisions-2026-09-28.md](docs/decisions-2026-09-28.md) maps every
+decision row to them.
+
+- **Missing selection data is unknown.** `only_for` / `scope` `if_missing: unknown`: a held
+  item that lacks the data of `type_rated: true`, `ul_kinds`, `categories` or
+  `different_engine_type` is evaluated as `unknown` (`selection.input_missing`, param
+  `input`) instead of being skipped. A `$subject` filter (`in_class`, `in_type`,
+  `in_category`, `in_ul_kind`, `by_this_tow_kind` ...) the subject cannot supply makes every
+  item unknown input, never a silent non-match.
+- **Aircraft category.** A rating may record `category`; a subject's category is the
+  recorded one, else its class's, else its licence kind's (`licence_kinds.<kind>.category`).
+  `in_category: true` counts in it; `only_for.categories` selects by it; `holds.sameCategory`
+  compares with it. Events may record `category`.
+- **Events tied to an authority and to several ratings.** Events record `authority`
+  (flights `checkAuthority`), further `ratings` and `fstdType`; `by_authority: [FAA]`,
+  `excluding_ratings: [IR, BIR]` and `fstd` on events.
+- **Class groups.** `class_groups` in the vocabulary and `relevant_class: { class_group }`:
+  one passengers result per group, counting every class of it (FAA single-engine land).
+  FAA classes for powered parachutes and weight-shift-control aircraft.
+- **Record fields.** `nightPeriodTakeoffs` (count `night_period_takeoffs`, unknown on a
+  night flight without it), `fixedEngine` (`ul_credit` `fixed_engine: true`), `towTakeUp`,
+  variant `differentEngineType`, `trainings: [{ programme, seeks }]` (condition `seeks`).
+- **Counts.** `sum_of` with a minimum over counts whose values add, `max`/`max_hours` to cap
+  one, `unknown_if_none` (untracked rather than unmet while nothing is recorded),
+  `longest_flight`, `passenger_training_flight`, `safety_training`, `in_ul_kind`,
+  `by_this_tow_kind`, `by_this_tow_take_up`; `holds` `details` (`$subject`, `none`),
+  `expiryRecorded`, `authorities`.
+- **Validity.** `valid_for.age_on` (the age on the examination date) and
+  `recorded_expiry_wins`; `authority_conventions` (DE: derived periods end the day before,
+  §§ 186, 187(2), 188(2) BGB).
+- **Levels and limitations in composites.** An entry may carry `level: <name>`; a
+  requirement may name `<credential id>@<level>` and counts only that level (a class 1
+  medical at its class 2 validity); `limits: <scope>` reports an entry as a limitation of
+  that scope (`limitation_scopes`), never deciding (a CPL with a class 2 medical: usable
+  for private privileges, `commercial_privileges` limited). Composites list `levels`.
+- **Kind `document`** (`credentials/<authority>/documents/`): a non-aviation document a
+  rule accepts, such as a U.S. driver's license.
+- **Interpretations** may name their `principle` (section 14).

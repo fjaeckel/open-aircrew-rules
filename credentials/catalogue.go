@@ -35,6 +35,7 @@ type Catalogue struct {
 	// Associations are the association documents of associations.yaml.
 	Associations map[string]*Association
 	Options      Options
+	ev           *engine.Vocabulary
 	byID         map[string]*Credential
 	// held is what each credential selects in a record (its own part).
 	held map[string]engine.AppliesTo
@@ -103,13 +104,24 @@ func LoadWith(root string, o Options) (*Catalogue, error) {
 	if err != nil {
 		return nil, err
 	}
-	cat := &Catalogue{Root: root, Vocab: v, Policies: pol, Options: o, Shared: map[string]*Shared{}, Compiled: map[string]*Compiled{}, ByEvaluation: map[string]string{}, byID: map[string]*Credential{}, held: map[string]engine.AppliesTo{}, resolved: map[*Evaluation]resolution{}, following: map[string]bool{}}
+	cat := &Catalogue{Root: root, Vocab: v, ev: ev, Policies: pol, Options: o, Shared: map[string]*Shared{}, Compiled: map[string]*Compiled{}, ByEvaluation: map[string]string{}, byID: map[string]*Credential{}, held: map[string]engine.AppliesTo{}, resolved: map[*Evaluation]resolution{}, following: map[string]bool{}}
 	assoc, err := LoadAssociations(root)
 	if err != nil {
 		return nil, err
 	}
 	cat.Associations = assoc
 	cat.Resolver = NewResolver(root, v, pol)
+	for auth, conv := range v.AuthorityConventions {
+		if conv.ValidityEnds != "same_day" && conv.ValidityEnds != "day_before" {
+			cat.Errors = append(cat.Errors, fmt.Sprintf("vocabulary.yaml: authority_conventions.%s.validity_ends is same_day or day_before", auth))
+		}
+		if len(conv.Ref) == 0 {
+			cat.Errors = append(cat.Errors, fmt.Sprintf("vocabulary.yaml: authority_conventions.%s has no ref", auth))
+		}
+		for _, r := range conv.Ref {
+			cat.addRef(r, "vocabulary.yaml authority_conventions."+auth, 0)
+		}
+	}
 	cat.Resolver.associations = assoc
 	files, err := engine.YAMLFiles(filepath.Join(root, "credentials"))
 	if err != nil {
@@ -184,6 +196,9 @@ func LoadWith(root string, o Options) (*Catalogue, error) {
 		}
 	}
 	cat.checkRequirementCycles()
+	for _, c := range cat.Credentials {
+		cat.checkLevelsAndLimits(c)
+	}
 	for _, c := range cat.Credentials {
 		cp := &compiler{v: v, cat: cat, where: c.ID}
 		cat.held[c.ID] = cp.appliesTo(c, &Evaluation{})
