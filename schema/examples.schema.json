@@ -13,21 +13,30 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["name", "evaluation", "asOf", "record", "expect"],
+        "required": ["name", "outcome", "asOf", "record"],
+        "oneOf": [
+          { "required": ["evaluation"], "not": { "required": ["composite"] } },
+          { "required": ["composite"], "properties": { "composite": { "const": true } }, "not": { "required": ["evaluation"] } }
+        ],
         "properties": {
           "name": { "type": "string", "pattern": "^[a-z0-9-]+$" },
           "evaluation": { "type": "string" },
+          "composite": { "type": "boolean" },
           "says": { "type": "string" },
           "shows": { "type": "array", "items": { "type": "string" } },
           "asOf": { "type": "string", "format": "date" },
           "record": { "$ref": "record.schema.json" },
+          "outcome": { "enum": ["current", "expiring", "expired", "lapsed", "unknown", "not_applicable"] },
           "expect": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["status"],
             "properties": {
               "subject": { "type": "object" },
-              "status": { "enum": ["current", "expiring", "expired", "lapsed", "unknown", "not_applicable"] },
+              "decidedBy": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": { "evaluation": { "type": "string" }, "credential": { "type": "string" } }
+              },
               "message": { "type": "string" },
               "params": { "type": "object" },
               "expiresOn": { "type": "string" },

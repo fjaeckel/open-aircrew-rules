@@ -27,6 +27,66 @@ type CoverageEntry struct {
 	NotEvaluated string   `yaml:"not_evaluated"`
 }
 
+// CoverageFragment is one file under fragments/coverage/: changes to coverage/articles.yaml
+// that the integration step merges.
+type CoverageFragment struct {
+	Articles []struct {
+		Article      string   `yaml:"article"`
+		Evaluations  []string `yaml:"evaluations"`
+		Pending      []string `yaml:"pending"`
+		DonePending  []string `yaml:"done_pending"`
+		Note         string   `yaml:"note"`
+		NotEvaluated string   `yaml:"not_evaluated"`
+	} `yaml:"articles"`
+}
+
+// mergeCoverage applies one coverage fragment: evaluations and pending are added,
+// done_pending removed from pending, note and not_evaluated replaced when given; an article
+// not listed yet is added. A note without pending files left is dropped.
+func mergeCoverage(cov *Coverage, file string) []string {
+	var probs []string
+	b, err := os.ReadFile(file)
+	var fr CoverageFragment
+	if err == nil {
+		err = yaml.Unmarshal(b, &fr)
+	}
+	if err != nil {
+		return []string{fmt.Sprintf("%s: %v", file, err)}
+	}
+	for _, a := range fr.Articles {
+		i := slices.IndexFunc(cov.Articles, func(e CoverageEntry) bool { return e.Article == a.Article })
+		if i < 0 {
+			cov.Articles = append(cov.Articles, CoverageEntry{Article: a.Article})
+			i = len(cov.Articles) - 1
+		}
+		e := &cov.Articles[i]
+		e.Evaluations = append(e.Evaluations, a.Evaluations...)
+		for _, d := range a.DonePending {
+			j := slices.Index(e.Pending, d)
+			if j < 0 {
+				probs = append(probs, fmt.Sprintf("%s: %s: done_pending %s is not pending", file, a.Article, d))
+				continue
+			}
+			e.Pending = slices.Delete(e.Pending, j, j+1)
+		}
+		for _, p := range a.Pending {
+			if !slices.Contains(e.Pending, p) {
+				e.Pending = append(e.Pending, p)
+			}
+		}
+		if a.Note != "" {
+			e.Note = a.Note
+		}
+		if len(e.Pending) == 0 {
+			e.Note = ""
+		}
+		if a.NotEvaluated != "" {
+			e.NotEvaluated = a.NotEvaluated
+		}
+	}
+	return probs
+}
+
 // CoverageResult is the outcome of CheckCoverage.
 type CoverageResult struct {
 	// Problems fail the gate.
@@ -103,6 +163,17 @@ func CheckCoverage(cat *Catalogue) *CoverageResult {
 	if err := yaml.Unmarshal(b, &cov); err != nil {
 		fail("coverage/articles.yaml: %v", err)
 		return res
+	}
+	if cat.Options.Fragments {
+		frags, err := fragmentFiles(cat.Root, "coverage")
+		if err != nil {
+			fail("fragments/coverage: %v", err)
+		}
+		for _, f := range frags {
+			for _, p := range mergeCoverage(&cov, f) {
+				fail("%s", p)
+			}
+		}
 	}
 	scope, err := LoadScope(cat.Root)
 	if err != nil {

@@ -151,6 +151,9 @@ func (e *evalCtx) run() Evaluation {
 	}
 
 	root := e.evalRoot(e.asOf, &ev.Requirements, true)
+	if r.Requirements != nil {
+		e.trace.Root = [...]string{triUnmet: "unmet", triMet: "met", triUnknown: "unknown"}[root]
+	}
 	if root == triMet && e.moving() {
 		ev.ValidUntil = e.projectRoot()
 	}

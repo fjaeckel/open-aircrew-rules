@@ -21,6 +21,7 @@ credentials/<authority>/examiners/<name>.yaml       kind: examiner_certificate
 credentials/<authority>/medicals/<name>.yaml        kind: medical
 credentials/<authority>/shared/<name>.yaml          parameterised evaluations used by several credentials
 examples/<credential id>.yaml                       worked examples of one credential
+policies.yaml                                       every policy (convention with no legal text) cited as policy:<id>
 coverage/articles.yaml                              every article in scope -> evaluations, pending files, or why not
 scope/articles-<authority>.yaml                     the articles in scope, with a one-line summary each
 sources/<authority>/<article>.md                    verbatim texts (unchanged; see sources/README.md)
@@ -86,7 +87,7 @@ evaluations:
 
   - id: licence
     asks: Is the rating held on a licence whose own requirements (medical, language) are met?
-    requires: [easa.licence.ppl-a]
+    requires_any: [easa.licence.ppl-a]
 
 interpretations:
   - id: refresher-as-dual
@@ -129,14 +130,39 @@ An evaluation is one of three things.
    this credential's `selects`; `asks` and `only_for` given here override. A shared
    evaluation with its own `scope` (the flight review: one per pilot) is compiled once,
    whichever credentials list it.
-3. **A reference**: `requires: [credential ids]` says that this credential needs another
-   one (the licence's medical, the rating's licence). It compiles to nothing; the other
-   credential evaluates itself. It keeps "what does this credential need?" answerable
-   from one file.
+3. **A requirement**: `requires_all: [credential ids]` (every one of them) and/or
+   `requires_any: [credential ids]` (at least one) say that this credential needs others
+   (the licence's medical and language endorsement, the rating's licence). The entry has
+   only `id`, `asks` and these two keys. It compiles to no rule; each required credential
+   evaluates itself, and the requirement takes part in this credential's **composite**
+   (below). Requirements point from the dependent credential to the one it depends on (a
+   rating names its licence; a licence does not list its ratings); a cycle is an error.
+
+### Composite: may the credential be exercised?
+
+For every item the record holds of a credential (what `selects` picks, the licence for a
+licence), the composite combines:
+
+- **its own evaluations**: the result concerning that item (the worst, when several do);
+  results about `passengers`, `launch_methods`, `variants` or `training` concern part of
+  the privileges only and are listed as `limitations`, never deciding;
+- **its requirement groups**: a required credential counts by the best composite among the
+  items of it the record holds, narrowed to the same licence when both are held on one
+  (`not_applicable` counts as met). `requires_all` is the worst of its credentials, and a
+  credential the record does not hold is `unknown` (reason `not_held`); `requires_any` is
+  the best of the listed credentials the record holds, and `unknown` when it holds none.
+
+The composite status is the worst member status, in the order expired or lapsed, unknown,
+expiring, current; `decidedBy` names the first member in file order with that status
+(`evaluation`, `kind`, and for a requirement the deciding `credential`). `not_applicable`
+members never decide; without a deciding member the composite is `not_applicable`.
+`current` and `expiring` mean the credential may be exercised; `unknown` means the record
+cannot tell, never a silent pass or fail. A required credential counts as a whole (all its
+evaluations), not only the part the requiring credential needs.
 
 | Key | Meaning |
 | --- | --- |
-| `about` | The subject: `self` (default; the credential's own record part, the licence for kind licence), `rating`, `passengers` (one result per class and authority), `launch_methods` (one per launch method used), `licence`, `training` (a programme), `pilot` (one result per pilot). |
+| `about` | The subject: `self` (default; the credential's own record part, the licence for kind licence), `rating`, `passengers` (one result per class and authority), `launch_methods` (one per launch method used), `licence`, `training` (a programme), `pilot` (one result per pilot), `variants` (one per variant recorded on a selected rating). |
 | `only_for` | Narrows the subjects: `authorities`, `not_authorities`, `licence_kinds`, `not_licence_kinds`, `classes`, `not_classes`, `credential_types`, `privilege_kinds`, `launch_methods`, `type_rated`, `programme`, `when_holding` (engine `holds`), `ref`. |
 | `scope` | Replaces `selects` for this evaluation (same keys as `only_for`). |
 | `relevant_class` | `pooled_with_held: [classes]` with `ref`: `in_class` then also counts the pool's classes the holder rates on the same licence. |
@@ -170,8 +196,10 @@ all_of: [ ... ]           # or any_of: [ ... ], or n_of: { n: 2, of: [ ... ] }
 `longest_training_flight`, `flights`, `training_flights`, `takeoffs`, `landings`,
 `takeoffs_and_landings` (the smaller of the two), `night_takeoffs`, `night_landings`,
 `full_stop_landings`, `full_stop_night_landings`, `launches`, `approaches`, `holds`,
-`intercept_and_track`, `tows`, `not_recorded` (something no record holds: always
-untracked), and the events `proficiency_check`, `skill_test`, `flight_review`,
+`intercept_and_track`, `tows`, `route_sectors` (flights with a cruise of at least 15
+minutes), `solo_time` (PIC + supervised solo), `instruction_given_time`,
+`instruction_or_examining_time`, `mountain_landings`, `not_recorded` (something no record
+holds: always untracked), and the events `proficiency_check`, `skill_test`, `flight_review`,
 `proficiency_program_phase`, `basicmed_course`, `basicmed_exam`. Each has a default row id,
 name key, unit and remedy key (the requirement rows consumers already display); override
 with `id`, `name`, `unit`, `remedy` (`remedy: none` drops it).
@@ -193,7 +221,9 @@ Amounts: `min` for counts (default 1), `min_hours` or `min_minutes` for times.
 | `as: pilot_flying`, `as: sole_manipulator`, `as: [pic, dual, spic, ...]` | the pilot's role |
 | `with_time: [ifr, crossCountry, ...]`, `without_time` | flights with or without time of a kind |
 | `simulator: include \| only`, `fstd: [FFS]` | simulator sessions (excluded by default) |
-| `tailwheel`, `min_distance_km` | aircraft and flight properties |
+| `tailwheel`, `min_distance_km`, `min_landings`, `max_engines`, `max_mtom_kg`, `tow_kinds` | aircraft and flight properties |
+| `flagged: { <flight flag>: true \| false }` | flights with these flags set or unset (`examinerOnBoard`, `towFlight` ...) |
+| `in_variant: true` | in the variant evaluated (`about: variants`) |
 | `for_rating`, `also: [event kinds]` | events for a rating; further event kinds that count |
 | `any_flight_of: [ {qualifiers}, ... ]` | a flight counts when it matches any set |
 | `with: examiner` | who conducts it. **Not evaluated**; the gate requires an interpretation that says so |
@@ -221,8 +251,25 @@ an engine stage condition (`all_met`, `undetermined`, `{ unmet: <row> }`, `{ hol
 
 Options: `special: [stages]` (exemptions and waivers, checked after the expiry stages and
 before the requirement stages), `messages: { <stage id>: key }`, `statuses: { <stage id>:
-status }`, `omit: [stage ids]`, `expiring_notice: { days, message?, ref }` (required by
-`revalidation` and `validity`).
+{ status, ref: policy:<id> } }`, `omit: [stage ids]`, `expiring_notice: { days, message?,
+ref }` (required by `revalidation` and `validity`). The stage ids named must exist in the
+preset.
+
+**Conventions.** A preset stage whose status is a convention rather than the text cites a
+policy, declared per preset in `vocabulary.yaml` (`outcome_presets.<preset>.conventions`):
+
+| Preset | Stage: policy |
+| --- | --- |
+| `revalidation` | no_expiry: `no-expiry-recorded`; window_not_open: `window-not-open`; met_expiring: `expiring-notice`; not_met: `revalidation-not-met-expiring` |
+| `recency`, `privilege_recency` | lapsed: `recency-lapsed` |
+| `passengers` | unknown: `unknown-input`; not_met: `passengers-expired` |
+| `validity` | date_of_birth: `unknown-input`; no_expiry: `no-expiry-recorded`; expiring: `expiring-notice` |
+| `training` | unknown: `unknown-input`; in_progress: `training-in-progress-lapsed` |
+
+Every evaluation using the preset cites these policies (the gate counts and resolves them).
+A file that overrides such a status cites the policy of its own convention, e.g. FAA
+passenger recency: `statuses: { not_met: { status: lapsed, ref: policy:recency-lapsed } }`.
+Written stages carry their own `ref`, a `policy:` one when the status is a convention.
 
 ## References
 
@@ -237,8 +284,10 @@ names the paragraph it interprets. A ref is `<prefix>:<article><paragraph labels
 - The gate parses the paragraph outline of the source text ((a), (1), (i), (A), nested in
   whatever order the text uses) and requires the exact label path to exist.
 - `policy:<id>` marks a condition with no legal text behind it (a presentation or
-  implementation choice such as the 90-day expiring notice); the id must be declared in
-  `credential_vocabulary.policy_refs`. Keep these few.
+  implementation choice such as the 90-day expiring notice, or the status an unmet
+  recency is reported with); the id must be declared in `policies.yaml` (`id`,
+  `statement`, `rationale`), and every declared policy must be cited somewhere. Keep these
+  few.
 - `ref: [a, b]` gives several. No quote is pasted into a credential file; the text lives
   in `sources/`. An optional `@<hash>` suffix is reserved for anchoring the quoted passage
   (change detection); it is parsed and not yet verified.
@@ -261,10 +310,9 @@ one without `ref`, `reading` or `affects`.
 
 ## Worked examples
 
-`examples/<credential id>.yaml` holds a few examples: at least one passing (status
-`current`) and one failing example per compiled evaluation (only one kind when the
-evaluation cannot report the other), plus examples for interpretations that change a result
-(`shows: [interpretation ids]`).
+`examples/<credential id>.yaml` holds a few examples. Each names the `evaluation` it runs
+(or `composite: true` for the credential's composite), a date, a small record and the
+`outcome` the result must report; `expect` optionally compares more.
 
 ```yaml
 credential: easa.rating.tmg
@@ -281,13 +329,40 @@ examples:
         - { id: r-tmg, licenceId: l-ppl, class: TMG, expires: 2027-03-31 }
       flights:
         - { date: 2026-09-01, class: SEP_LAND, minutes: { total: 720, pic: 660, dual: 60 }, takeoffs: { day: 12 }, landings: { day: 12 } }
-    expect: { subject: { kind: rating, id: r-tmg }, status: current, message: rating.revalidation_current }
+    outcome: current
+    expect: { subject: { kind: rating, id: r-tmg }, message: rating.revalidation_current }
 ```
 
-`record` is the neutral input (`schema/record.schema.json`). `expect` compares what it
-states: `subject` (needed when the evaluation reports several), `status`, `message`,
-`params`, `expiresOn`, `validUntil`, `requirements`. `go generate` writes one test per
-credential under `gen/` that runs its examples.
+`outcome` is the status: `current`, `expiring`, `expired`, `lapsed`, `unknown` or
+`not_applicable`. `record` is the neutral input (`schema/record.schema.json`). `expect`
+compares what it states: `subject` (needed when the evaluation reports several), `message`,
+`params`, `expiresOn`, `validUntil`, `requirements`. A composite example expects only
+`subject` and `decidedBy: { evaluation, credential? }`:
+
+```yaml
+  - name: composite-language-expired
+    composite: true
+    says: With the language endorsement expired the PPL(A) may not be exercised.
+    asOf: 2026-09-15
+    record: { ... }
+    outcome: expired
+    expect: { subject: { kind: licence, id: l-1 }, decidedBy: { evaluation: language, credential: easa.endorsement.language-proficiency } }
+```
+
+**Outcome classes.** An example is *passing* when its result is `current`, or `expiring`
+while the evaluation's requirement tree is met or the evaluation has none (the notice
+before a valid credential ends: `met_expiring` of `revalidation`, `expiring` of
+`validity`, an expiring flight review). It is *failing* otherwise: `expired`, `lapsed`,
+`unknown`, `not_applicable`, or `expiring` with the requirements unmet or undetermined (the
+`not_met` stage of `revalidation`, the grace period of FAA instrument currency). A
+composite example is passing when the composite is `current` or `expiring`, failing
+otherwise.
+
+The gate requires a passing example for every compiled evaluation that can report
+`current` or `expiring`, a failing example for every one that can report another status,
+and at least one passing and one failing composite example in the catalogue. Add examples
+for interpretations that change a result (`shows: [interpretation ids]`). `go generate`
+writes one test per credential under `gen/` that runs its examples.
 
 ## Coverage
 
@@ -325,6 +400,7 @@ Each evaluation becomes one engine rule (`engine.Rule`), evaluated by the engine
 | `valid_for` | `validity` (age periods, caps, end of month) |
 | `outcomes` | `stages` |
 | `effective_from`, `effective_to` | `effective_from`, `effective_to` |
+| `requires_all`, `requires_any` | no rule; evaluated in the composite (`credentials.Catalogue.Evaluate`) |
 
 The compiled rule id is `<credential id>#<evaluation id>`, or the shared id for a
 shared evaluation with its own `scope`.

@@ -9,7 +9,8 @@ import (
 	"strings"
 )
 
-// engineCoverage runs the engine tests and returns the combined statement coverage.
+// engineCoverage runs the engine and credentials tests and returns their combined statement
+// coverage.
 func engineCoverage(root string) (float64, error) {
 	tmp, err := os.CreateTemp("", "rulescheck-cover-*.out")
 	if err != nil {
@@ -17,10 +18,10 @@ func engineCoverage(root string) (float64, error) {
 	}
 	tmp.Close()
 	defer os.Remove(tmp.Name())
-	cmd := exec.Command("go", "test", "-count=1", "-coverpkg=./engine/...", "-coverprofile="+tmp.Name(), "./engine/...")
+	cmd := exec.Command("go", "test", "-count=1", "-coverpkg=./engine/...,./credentials/...", "-coverprofile="+tmp.Name(), "./engine/...", "./credentials/...")
 	cmd.Dir = root
 	if out, err := cmd.CombinedOutput(); err != nil {
-		return 0, fmt.Errorf("go test ./engine/...: %v\n%s", err, out)
+		return 0, fmt.Errorf("go test ./engine/... ./credentials/...: %v\n%s", err, out)
 	}
 	return profileCoverage(tmp.Name())
 }

@@ -10,7 +10,8 @@ examples:
         - {id: l-ppl, authority: FAA, type: PRIVATE}
       credentials:
         - {id: c-3, type: FAA_CLASS3_MEDICAL, issued: 2024-06-10}
-    expect: { status: current, message: credential.valid }
+    outcome: current
+    expect: { message: credential.valid }
   - name: private-privileges-missing-inputs
     evaluation: private_privileges
     says: Without a date of birth the age on the examination date, and so the duration, is unknown.
@@ -20,4 +21,5 @@ examples:
         - {id: l-ppl, authority: FAA, type: PRIVATE}
       credentials:
         - {id: c-3, type: FAA_CLASS3_MEDICAL, issued: 2024-06-10}
-    expect: { status: unknown, message: credential.date_of_birth_required }
+    outcome: unknown
+    expect: { message: credential.date_of_birth_required }

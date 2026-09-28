@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/fjaeckel/open-aircrew-rules/schema/coverage-fragment.schema.json",
+  "title": "Changes to coverage/articles.yaml, merged at integration (fragments/coverage/*.yaml)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["articles"],
+  "properties": {
+    "articles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["article"],
+        "minProperties": 2,
+        "properties": {
+          "article": { "type": "string" },
+          "evaluations": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+          "pending": { "$ref": "#/$defs/files" },
+          "done_pending": { "$ref": "#/$defs/files" },
+          "note": { "type": "string", "minLength": 1 },
+          "not_evaluated": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "files": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z]+/(licences|ratings|privileges|endorsements|instructors|examiners|medicals)/[a-z0-9-]+$" } }
+  }
+}

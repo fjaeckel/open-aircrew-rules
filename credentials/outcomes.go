@@ -2,6 +2,7 @@ package credentials
 
 import (
 	"fmt"
+	"sort"
 
 	"gopkg.in/yaml.v3"
 
@@ -54,7 +55,23 @@ func (cp *compiler) outcomes(n *yaml.Node, r *engine.Rule) []engine.Stage {
 			case "messages":
 				_ = v.Decode(&spec.Messages)
 			case "statuses":
-				_ = v.Decode(&spec.Statuses)
+				spec.Statuses = map[string]string{}
+				for _, q := range pairs(v) {
+					st, ref := "", false
+					for _, x := range pairs(q[1]) {
+						switch x[0].Value {
+						case "status":
+							st = x[1].Value
+						case "ref":
+							ref = true
+							cp.ref(x[1], "outcomes.statuses."+q[0].Value)
+						}
+					}
+					if st == "" || !ref {
+						cp.fail(q[1], "outcomes.statuses.%s: write { status, ref: policy:<id> }", q[0].Value)
+					}
+					spec.Statuses[q[0].Value] = st
+				}
 			case "omit":
 				_ = v.Decode(&spec.Omit)
 			case "date_of_birth":
@@ -78,12 +95,25 @@ func (cp *compiler) outcomes(n *yaml.Node, r *engine.Rule) []engine.Stage {
 			}
 		}
 	}
-	if _, ok := cp.v.OutcomePresets[spec.Preset]; !ok {
+	def, ok := cp.v.OutcomePresets[spec.Preset]
+	if !ok {
 		cp.fail(n, "outcomes: preset %q is not in the vocabulary", spec.Preset)
 		return nil
 	}
 	st := cp.preset(spec, r)
+	ids := map[string]bool{}
+	for _, s := range st {
+		ids[baseID(s.ID)] = true
+	}
+	for what, m := range map[string][]string{"messages": keysOf(spec.Messages), "statuses": keysOf(spec.Statuses), "omit": spec.Omit} {
+		for _, id := range m {
+			if !ids[id] {
+				cp.fail(n, "outcomes.%s: preset %s has no stage %q", what, spec.Preset, id)
+			}
+		}
+	}
 	var out []engine.Stage
+	cited := map[string]bool{}
 	for _, s := range st {
 		if containsStr(spec.Omit, s.ID) {
 			continue
@@ -94,9 +124,21 @@ func (cp *compiler) outcomes(n *yaml.Node, r *engine.Rule) []engine.Stage {
 		}
 		if m, ok := spec.Statuses[base]; ok {
 			s.Status = m
+		} else if conv, ok := def.Conventions[base]; ok && !cited[base] {
+			cp.cat.addRef(conv, fmt.Sprintf("%s outcomes preset %s stage %s", cp.where, spec.Preset, base), n.Line)
 		}
+		cited[base] = true
 		out = append(out, s)
 	}
+	return out
+}
+
+func keysOf(m map[string]string) []string {
+	out := make([]string, 0, len(m))
+	for k := range m {
+		out = append(out, k)
+	}
+	sort.Strings(out)
 	return out
 }
 

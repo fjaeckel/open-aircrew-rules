@@ -16,10 +16,16 @@ type Vocab struct {
 	Selects        map[string]string          `yaml:"selects"`
 	About          map[string]AboutDef        `yaml:"about"`
 	RefAuthorities map[string]RefAuthorityDef `yaml:"ref_authorities"`
-	PolicyRefs     map[string]string          `yaml:"policy_refs"`
 	Counts         map[string]CountDef        `yaml:"counts"`
 	Qualifiers     map[string]QualifierDef    `yaml:"qualifiers"`
-	OutcomePresets map[string]string          `yaml:"outcome_presets"`
+	OutcomePresets map[string]PresetDef       `yaml:"outcome_presets"`
+}
+
+// PresetDef is one outcome preset: its description and, per stage id, the policy ref behind
+// a status the preset sets by convention.
+type PresetDef struct {
+	Description string            `yaml:"description"`
+	Conventions map[string]string `yaml:"conventions"`
 }
 
 // AboutDef is what an evaluation can be about.

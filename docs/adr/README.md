@@ -8,6 +8,7 @@ here.
 | No. | Title | Status | Date |
 | --- | --- | --- | --- |
 | [0001](0001-credential-centric-catalogue.md) | One file per credential, with references and interpretations made explicit | Accepted | 2026-09-28 |
+| [0002](0002-outcomes-requirements-policies.md) | Explicit outcomes, evaluated requirements, declared policies | Accepted | 2026-09-28 |
 
 To add one: copy the headings of the latest record (Context, Decision, Consequences,
 Alternatives considered), take the next number, and link it from this table in the same pull

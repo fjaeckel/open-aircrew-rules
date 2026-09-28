@@ -23,9 +23,28 @@ func check(o options) (*report, error) {
 	}
 	validate("vocabulary", filepath.Join(o.root, "vocabulary.yaml"))
 	validate("messages", filepath.Join(o.root, "messages", "keys.yaml"))
+	validate("policies", filepath.Join(o.root, "policies.yaml"))
 	if len(r.schema) > 0 {
 		return r, nil
 	}
+	if r.frags, err = credentials.Fragments(o.root); err != nil {
+		return nil, err
+	}
+	for kind, files := range r.frags {
+		for _, f := range files {
+			switch {
+			case !o.fragments:
+				r.fragFail = append(r.fragFail, f+": unmerged fragment; merge it into its shared file (fragments/README.md) or run with -fragments")
+			case kind == "coverage":
+				validate("coverage-fragment", filepath.Join(o.root, f))
+			case kind == "keys":
+				validate("messages", filepath.Join(o.root, f))
+			case kind == "policies":
+				validate("policies", filepath.Join(o.root, f))
+			}
+		}
+	}
+	sort.Strings(r.fragFail)
 	files, err := engine.YAMLFiles(filepath.Join(o.root, "credentials"))
 	if err != nil {
 		return nil, err
@@ -51,7 +70,7 @@ func check(o options) (*report, error) {
 	}
 	validate("coverage", filepath.Join(o.root, "coverage", "articles.yaml"))
 
-	cat, err := credentials.Load(o.root)
+	cat, err := credentials.LoadWith(o.root, credentials.Options{Fragments: o.fragments})
 	if err != nil {
 		return nil, err
 	}

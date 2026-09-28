@@ -7,7 +7,8 @@ contributing you agree that your contribution is licensed under the MIT License 
 [LICENSE](LICENSE)) and follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 Read [DESIGN.md](DESIGN.md) once, and [docs/credential-format.md](docs/credential-format.md)
-before writing a credential file.
+before writing a credential file. Converting a credential from an article-centric rule set
+follows [docs/converting.md](docs/converting.md).
 
 ## Adding or changing a credential
 
@@ -20,29 +21,37 @@ before writing a credential file.
    `sources/<authority>/` (see [Sources and copyright](#sources-and-copyright)).
 3. **Write the evaluations.** Each evaluation asks one question in plain words (`asks`),
    names its article (`source`) and uses only the words of `vocabulary.yaml`
-   `credential_vocabulary`. Reuse shared evaluations with `uses:`, and list the credentials
-   it depends on with `requires:`.
+   `credential_vocabulary`. Reuse shared evaluations with `uses:`, and name the credentials
+   it depends on with `requires_all:` (every one) and `requires_any:` (at least one); a
+   rating names its licence, a licence its medical, never the other way round.
 4. **A `ref:` on every condition.** Every count, combinator, `waived_by`, `only_if`,
    `ul_credit`, `relevant_class`, validity period, `restored_by` event, `on_fail`, written
    stage and expiring notice points to the most specific paragraph it encodes, e.g.
    `easa:FCL.740.A(b)(1)(ii)(C)`, `faa:61.57(c)(1)(iii)`, `de:LuftPersV.45a`. The gate
    checks that the exact paragraph exists in the stored text.
 5. **`policy:` for anything that is not law.** A presentation or implementation choice (the
-   90-day expiring notice, "unknown" when input is missing) is `ref: policy:<id>`, with the id
-   and its reason declared in `credential_vocabulary.policy_refs`. Keep these few; a reviewer
-   will ask why each one is not law.
+   90-day expiring notice, "unknown" when input is missing, the status an unmet recency is
+   reported with) is `ref: policy:<id>`, with the id, a statement and a rationale declared
+   once in `policies.yaml`. Reuse an existing policy where it says the same; keep new ones
+   few, as a reviewer will ask why each one is not law.
 6. **Interpretations for every judgement call.** Where the text leaves room (what a word
    means, what is assumed because a logbook cannot show it, what part of an article is not
    applied), add an interpretation with `id`, `reading`, `ref`, `affects`, and
    `approved_by: null`, `approved_on: null`. No free-text notes.
 7. **Worked examples.** In `examples/<credential id>.yaml`, give every evaluation at least
-   one passing (`current`) and one failing example, and add an example for each
-   interpretation that changes a result (`shows: [interpretation id]`). Keep records small
-   and say in `says:` what the example shows.
+   one passing and one failing example, each stating its `outcome` (the status it must
+   report; the outcome classes are defined in the format reference), and add an example for
+   each interpretation that changes a result (`shows: [interpretation id]`). For a licence
+   with requirements, add composite examples (`composite: true`). Keep records small and
+   say in `says:` what the example shows.
 8. **Account for the articles.** List each new evaluation under the article of its `source`
    in `coverage/articles.yaml`, and remove the credential file from the `pending` lists it
    appeared in.
 9. **Run the gate** (below) and add a line to `CHANGELOG.md` under "Unreleased".
+
+When several contributors work at once, steps 8 and 9 and any new message key or policy go
+into fragments instead of the shared files (`fragments/`, see its README), and the gate
+runs with `-fragments`.
 
 A new vocabulary word or message key is a larger change: add it to `vocabulary.yaml` or
 `messages/keys.yaml`, implement it in the compiler or engine, add a schema entry if needed,
@@ -106,6 +115,7 @@ go vet ./...
 go test -race ./...
 go generate ./... && git diff --exit-code   # generated code is up to date
 go run ./cmd/rulescheck -strict              # the gate CI runs
+go run ./cmd/rulescheck -strict -fragments   # the same, with unmerged fragments/ (parallel work)
 go run ./cmd/rulescheck -report              # the same report, always exits 0
 gofmt -l .                                    # prints nothing
 ```

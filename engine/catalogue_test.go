@@ -32,6 +32,14 @@ func TestLoadErrors(t *testing.T) {
 	} else if _, ok := k.Get("a"); !ok {
 		t.Error("key a")
 	}
+	if k, err := LoadKeys(write("k4.yaml", "keys:\n  - {key: a}\n"), write("k5.yaml", "keys:\n  - {key: b}\n")); err != nil {
+		t.Error(err)
+	} else if d, ok := k.Get("a"); !ok || d.Key != "a" || len(k.Keys) != 2 {
+		t.Error("keys from two files")
+	}
+	if _, err := LoadKeys(write("k6.yaml", "keys:\n  - {key: a}\n"), write("k7.yaml", "keys:\n  - {key: a}\n")); err == nil {
+		t.Error("a key in two files must fail")
+	}
 	if _, err := LoadVocabulary(filepath.Join(dir, "nope.yaml")); err == nil {
 		t.Error("missing vocabulary must fail")
 	}
@@ -46,5 +54,17 @@ func TestLoadErrors(t *testing.T) {
 	}
 	if files, err := YAMLFiles(filepath.Join(dir, "missing")); err != nil || len(files) != 0 {
 		t.Errorf("missing dir: %v %v", files, err)
+	}
+}
+
+func TestHoldings(t *testing.T) {
+	c := testCatalogue(t)
+	rec := record(t, "licences: [{ id: l, authority: EASA, type: PPL(A) }, { id: f, authority: FAA, type: PRIVATE }]\nratings: [{ id: r, licenceId: l, class: SEP_LAND }]\n")
+	got := Holdings(c, rec, AppliesTo{Subject: "licence", Authorities: []string{"easa"}}, MustDate("2026-01-01"))
+	if len(got) != 1 || got[0].ID != "l" || got[0].Detail != "PPL_A" {
+		t.Errorf("licences: %+v", got)
+	}
+	if got := Holdings(c, rec, AppliesTo{Subject: "rating", Classes: []string{"SEP_LAND"}}, MustDate("2026-01-01")); len(got) != 1 || got[0].ID != "r" {
+		t.Errorf("ratings: %+v", got)
 	}
 }

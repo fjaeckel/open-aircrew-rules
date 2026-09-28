@@ -1,5 +1,6 @@
 // Command evaluate loads the credential catalogue, evaluates one record on a date and prints
-// every evaluation as JSON (DESIGN.md section 5).
+// every evaluation and, per held credential, the composite answer as JSON (DESIGN.md
+// section 5): { "evaluations": [...], "credentials": [...] }.
 //
 //	go run ./cmd/evaluate -as-of 2026-09-28 record.yaml
 //	go run ./cmd/evaluate -root path/to/open-aircrew-rules - < record.json
@@ -70,11 +71,16 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		fmt.Fprintf(stderr, "evaluate: the catalogue does not compile:\n  %s\n", strings.Join(cat.Errors, "\n  "))
 		return 2
 	}
-	evs := engine.Evaluate(cat.Engine, &rec, date)
-	out := []engine.Evaluation{}
-	for _, ev := range evs {
+	res := cat.Evaluate(&rec, date)
+	out := credentials.Result{Evaluations: []engine.Evaluation{}, Credentials: []credentials.Composite{}}
+	for _, ev := range res.Evaluations {
 		if *only == "" || belongsTo(cat, ev.RuleID, *only) {
-			out = append(out, ev)
+			out.Evaluations = append(out.Evaluations, ev)
+		}
+	}
+	for _, c := range res.Credentials {
+		if *only == "" || c.Credential == *only {
+			out.Credentials = append(out.Credentials, c)
 		}
 	}
 	enc := json.NewEncoder(stdout)

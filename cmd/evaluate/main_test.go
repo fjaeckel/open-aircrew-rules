@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/fjaeckel/open-aircrew-rules/credentials"
-	"github.com/fjaeckel/open-aircrew-rules/engine"
 )
 
 const record = `
@@ -26,12 +25,15 @@ func TestEvaluate(t *testing.T) {
 	if code := run([]string{"-root", "../..", "-as-of", "2026-09-28", "-credential", "easa.rating.sep-land", "-"}, strings.NewReader(record), &out, &errs); code != 0 {
 		t.Fatalf("exit %d: %s", code, errs.String())
 	}
-	var evs []engine.Evaluation
-	if err := json.Unmarshal(out.Bytes(), &evs); err != nil {
+	var res credentials.Result
+	if err := json.Unmarshal(out.Bytes(), &res); err != nil {
 		t.Fatal(err)
 	}
+	if len(res.Credentials) != 1 || res.Credentials[0].Credential != "easa.rating.sep-land" || res.Credentials[0].Status != "unknown" || res.Credentials[0].DecidedBy.Evaluation != "licence" {
+		t.Errorf("composites: %+v", res.Credentials)
+	}
 	got := map[string]string{}
-	for _, ev := range evs {
+	for _, ev := range res.Evaluations {
 		if !strings.HasPrefix(ev.RuleID, "easa.rating.sep-land#") {
 			t.Errorf("unexpected %s", ev.RuleID)
 		}

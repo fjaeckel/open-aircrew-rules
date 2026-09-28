@@ -51,17 +51,18 @@ func (v *Vocab) Cite(r Ref) string {
 	return strings.ReplaceAll(a.Cite, "{article}", r.Article+lab)
 }
 
-// Resolver checks references against sources/ and the declared policy refs.
+// Resolver checks references against sources/ and the policies of policies.yaml.
 type Resolver struct {
-	root  string
-	v     *Vocab
-	mu    sync.Mutex
-	files map[string][]label
+	root     string
+	v        *Vocab
+	policies map[string]*Policy
+	mu       sync.Mutex
+	files    map[string][]label
 }
 
 // NewResolver returns a resolver for the module rooted at root.
-func NewResolver(root string, v *Vocab) *Resolver {
-	return &Resolver{root: root, v: v, files: map[string][]label{}}
+func NewResolver(root string, v *Vocab, policies map[string]*Policy) *Resolver {
+	return &Resolver{root: root, v: v, policies: policies, files: map[string][]label{}}
 }
 
 // SourceFile returns the sources/ path of an article reference.
@@ -77,7 +78,7 @@ func (rs *Resolver) SourceFile(r Ref) (string, error) {
 	return filepath.Join(rs.root, "sources", a.Directory, name+".md"), nil
 }
 
-// Resolve checks one reference: the prefix is known, a policy ref is declared, the article
+// Resolve checks one reference: the prefix is known, a policy is declared, the article
 // file exists and the paragraph labels occur in order in its text.
 func (rs *Resolver) Resolve(s string) error {
 	r, err := ParseRef(s)
@@ -88,8 +89,8 @@ func (rs *Resolver) Resolve(s string) error {
 		if len(r.Labels) > 0 {
 			return fmt.Errorf("ref %q: a policy ref has no paragraph labels", s)
 		}
-		if _, ok := rs.v.PolicyRefs[r.Article]; !ok {
-			return fmt.Errorf("ref %q: policy ref not declared in vocabulary.yaml credential_vocabulary.policy_refs", s)
+		if _, ok := rs.policies[r.Article]; !ok {
+			return fmt.Errorf("ref %q: policy not declared in policies.yaml", s)
 		}
 		return nil
 	}

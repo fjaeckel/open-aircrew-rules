@@ -47,6 +47,7 @@ func newRoot(t *testing.T) string {
 	root := t.TempDir()
 	copyFile(t, "../../vocabulary.yaml", filepath.Join(root, "vocabulary.yaml"))
 	copyFile(t, "../../messages/keys.yaml", filepath.Join(root, "messages/keys.yaml"))
+	copyFile(t, "../../policies.yaml", filepath.Join(root, "policies.yaml"))
 	copyFile(t, "../../sources/faa/61.57.md", filepath.Join(root, "sources/faa/61.57.md"))
 	schemas, err := filepath.Glob("../../schema/*.schema.json")
 	if err != nil || len(schemas) == 0 {
@@ -178,5 +179,35 @@ func writeFile(t *testing.T, path, body string) {
 	}
 	if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
 		t.Fatal(err)
+	}
+}
+
+// TestFragmentsFlag checks that fragments fail the default run and are validated and listed
+// with -fragments.
+func TestFragmentsFlag(t *testing.T) {
+	root := newRoot(t)
+	writeFile(t, filepath.Join(root, "coverage/articles.yaml"), "articles: []\n")
+	writeFile(t, filepath.Join(root, "fragments/coverage/README.md"), "readme\n")
+	writeFile(t, filepath.Join(root, "fragments/coverage/x.yaml"), "articles:\n  - { article: \"faa:61.57\", colour: red }\n")
+	writeFile(t, filepath.Join(root, "fragments/keys/x.yaml"), "keys:\n  - { key: x.y, kind: message, params: [] }\n")
+	writeFile(t, filepath.Join(root, "fragments/policies/x.yaml"), "policies: []\n")
+	writeFile(t, filepath.Join(root, "fragments/changelog/x.md"), "- x\n")
+	var out bytes.Buffer
+	if code := run([]string{"-root", root, "-coverage=false"}, &out); code != 1 || !strings.Contains(out.String(), "fragments/keys/x.yaml: unmerged fragment") {
+		t.Errorf("default: exit %d\n%s", code, out.String())
+	}
+	out.Reset()
+	run([]string{"-root", root, "-coverage=false", "-fragments"}, &out)
+	for _, want := range []string{"== No unmerged fragments: ok", "== Fragments pending integration (report only, -fragments): 4", "fragments/coverage/x.yaml: at /articles/0", "fragments/policies/x.yaml: at /policies"} {
+		if !strings.Contains(out.String(), want) {
+			t.Errorf("-fragments report misses %q\n%s", want, out.String())
+		}
+	}
+	if err := os.RemoveAll(filepath.Join(root, "fragments/keys")); err != nil {
+		t.Fatal(err)
+	}
+	writeFile(t, filepath.Join(root, "fragments/keys"), "not a directory\n")
+	if code := run([]string{"-root", root, "-coverage=false"}, &out); code != 2 {
+		t.Errorf("unreadable fragments: exit %d", code)
 	}
 }

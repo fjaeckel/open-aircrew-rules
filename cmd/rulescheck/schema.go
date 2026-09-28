@@ -19,7 +19,7 @@ const schemaBase = "https://github.com/fjaeckel/open-aircrew-rules/schema/"
 
 func loadSchemas(root string) (schemas, error) {
 	c := jsonschema.NewCompiler()
-	names := []string{"vocabulary", "messages", "record", "credential", "shared", "examples", "coverage", "scope"}
+	names := []string{"vocabulary", "messages", "policies", "record", "credential", "shared", "examples", "coverage", "coverage-fragment", "scope"}
 	for _, n := range names {
 		path := filepath.Join(root, "schema", n+".schema.json")
 		f, err := os.Open(path)

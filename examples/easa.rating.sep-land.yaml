@@ -12,7 +12,8 @@ examples:
         - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2026-10-31}
       flights:
         - {date: 2026-08-01, class: SEP_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 1}, landings: {day: 1}, flags: {proficiencyCheck: true, examinerOnBoard: true}}
-    expect: { status: expiring, message: rating.revalidation_expiring_met }
+    outcome: expiring
+    expect: { message: rating.revalidation_expiring_met }
   - name: revalidation-refresher-exempt-by-skill-test
     evaluation: revalidation
     shows: [exemption-period, exemption-any-aeroplane]
@@ -28,7 +29,8 @@ examples:
         - {date: 2026-02-02, kind: skill_test, class: HELICOPTER}
       flights:
         - {date: 2026-03-10, class: SEP_LAND, minutes: {total: 720, pic: 360, sic: 360}, takeoffs: {day: 12}, landings: {day: 12}}
-    expect: { status: expiring, message: rating.revalidation_expiring_met }
+    outcome: expiring
+    expect: { message: rating.revalidation_expiring_met }
   - name: revalidation-sep-land-and-tmg-pooled
     evaluation: revalidation
     shows: [pooling-same-licence]
@@ -44,7 +46,8 @@ examples:
         - {date: 2026-03-10, class: SEP_LAND, minutes: {total: 300, pic: 300}, takeoffs: {day: 5}, landings: {day: 5}}
         - {date: 2026-05-20, class: TMG, minutes: {total: 60, dual: 60}, takeoffs: {day: 2}, landings: {day: 2}}
         - {date: 2026-06-12, class: TMG, minutes: {total: 360, pic: 60, dual: 300}, takeoffs: {day: 5}, landings: {day: 5}}
-    expect: { status: expiring, message: rating.revalidation_expiring_met }
+    outcome: expiring
+    expect: { message: rating.revalidation_expiring_met }
   - name: revalidation-ultralight-credit
     evaluation: revalidation
     shows: [ul-credit-time-only]
@@ -60,7 +63,8 @@ examples:
         - {date: 2026-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: {total: 600, pic: 540, dual: 60}, takeoffs: {day: 10}, landings: {day: 10}}
         - {date: 2026-06-01, class: ULTRALIGHT, minutes: {total: 90, pic: 90}, takeoffs: {day: 1}, landings: {day: 1}}
         - {date: 2026-06-02, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: {total: 60, pic: 60}, takeoffs: {day: 1}, landings: {day: 1}}
-    expect: { status: expiring, message: rating.revalidation_expiring_met }
+    outcome: expiring
+    expect: { message: rating.revalidation_expiring_met }
   - name: revalidation-valid-on-expiry-day
     evaluation: revalidation
     shows: [valid-through-expiry]
@@ -75,7 +79,8 @@ examples:
         - {date: 2026-03-10, class: SEP_LAND, minutes: {total: 300, pic: 300}, takeoffs: {day: 5}, landings: {day: 5}}
         - {date: 2026-05-20, class: SEP_LAND, minutes: {total: 60, dual: 60}, takeoffs: {day: 2}, landings: {day: 2}}
         - {date: 2026-06-12, class: SEP_LAND, minutes: {total: 360, pic: 60, dual: 300}, takeoffs: {day: 5}, landings: {day: 5}}
-    expect: { status: expiring, message: rating.revalidation_expiring_met }
+    outcome: expiring
+    expect: { message: rating.revalidation_expiring_met }
   - name: revalidation-experience-met-current
     evaluation: revalidation
     says: With more than 90 days to expiry the met rating is current. The authority matches whatever its case and spacing.
@@ -89,7 +94,8 @@ examples:
         - {date: 2026-07-05, class: SEP_LAND, minutes: {total: 300, pic: 300}, takeoffs: {day: 5}, landings: {day: 5}}
         - {date: 2026-07-20, class: SEP_LAND, minutes: {total: 60, dual: 60}, takeoffs: {day: 2}, landings: {day: 2}}
         - {date: 2026-08-10, class: SEP_LAND, minutes: {total: 360, pic: 60, dual: 300}, takeoffs: {day: 5}, landings: {day: 5}}
-    expect: { status: current, message: rating.revalidation_current }
+    outcome: current
+    expect: { message: rating.revalidation_current }
   - name: revalidation-experience-not-met
     evaluation: revalidation
     says: 5 h and 5 take-offs and landings are not enough; every unmet row carries its remedy.
@@ -101,7 +107,8 @@ examples:
         - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2026-10-31}
       flights:
         - {date: 2026-03-10, class: SEP_LAND, minutes: {total: 300, pic: 300}, takeoffs: {day: 5}, landings: {day: 5}}
-    expect: { status: expiring, message: rating.revalidation_not_met }
+    outcome: expiring
+    expect: { message: rating.revalidation_not_met }
   - name: passengers-day-pilot-flying-not-logged
     evaluation: passengers_day
     shows: [pilot-flying-recorded]
@@ -114,7 +121,8 @@ examples:
         - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-06-30}
       flights:
         - {date: 2026-08-20, class: SEP_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 5}, landings: {day: 5}}
-    expect: { status: unknown, message: pax.experience_not_logged }
+    outcome: unknown
+    expect: { message: pax.experience_not_logged }
   - name: passengers-day-current
     evaluation: passengers_day
     says: Three take-offs and landings as pilot flying in the class within 90 days allow carrying passengers; the recency lasts until the first of them is 90 days old.
@@ -127,7 +135,8 @@ examples:
       flights:
         - {date: 2026-08-01, class: SEP_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 1}, landings: {day: 1}, pilotFlying: true}
         - {date: 2026-08-20, class: SEP_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 2}, landings: {day: 2}, pilotFlying: true}
-    expect: { status: current, message: pax.day_current }
+    outcome: current
+    expect: { message: pax.day_current }
   - name: passengers-day-not-current
     evaluation: passengers_day
     says: Two take-offs and landings are one short.
@@ -139,7 +148,8 @@ examples:
         - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-06-30}
       flights:
         - {date: 2026-08-20, class: SEP_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 2}, landings: {day: 2}, pilotFlying: true}
-    expect: { status: expired, message: pax.not_current }
+    outcome: expired
+    expect: { message: pax.not_current }
   - name: passengers-night-ir-no-expiry-waives
     evaluation: passengers_night
     shows: [ir-held]
@@ -153,7 +163,8 @@ examples:
         - {id: r-ir, licenceId: l-ppl, class: IR}
       flights:
         - {date: 2026-08-20, class: SEP_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 1}, landings: {day: 1}, pilotFlying: true}
-    expect: { status: current, message: pax.night_waived_ir }
+    outcome: current
+    expect: { message: pax.night_waived_ir }
   - name: passengers-night-ffs-night
     evaluation: passengers_night
     says: A night take-off and landing as pilot flying in an FFS representing the class allow night passengers.
@@ -165,7 +176,8 @@ examples:
         - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-06-30}
       flights:
         - {date: 2026-08-10, class: SEP_LAND, isSimulator: true, fstdType: FFS, minutes: {total: 60}, takeoffs: {night: 1}, landings: {night: 1}, pilotFlying: true}
-    expect: { status: current, message: pax.night_current }
+    outcome: current
+    expect: { message: pax.night_current }
   - name: passengers-night-ir-expired
     evaluation: passengers_night
     says: An IR that expired the day before does not waive the night requirement.
@@ -178,4 +190,22 @@ examples:
         - {id: r-ir, licenceId: l-ppl, class: IR, expires: 2026-09-14}
       flights:
         - {date: 2026-08-20, class: SEP_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 1}, landings: {day: 1}, pilotFlying: true}
-    expect: { status: expired, message: pax.night_not_current }
+    outcome: expired
+    expect: { message: pax.night_not_current }
+  - name: composite-licence-medical-expired
+    composite: true
+    says: A rating revalidated by a check in the 3 months before expiry is expiring on its own, but its PPL(A) has an expired medical, so the rating may not be exercised; missing passenger recency is a limitation only and decides nothing.
+    asOf: 2026-09-15
+    record:
+      holder: {dateOfBirth: 1976-01-01}
+      licences:
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      ratings:
+        - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2026-10-31}
+      credentials:
+        - {id: c-med, type: EASA_CLASS2_MEDICAL, issued: 2024-06-01, expires: 2025-06-01}
+        - {id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2023-04-15}
+      flights:
+        - {date: 2026-08-01, class: SEP_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 1}, landings: {day: 1}, flags: {proficiencyCheck: true, examinerOnBoard: true}}
+    outcome: expired
+    expect: { subject: { kind: rating, id: r-sep }, decidedBy: { evaluation: licence, credential: easa.licence.ppl-a } }

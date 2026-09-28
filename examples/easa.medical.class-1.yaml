@@ -8,7 +8,8 @@ examples:
       holder: {dateOfBirth: 1966-02-01}
       credentials:
         - {id: c-med, type: EASA_CLASS1_MEDICAL, issued: 2026-08-01}
-    expect: { status: current, message: credential.valid }
+    outcome: current
+    expect: { message: credential.valid }
   - name: validity-expired-day-after
     evaluation: validity
     says: The day after its expiry date the certificate is expired.
@@ -17,4 +18,5 @@ examples:
       holder: {dateOfBirth: 1980-05-20}
       credentials:
         - {id: c-med, type: EASA_CLASS1_MEDICAL, issued: 2026-03-01}
-    expect: { status: expired, message: credential.expired }
+    outcome: expired
+    expect: { message: credential.expired }

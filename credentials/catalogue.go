@@ -29,7 +29,19 @@ type Catalogue struct {
 	// Refs lists every reference used, with where.
 	Refs     []RefUse
 	Resolver *Resolver
+	// Policies are the declared policies (policies.yaml, plus fragments with Options.Fragments).
+	Policies map[string]*Policy
+	Options  Options
 	byID     map[string]*Credential
+	// held is what each credential selects in a record (its own part).
+	held map[string]engine.AppliesTo
+}
+
+// Options changes what Load reads.
+type Options struct {
+	// Fragments also reads fragments/keys/*.yaml and fragments/policies/*.yaml, and makes
+	// CheckCoverage merge fragments/coverage/*.yaml (DESIGN.md section 12).
+	Fragments bool
 }
 
 // Compiled is one compiled rule and the evaluations that use it.
@@ -57,14 +69,23 @@ func (cat *Catalogue) Credential(id string) (*Credential, bool) {
 	return c, ok
 }
 
-// Load reads vocabulary.yaml, messages/keys.yaml and credentials/** under root and
-// compiles every evaluation.
-func Load(root string) (*Catalogue, error) {
+// Load reads vocabulary.yaml, messages/keys.yaml, policies.yaml and credentials/** under
+// root and compiles every evaluation.
+func Load(root string) (*Catalogue, error) { return LoadWith(root, Options{}) }
+
+// LoadWith is Load with options.
+func LoadWith(root string, o Options) (*Catalogue, error) {
 	ev, err := engine.LoadVocabulary(filepath.Join(root, "vocabulary.yaml"))
 	if err != nil {
 		return nil, err
 	}
-	keys, err := engine.LoadKeys(filepath.Join(root, "messages", "keys.yaml"))
+	var moreKeys []string
+	if o.Fragments {
+		if moreKeys, err = fragmentFiles(root, "keys"); err != nil {
+			return nil, err
+		}
+	}
+	keys, err := engine.LoadKeys(filepath.Join(root, "messages", "keys.yaml"), moreKeys...)
 	if err != nil {
 		return nil, err
 	}
@@ -72,8 +93,12 @@ func Load(root string) (*Catalogue, error) {
 	if err != nil {
 		return nil, err
 	}
-	cat := &Catalogue{Root: root, Vocab: v, Shared: map[string]*Shared{}, Compiled: map[string]*Compiled{}, ByEvaluation: map[string]string{}, byID: map[string]*Credential{}}
-	cat.Resolver = NewResolver(root, v)
+	pol, err := LoadPolicies(root, o.Fragments)
+	if err != nil {
+		return nil, err
+	}
+	cat := &Catalogue{Root: root, Vocab: v, Policies: pol, Options: o, Shared: map[string]*Shared{}, Compiled: map[string]*Compiled{}, ByEvaluation: map[string]string{}, byID: map[string]*Credential{}, held: map[string]engine.AppliesTo{}}
+	cat.Resolver = NewResolver(root, v, pol)
 	files, err := engine.YAMLFiles(filepath.Join(root, "credentials"))
 	if err != nil {
 		return nil, err
@@ -119,13 +144,9 @@ func Load(root string) (*Catalogue, error) {
 				cat.Errors = append(cat.Errors, fmt.Sprintf("%s: %v", key, err))
 				continue
 			}
-			if len(re.Requires) > 0 && empty(&re.PassesIf) && empty(&re.Outcomes) {
+			if e.isRequirement() {
 				cat.ByEvaluation[key] = ""
-				for _, id := range re.Requires {
-					if _, ok := cat.byID[id]; !ok {
-						cat.Errors = append(cat.Errors, fmt.Sprintf("%s: requires %s, which is no credential", key, id))
-					}
-				}
+				cat.checkRequirement(key, e)
 				continue
 			}
 			id := key
@@ -145,6 +166,12 @@ func Load(root string) (*Catalogue, error) {
 			cat.Compiled[id] = &Compiled{Rule: r, Eval: re, Users: []string{key}, UsesWith: cp.usesWith}
 			rules = append(rules, r)
 		}
+	}
+	cat.checkRequirementCycles()
+	for _, c := range cat.Credentials {
+		cp := &compiler{v: v, cat: cat, where: c.ID}
+		cat.held[c.ID] = cp.appliesTo(c, &Evaluation{})
+		cat.Errors = append(cat.Errors, cp.errs...)
 	}
 	sort.Slice(rules, func(i, j int) bool { return rules[i].ID < rules[j].ID })
 	cat.Engine = engine.NewCatalogue(root, ev, keys, rules)

@@ -17,7 +17,8 @@ examples:
         - {date: 2026-06-01, class: SEP_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 1}, landings: {day: 1}, towKind: banner, flags: {towFlight: true}}
         - {date: 2026-07-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: {total: 60, pic: 60}, takeoffs: {day: 4}, landings: {day: 4}, towedGliders: 4, flags: {towFlight: true}}
         - {date: 2026-08-01, class: TMG, minutes: {total: 90, pic: 90}, takeoffs: {day: 1}, landings: {day: 1}, launches: 1}
-    expect: { status: current, message: privilege.recency_current }
+    outcome: current
+    expect: { message: privilege.recency_current }
   - name: recency-expired
     evaluation: recency
     says: A towing rating past its expiry date is expired whatever the tows.
@@ -29,4 +30,5 @@ examples:
         - {id: p-tow, licenceId: l-spl, kind: SAILPLANE_TOWING, expires: 2026-09-14}
       flights:
         - {date: 2026-05-01, class: TMG, minutes: {total: 90, pic: 90}, takeoffs: {day: 5}, landings: {day: 5}, towedGliders: 5, flags: {towFlight: true}}
-    expect: { status: expired, message: privilege.expired }
+    outcome: expired
+    expect: { message: privilege.expired }

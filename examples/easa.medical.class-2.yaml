@@ -9,7 +9,8 @@ examples:
       holder: {dateOfBirth: 1976-01-01}
       credentials:
         - {id: c-med, type: EASA_CLASS2_MEDICAL, issued: 2026-06-01}
-    expect: { status: current, message: credential.valid }
+    outcome: current
+    expect: { message: credential.valid }
   - name: validity-entered-date-earlier
     evaluation: validity
     shows: [earlier-expiry-wins]
@@ -19,7 +20,8 @@ examples:
       holder: {dateOfBirth: 1980-05-20}
       credentials:
         - {id: c-med, type: EASA_CLASS2_MEDICAL, issued: 2026-03-01, expires: 2026-12-31}
-    expect: { status: current, message: credential.valid }
+    outcome: current
+    expect: { message: credential.valid }
   - name: validity-age-49-capped-at-51
     evaluation: validity
     says: Issued at 49 the certificate would run 24 months but ends on the 51st birthday.
@@ -28,7 +30,8 @@ examples:
       holder: {dateOfBirth: 1977-01-01}
       credentials:
         - {id: c-med, type: EASA_CLASS2_MEDICAL, issued: 2026-01-10}
-    expect: { status: current, message: credential.valid }
+    outcome: current
+    expect: { message: credential.valid }
   - name: validity-expired-day-after
     evaluation: validity
     says: The day after its expiry date the certificate is expired.
@@ -37,4 +40,5 @@ examples:
       holder: {dateOfBirth: 1980-05-20}
       credentials:
         - {id: c-med, type: EASA_CLASS2_MEDICAL, issued: 2026-03-01}
-    expect: { status: expired, message: credential.expired }
+    outcome: expired
+    expect: { message: credential.expired }

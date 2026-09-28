@@ -1,0 +1,48 @@
+# Policies: conventions with no legal text behind them. A credential file or an outcome preset
+# cites one as `ref: policy:<id>` wherever it sets a status, a threshold or a row by
+# convention rather than by the text. Every id is declared once here and used at least once
+# (the gate checks both). Fields:
+#   id         the id cited after `policy:`
+#   statement  what the catalogue does, in one sentence
+#   rationale  why, and why it is not law
+# Keep these few: a reviewer asks of each one why it is not a regulation.
+policies:
+  - id: expiring-notice
+    statement: "'expiring' is reported a fixed number of days, set per evaluation, before an expiry date or the end of a recency period, while the credential is still valid."
+    rationale: No regulation sets a warning threshold; an early notice lets the holder revalidate or renew in time.
+
+  - id: window-not-open
+    statement: A rating whose revalidation period has not opened yet is reported current, with a message naming the date the period opens.
+    rationale: The rating is valid and nothing can be done yet; counting the experience before the period opens would mislead.
+
+  - id: no-expiry-recorded
+    statement: Without a recorded or derivable expiry date the result is unknown, with a message asking for the date.
+    rationale: The validity of a dated credential cannot be told without its date; reporting it valid or expired would be a guess.
+
+  - id: unknown-input
+    statement: Missing input is unknown, never met; the result is unknown, with a message saying what to record.
+    rationale: A logbook that does not record something is not evidence that it did not happen (DESIGN.md section 11, decision 4).
+
+  - id: medical-not-recorded
+    statement: When no medical certificate is recorded at all, the licence's medical evaluation is unknown rather than expired.
+    rationale: Many pilots do not record their medical certificate in a logbook; its absence from the record says nothing about whether they hold one.
+
+  - id: informational-row
+    statement: A requirement row shown for information (the last flight review, tailwheel flights flown) never changes the status.
+    rationale: The row helps the holder read the result; the regulation does not make it a condition.
+
+  - id: revalidation-not-met-expiring
+    statement: A rating that is still valid but whose revalidation requirements are not met yet is reported expiring, not expired.
+    rationale: The rating stays valid until its expiry date whatever the experience; the requirements only decide whether it can be revalidated before then.
+
+  - id: recency-lapsed
+    statement: An unmet rolling recency requirement (privilege recency, launch-method recency, FAA passenger recency) is reported lapsed.
+    rationale: The licence or rating stays valid; only the privilege may not be exercised until the experience is regained, which "lapsed" says and "expired" would not.
+
+  - id: passengers-expired
+    statement: EASA passenger recency that is not met is reported expired.
+    rationale: The text sets no status name; expired marks that the passenger privilege ended on a date (90 days after the last qualifying flight), as other EASA privileges with a fixed end do.
+
+  - id: training-in-progress-lapsed
+    statement: A training programme whose requirements are not all met yet is reported lapsed, with a message saying it is in progress.
+    rationale: The status set has no "in progress"; lapsed marks "not yet usable" without implying something was lost.

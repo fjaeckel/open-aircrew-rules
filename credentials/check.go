@@ -55,6 +55,7 @@ func Check(cat *Catalogue, examples []*ExampleFile) *Findings {
 	f.checkKeys(cat)
 	f.checkExamples(cat, examples)
 	f.checkInterpretations(cat)
+	f.checkPolicies(cat)
 	f.Overlaps = Overlaps(cat)
 	sort.Strings(f.Refs)
 	sort.Strings(f.Keys)
@@ -193,26 +194,32 @@ func (f *Findings) checkExamples(cat *Catalogue, files []*ExampleFile) {
 				f.ExampleErrs = append(f.ExampleErrs, fmt.Sprintf("%s: example name %q missing or repeated", where, x.Name))
 			}
 			names[x.Name] = true
-			for _, d := range cat.RunExample(c.ID, x) {
+			class, diffs := cat.RunExampleClass(c.ID, x)
+			for _, d := range diffs {
 				f.ExampleErrs = append(f.ExampleErrs, fmt.Sprintf("%s: %s: %s", where, x.Name, d))
 			}
 			key := c.ID + "#" + x.Evaluation
-			seen[key] = append(seen[key], x.Outcome())
-			var ev *Evaluation
+			if x.Composite {
+				key = compositeKey
+			}
+			seen[key] = append(seen[key], class)
+			var interps []string
 			for _, e := range c.Evaluations {
-				if e.ID == x.Evaluation {
-					ev = e
+				if x.Composite || e.ID == x.Evaluation {
+					interps = append(interps, cat.interpretationsFor(c, e)...)
 				}
 			}
 			for _, s := range x.Shows {
-				if ev == nil || !slices.Contains(cat.interpretationsFor(c, ev), s) {
+				if !slices.Contains(interps, s) {
 					f.ExampleErrs = append(f.ExampleErrs, fmt.Sprintf("%s: %s: shows %q, which is no interpretation of %s", where, x.Name, s, key))
 				}
 			}
 		}
 	}
+	needsComposite := false
 	for _, c := range cat.Credentials {
 		for _, e := range c.Evaluations {
+			needsComposite = needsComposite || e.isRequirement()
 			key := c.ID + "#" + e.ID
 			id := cat.ByEvaluation[key]
 			comp := cat.Compiled[id]
@@ -220,16 +227,26 @@ func (f *Findings) checkExamples(cat *Catalogue, files []*ExampleFile) {
 				continue
 			}
 			st := Statuses(comp.Rule)
-			if slices.Contains(st, "current") && !slices.Contains(seen[key], "pass") {
+			if slices.ContainsFunc(st, func(s string) bool { return s == "current" || s == "expiring" }) && !slices.Contains(seen[key], Passing) {
 				f.ExampleErrs = append(f.ExampleErrs, fmt.Sprintf("%s: no passing example", key))
 			}
-			if slices.ContainsFunc(st, func(s string) bool { return s != "current" }) && !slices.Contains(seen[key], "fail") {
+			if slices.ContainsFunc(st, func(s string) bool { return s != "current" && s != "expiring" }) && !slices.Contains(seen[key], Failing) {
 				f.ExampleErrs = append(f.ExampleErrs, fmt.Sprintf("%s: no failing example", key))
+			}
+		}
+	}
+	if needsComposite {
+		for _, class := range []string{Passing, Failing} {
+			if !slices.Contains(seen[compositeKey], class) {
+				f.ExampleErrs = append(f.ExampleErrs, fmt.Sprintf("composites: no %s composite example in the catalogue", class))
 			}
 		}
 	}
 	sort.Strings(f.ExampleErrs)
 }
+
+// compositeKey collects the classes of composite examples across the catalogue.
+const compositeKey = "(composite)"
 
 func (f *Findings) checkInterpretations(cat *Catalogue) {
 	check := func(file string, evals []string, l []Interpretation) {
@@ -277,4 +294,27 @@ func (f *Findings) checkInterpretations(cat *Catalogue) {
 	}
 	sort.Strings(f.Interpret)
 	sort.Strings(f.Unapproved)
+}
+
+// checkPolicies reports declared policies that no reference cites.
+func (f *Findings) checkPolicies(cat *Catalogue) {
+	used := map[string]bool{}
+	cite := func(r string) {
+		if id, ok := strings.CutPrefix(r, "policy:"); ok {
+			used[id] = true
+		}
+	}
+	for _, r := range cat.Refs {
+		cite(r.Ref)
+	}
+	for _, x := range cat.Interpretations() {
+		for _, r := range x.I.Ref {
+			cite(r)
+		}
+	}
+	for id, p := range cat.Policies {
+		if !used[id] {
+			f.Refs = append(f.Refs, fmt.Sprintf("%s: policy %s is cited nowhere; cite it or remove it", rel(cat.Root, p.File), id))
+		}
+	}
 }

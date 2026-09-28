@@ -9,7 +9,7 @@
     "credential_vocabulary": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["kinds", "selects", "about", "ref_authorities", "policy_refs", "counts", "qualifiers", "outcome_presets"],
+      "required": ["kinds", "selects", "about", "ref_authorities", "counts", "qualifiers", "outcome_presets"],
       "properties": {
         "kinds": { "$ref": "#/$defs/described" },
         "selects": { "$ref": "#/$defs/described" },
@@ -31,7 +31,6 @@
             "properties": { "directory": { "type": "string" }, "file": { "enum": ["lower_dashed", "as_is"] }, "cite": { "type": "string" } }
           }
         },
-        "policy_refs": { "$ref": "#/$defs/described" },
         "counts": {
           "type": "object",
           "additionalProperties": {
@@ -66,7 +65,19 @@
             }
           }
         },
-        "outcome_presets": { "$ref": "#/$defs/described" }
+        "outcome_presets": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["description"],
+            "properties": {
+              "description": { "type": "string", "minLength": 1 },
+              "conventions": { "type": "object", "additionalProperties": { "type": "string", "pattern": "^policy:[a-z0-9-]+$" } }
+            }
+          }
+        }
       }
     },
     "version": { "type": "integer" },

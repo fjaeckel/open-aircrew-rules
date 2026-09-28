@@ -13,7 +13,8 @@ examples:
       events:
         - {date: 2023-05-01, kind: basicmed_exam}
         - {date: 2025-02-10, kind: basicmed_course}
-    expect: { status: current, message: credential.valid }
+    outcome: current
+    expect: { message: credential.valid }
   - name: course-and-examination-course-lapsed
     evaluation: course_and_examination
     says: A course on 31 July 2024 is outside the 24 calendar months on 16 August 2026 (they start on 1 August 2024); an examination on 1 August 2022 is just inside the 48.
@@ -25,4 +26,5 @@ examples:
       events:
         - {date: 2022-08-01, kind: basicmed_exam}
         - {date: 2024-07-31, kind: basicmed_course}
-    expect: { status: lapsed, message: credential.basicmed_not_met }
+    outcome: lapsed
+    expect: { message: credential.basicmed_not_met }

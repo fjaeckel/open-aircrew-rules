@@ -33,7 +33,7 @@ articles:
   - article: "easa:FCL.105.H"
     not_evaluated: 'A scope of privileges (aircraft mass, number of passengers), not a recency or validity condition: it decides what a flight may be, not whether the pilot is current on a date.'
   - article: "easa:FCL.140.A"
-    pending: [easa/licences/lapl-a, easa/ratings/type-rating]
+    pending: [easa/licences/lapl-a, easa/ratings/aeroplane-type]
     note: "Still to convert: LAPL(A) recency, variant recency."
   - article: "easa:FCL.140.H"
     pending: [easa/licences/lapl-h]
@@ -56,11 +56,11 @@ articles:
   - article: "easa:FCL.625.As"
     not_evaluated: An IR is recorded without its aircraft category; an IR(As) cannot be told from an IR(A) on an aeroplane licence (there is no airship licence kind).
   - article: "easa:FCL.710"
-    pending: [easa/ratings/type-rating]
+    pending: [easa/ratings/aeroplane-type]
     note: "Still to convert: variant recency."
   - article: "easa:FCL.740"
     evaluations: [easa.rating.sep-land#revalidation, easa.rating.sep-sea#revalidation, easa.rating.tmg#revalidation]
-    pending: [easa/ratings/type-rating, easa/ratings/mep-land, easa/ratings/set-land, easa/ratings/helicopter-type, easa/ratings/powered-lift-type, easa/ratings/airship-type]
+    pending: [easa/ratings/aeroplane-type, easa/ratings/mep-land, easa/ratings/set-land, easa/ratings/helicopter-type, easa/ratings/powered-lift-type, easa/ratings/airship-type]
     note: "Still to convert beyond the evaluations above: validity of other type ratings, MEP revalidation, SET revalidation, helicopter type rating revalidation, powered-lift type rating revalidation, airship type rating revalidation."
   - article: "easa:FCL.740.A"
     evaluations: [easa.rating.sep-land#revalidation, easa.rating.sep-sea#revalidation, easa.rating.tmg#revalidation]
@@ -78,7 +78,7 @@ articles:
   - article: "easa:FCL.800"
     not_evaluated: The aerobatic rating has no validity period and no recency requirement; FCL.800 sets only training prerequisites, which are out of scope (DESIGN.md section 9).
   - article: "easa:FCL.805"
-    pending: [easa/privileges/sailplane-towing, easa/privileges/banner-towing]
+    pending: [easa/privileges/fcl-sailplane-towing, easa/privileges/fcl-banner-towing]
     note: "Still to convert: Part-FCL sailplane towing, Part-FCL banner towing."
   - article: "easa:FCL.810"
     not_evaluated: The night rating has no validity period and no recency requirement of its own; FCL.810 sets training requirements, which are out of scope.
@@ -118,7 +118,7 @@ articles:
   - article: "easa:FCL.940.FTI"
     not_evaluated: Flight-test time and flight-test instruction are not recorded as such.
   - article: "easa:FCL.1025"
-    pending: [easa/examiners/examiner]
+    pending: [easa/examiners/fcl-examiner]
     note: "Still to convert: examiner certificates."
   - article: "easa:MED.A.020"
     not_evaluated: A self-assessment by the pilot on the day (awareness of reduced fitness, medication, treatment, surgery, pregnancy, hospital admission, first need for corrective lenses).
@@ -141,7 +141,7 @@ articles:
     evaluations: [easa.privilege.spl-tmg#extension_training]
   - article: "easa:SFCL.155"
     evaluations: [easa.licence.spl#launch_methods_towed, easa.licence.spl#launch_method_self, easa.licence.spl#launch_method_bungee]
-    pending: [easa/privileges/spl-launch-methods]
+    pending: [easa/privileges/sfcl-launch-methods]
     note: "Still to convert beyond the evaluations above: launch method privileges."
   - article: "easa:SFCL.160"
     evaluations: [easa.licence.spl#recency, easa.privilege.spl-tmg#recency, easa.licence.spl#passengers, easa.privilege.spl-tmg#passengers]

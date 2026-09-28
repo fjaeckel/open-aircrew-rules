@@ -34,6 +34,8 @@ scope/articles-<authority>.yaml                  the articles in scope, one own-
 sources/<authority>/<article>.md                 verbatim texts of allowed origin only (section 6)
 vocabulary.yaml                                  the closed vocabulary, incl. credential_vocabulary
 messages/keys.yaml                               every message, requirement, remedy and description key
+policies.yaml                                    every convention with no legal text behind it (policy:<id>)
+fragments/<kind>/                                unmerged changes to shared files during parallel work (section 12)
 schema/                                          JSON Schema 2020-12 for every YAML file
 engine/, engine/hatches/                         the evaluator (package engine)
 gen/                                             generated constants and tests (never edited by hand)
@@ -52,8 +54,11 @@ or examiner certificate, medical) lists every evaluation it needs:
 - evaluations written in the file;
 - evaluations used from a shared file or from another credential (`uses:`, with `with:`
   parameters for a shared file);
-- other credentials it depends on (`requires:`), which compile to nothing and keep "what
-  does this credential need?" answerable from one file.
+- other credentials it depends on: `requires_all: [ids]` (every one) and `requires_any:
+  [ids]` (at least one), on an evaluation entry of their own. They compile to no rule; they
+  take part in the credential's composite answer (section 5). Requirements point from the
+  dependent credential to the one it depends on (a rating to its licence, a licence to its
+  medical), never back, and a requirement cycle is an error.
 
 `selects` says which record items the credential is (a licence, ratings on a licence, a
 licence privilege, a certificate); no two credential files may select the same item. Ids:
@@ -65,8 +70,8 @@ successor rather than editing it in place.
 ## 4. Engine rules and the closed vocabulary
 
 Credential files use only the words of `vocabulary.yaml` `credential_vocabulary`: counts,
-qualifiers, outcome presets, subjects (`about`), reference authorities and policy
-references. The compiler maps each evaluation onto one engine rule (`engine.Rule`) of the
+qualifiers, outcome presets (with the policies behind their conventions), subjects
+(`about`) and reference authorities; policy ids come from `policies.yaml`. The compiler maps each evaluation onto one engine rule (`engine.Rule`) of the
 closed vocabulary:
 
 - **Subjects**: `rating`, `licence`, `privilege`, `credential`, `passengers` (one per class
@@ -134,6 +139,30 @@ Keys are stable, language-neutral ids from `messages/keys.yaml`; applications tr
 them. A new key is added there before a credential uses it. `engine.Evaluate` drops a
 rule's evaluation of a subject when a rule that `supersedes` it evaluated the same subject.
 
+**Composite.** `credentials.Catalogue.Evaluate` adds, per credential item the record holds
+(what the credential `selects`), the answer to "may this credential be exercised on the
+date?":
+
+```yaml
+credential, subject, status, decidedBy?: { evaluation, kind, status, credential?, reason? }
+members:     [{ evaluation, kind: evaluation | requires_all | requires_any, status, ... }]
+limitations: [{ evaluation, kind: evaluation, status, ... }]
+```
+
+- Members are the credential's own evaluation results for that item (the worst when several
+  results concern it) and its requirement groups. Results about passengers, a launch method,
+  a variant or a training programme concern part of the privileges only: they are
+  `limitations`, reported and never deciding.
+- A required credential counts by the best composite among the items of it the record
+  holds, narrowed to the same licence when both are held on one; `not_applicable` counts as
+  met. `requires_all` takes the worst of its credentials, one the record does not hold being
+  `unknown` (reason `not_held`); `requires_any` the best of those the record holds, `unknown`
+  when it holds none.
+- The composite status is the worst member status in the order expired or lapsed, unknown,
+  expiring, current (`not_applicable` members never decide; no deciding member gives
+  `not_applicable`), and `decidedBy` is the first member in file order with it. Current and
+  expiring mean the credential may be exercised; unknown means the record cannot tell.
+
 ## 6. References and sources
 
 Every evaluation has a `source`; every condition of `passes_if` and every `waived_by`,
@@ -151,8 +180,12 @@ exact paragraph label path occurs in its outline. Credential files contain no qu
 - `association`: rules an association sets under a statutory delegation (DULV, DAeC). They
   are cited by title and never stored or quoted; the delegating statute is stored;
 - `policy:<id>`: a presentation or implementation choice with no legal text behind it (the
-  90-day expiring notice, unknown when input is missing). Every id is declared in
-  `credential_vocabulary.policy_refs`, with its reason. Keep these few.
+  90-day expiring notice, unknown when input is missing, the status an unmet recency is
+  reported with). Every id is declared once in `policies.yaml` with a statement and a
+  rationale, and every declared policy is cited somewhere. An outcome preset that sets a
+  status by convention cites its policy for that stage (`credential_vocabulary.
+  outcome_presets.<preset>.conventions`), so every evaluation using the preset cites it; a
+  file that overrides such a status (`statuses:`) cites its own. Keep these few.
 
 **Copyright allow-list (enforced).** `vocabulary.yaml` `source_origins` lists the only
 origins a file under `sources/` may have: `us-federal` (17 U.S.C. § 105), `de-amtliches-werk`
@@ -176,10 +209,18 @@ CONTRIBUTING.md.
 
 ## 8. Worked examples
 
-`examples/<credential id>.yaml` holds, per compiled evaluation, at least one passing
-(`current`) and one failing example, unless the evaluation cannot report one of them, plus
-examples that show an interpretation changing a result (`shows:`). `go generate` writes one
-test per credential under `gen/` that runs them.
+`examples/<credential id>.yaml` holds worked examples. Each states its `outcome` (the status
+the evaluation, or with `composite: true` the credential's composite, must report). An
+example is **passing** when its result is `current`, or `expiring` while the evaluation's
+requirement tree is met or absent (the notice before a valid credential ends: a met
+revalidation, a validity or flight review about to end); it is **failing** otherwise
+(`expired`, `lapsed`, `unknown`, `not_applicable`, or `expiring` with the requirements unmet,
+such as a revalidation not yet met or an instrument-currency grace period). A composite
+example is passing when the composite is `current` or `expiring`. Every compiled evaluation
+that can report `current` or `expiring` has a passing example, and one that can report any
+other status a failing example; the catalogue has at least one passing and one failing
+composite example; examples show each interpretation that changes a result (`shows:`).
+`go generate` writes one test per credential under `gen/` that runs them.
 
 ## 9. Articles in scope and coverage
 
@@ -198,12 +239,13 @@ already exists fails the gate.
 ## 10. The gate
 
 `go run ./cmd/rulescheck -strict` fails on: schema errors in any YAML file; credentials that
-do not load or compile; references that do not resolve; unknown message keys or statuses;
-missing or failing worked examples; two credentials that select the same record item;
-malformed interpretations; vocabulary entries the engine does not implement; articles of the
-scope missing from the coverage map, unknown evaluations, evaluations not listed under their
-source article, pending files that exist; source files that break the allow-list; and engine
-statement coverage below 95 %. It reports without failing: articles with pending
+do not load or compile, requirement cycles; references that do not resolve, policies no
+reference cites; unknown message keys or statuses; missing or failing worked examples; two
+credentials that select the same record item; malformed interpretations; vocabulary entries
+the engine does not implement; articles of the scope missing from the coverage map, unknown
+evaluations, evaluations not listed under their source article, pending files that exist;
+source files that break the allow-list; engine and credentials statement coverage below
+95 %; and any file under `fragments/` (section 12). It reports without failing: articles with pending
 credentials, and interpretations awaiting approval. CI also runs `go vet`, the tests with
 the race detector, the generator up-to-date check and a vulnerability scan.
 
@@ -227,3 +269,15 @@ the race detector, the generator up-to-date check and a vulnerability scan.
 7. **No double evaluation.** Two credentials never select the same record item; a shared
    evaluation used by several credentials is compiled for each, or once when it has its own
    scope (the flight review, one per pilot).
+
+## 12. Parallel work and fragments
+
+Several contributors can add credentials at once. New credential, example and source files
+never conflict; the shared files do: `coverage/articles.yaml`, `messages/keys.yaml`,
+`policies.yaml`, `CHANGELOG.md` and `vocabulary.yaml`. During parallel work nobody edits
+them; each contributor writes fragments under `fragments/coverage/`, `fragments/keys/`,
+`fragments/policies/`, `fragments/changelog/` and `fragments/vocab-requests/` (formats in
+[fragments/README.md](fragments/README.md)). `rulescheck -fragments` merges the coverage,
+key and policy fragments in memory, validates every fragment and lists what is pending; the
+default run fails while any fragment exists, so the main branch never ships one. An
+integration step merges the fragments into the shared files and deletes them.

@@ -26,6 +26,7 @@ func TestGenerate(t *testing.T) {
 	}
 	cp("vocabulary.yaml")
 	cp("messages/keys.yaml")
+	cp("policies.yaml")
 	cp("credentials/easa/medicals/class-2.yaml")
 	stale := filepath.Join(root, "gen", "credential_gone_test.go")
 	if err := os.MkdirAll(filepath.Dir(stale), 0o755); err != nil {

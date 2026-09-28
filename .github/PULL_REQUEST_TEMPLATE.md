@@ -12,7 +12,8 @@
 
 ## Checklist
 
-- [ ] Every condition has a `ref:`; anything that is not law uses `policy:`
-- [ ] Every evaluation has at least one passing and one failing example
+- [ ] Every condition has a `ref:`; anything that is not law uses `policy:` (declared in `policies.yaml`)
+- [ ] Every evaluation has at least one passing and one failing example, each with its `outcome`
+- [ ] No file is left under `fragments/` (apart from the READMEs)
 - [ ] Only allow-listed source texts are stored (no AMC/GM, ICAO or association text)
 - [ ] `CHANGELOG.md` has a line for each change a pilot would notice

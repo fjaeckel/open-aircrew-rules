@@ -9,7 +9,8 @@ examples:
         - {id: l-1, authority: EASA, type: PPL(A)}
       credentials:
         - {id: c-1, type: EASA_CLASS1_MEDICAL, expires: 2027-01-10}
-    expect: { status: current, message: licence.valid }
+    outcome: current
+    expect: { message: licence.valid }
   - name: medical-expired
     evaluation: medical
     says: An expired medical certificate does not allow exercising the licence.
@@ -19,4 +20,44 @@ examples:
         - {id: l-1, authority: EASA, type: PPL(A)}
       credentials:
         - {id: c-1, type: EASA_CLASS2_MEDICAL, expires: 2026-09-14}
-    expect: { status: expired, message: licence.medical_required }
+    outcome: expired
+    expect: { message: licence.medical_required }
+
+  - name: composite-medical-and-language-valid
+    composite: true
+    says: With a valid class 2 medical and a valid level 4 language endorsement, the PPL(A) may be exercised.
+    asOf: 2026-09-15
+    record:
+      holder: {dateOfBirth: 1976-01-01}
+      licences:
+        - {id: l-1, authority: EASA, type: PPL(A)}
+      credentials:
+        - {id: c-med, type: EASA_CLASS2_MEDICAL, issued: 2026-06-01}
+        - {id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2023-04-15}
+    outcome: current
+    expect: { subject: { kind: licence, id: l-1 } }
+  - name: composite-language-expired
+    composite: true
+    says: A valid medical is not enough; with the language endorsement expired the PPL(A) may not be exercised, and the language requirement decides.
+    asOf: 2026-09-15
+    record:
+      holder: {dateOfBirth: 1976-01-01}
+      licences:
+        - {id: l-1, authority: EASA, type: PPL(A)}
+      credentials:
+        - {id: c-med, type: EASA_CLASS2_MEDICAL, issued: 2026-06-01}
+        - {id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2022-01-10}
+    outcome: expired
+    expect: { subject: { kind: licence, id: l-1 }, decidedBy: { evaluation: language, credential: easa.endorsement.language-proficiency } }
+  - name: composite-language-not-recorded
+    composite: true
+    says: With no language endorsement recorded the answer is unknown, never a silent pass or fail.
+    asOf: 2026-09-15
+    record:
+      holder: {dateOfBirth: 1976-01-01}
+      licences:
+        - {id: l-1, authority: EASA, type: PPL(A)}
+      credentials:
+        - {id: c-med, type: EASA_CLASS2_MEDICAL, issued: 2026-06-01}
+    outcome: unknown
+    expect: { subject: { kind: licence, id: l-1 }, decidedBy: { evaluation: language } }

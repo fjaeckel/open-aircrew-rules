@@ -58,7 +58,9 @@ passengers and nine interpretations. The format is described in
 The input is a neutral record of licences, ratings, privileges, certificates, events and
 flights ([schema/record.schema.json](schema/record.schema.json)); the output is one
 evaluation per credential evaluation and subject, with a status, a message key, the
-requirement rows and the citations.
+requirement rows and the citations, and, per credential the record holds, a composite
+answer to "may it be exercised today?" that combines its own evaluations with the
+credentials it requires (`requires_all`, `requires_any`) and names what decides it.
 
 ```go
 import (
@@ -70,13 +72,19 @@ cat, err := credentials.Load("path/to/open-aircrew-rules") // compiles every cre
 if err != nil {
 	return err
 }
-for _, ev := range engine.Evaluate(cat.Engine, &record, engine.MustDate("2026-09-28")) {
+res := cat.Evaluate(&record, engine.MustDate("2026-09-28"))
+for _, ev := range res.Evaluations {
 	fmt.Println(ev.RuleID, ev.Status, ev.MessageKey, ev.Citations)
 	// easa.rating.sep-land#revalidation current rating.revalidation_current [EASA FCL.740.A(b)(1) ...]
 }
+for _, c := range res.Credentials {
+	fmt.Println(c.Credential, c.Subject.ID, c.Status) // c.DecidedBy names the deciding member
+	// easa.licence.ppl-a l-ppl expired
+}
 ```
 
-From the command line, with a record in YAML or JSON:
+From the command line, with a record in YAML or JSON (the output is
+`{ "evaluations": [...], "credentials": [...] }`):
 
 ```bash
 go run ./cmd/evaluate -as-of 2026-09-28 record.yaml
@@ -92,16 +100,18 @@ is reported untracked and never met, and the status says what to record.
 | --- | --- |
 | `credentials/<authority>/<kind>/<name>.yaml` | One credential and every evaluation it needs |
 | `credentials/<authority>/shared/<name>.yaml` | Parameterised evaluations several credentials use |
-| `examples/<credential id>.yaml` | Worked examples: at least one passing and one failing per evaluation |
+| `examples/<credential id>.yaml` | Worked examples with their expected outcome: at least one passing and one failing per evaluation |
 | `scope/articles-<authority>.yaml` | Every article in scope, with a one-line summary |
 | `coverage/articles.yaml` | How each article is accounted for: evaluated, pending or not evaluated |
 | `sources/` | Verbatim regulation texts of allowed origin ([sources/README.md](sources/README.md)) |
 | `vocabulary.yaml`, `messages/keys.yaml` | The closed vocabulary and the message keys |
+| `policies.yaml` | Every convention with no legal text behind it, with its rationale |
+| `fragments/` | Unmerged changes to the shared files during parallel work ([fragments/README.md](fragments/README.md)) |
 | `schema/` | JSON Schema for every YAML file |
 | `credentials/*.go`, `engine/` | Loader and compiler; the evaluator |
 | `cmd/evaluate`, `cmd/rulescheck`, `cmd/rulesgen` | Command-line evaluator, gate, generator |
 | `gen/` | Generated constants and example tests (never edited by hand) |
-| `docs/` | Format reference, own-words AMC/GM notes, [ADRs](docs/adr/) |
+| `docs/` | Format reference, [conversion recipe](docs/converting.md), own-words AMC/GM notes, [ADRs](docs/adr/) |
 
 [DESIGN.md](DESIGN.md) is the contract the files follow.
 
@@ -119,8 +129,9 @@ On 2026-09-28:
 "Evaluated" articles have at least one evaluation; 51 articles (EASA 30, FAA 13, Germany 8)
 still name credential files to be written, 12 of them alongside existing evaluations. "Not
 evaluated" articles say why (for example, not a currency rule, or the record cannot show what
-they need). The 19 credentials hold 59 evaluations (45 compiled rules), 109 worked examples,
-312 references and 106 interpretations, none signed off yet. See [CHANGELOG.md](CHANGELOG.md)
+they need). The 19 credentials hold 57 evaluations (45 compiled rules and 12 requirement
+entries), 114 worked examples (4 of them composite), 388 references (policies included), 10
+policies and 106 interpretations, none signed off yet. See [CHANGELOG.md](CHANGELOG.md)
 for the list.
 
 ## Keeping up with regulation

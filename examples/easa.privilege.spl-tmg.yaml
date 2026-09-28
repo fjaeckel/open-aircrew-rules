@@ -14,7 +14,8 @@ examples:
         - {date: 2025-04-01, class: GLIDER, launchMethod: winch, minutes: {total: 300, pic: 300}, launches: 5, landings: {day: 5}}
         - {date: 2025-06-01, class: TMG, minutes: {total: 300, pic: 300}, takeoffs: {day: 4}, landings: {day: 4}, launches: 4}
         - {date: 2025-07-01, class: GLIDER, launchMethod: winch, minutes: {total: 120, dual: 120}, launches: 10, landings: {day: 10}}
-    expect: { status: current, message: pax.prerequisite_met }
+    outcome: current
+    expect: { message: pax.prerequisite_met }
   - name: recency-part-fcl-tmg-exempt
     evaluation: recency
     shows: [part-fcl-exemption]
@@ -29,7 +30,8 @@ examples:
         - {id: r-ppl-tmg, licenceId: l-ppl, class: TMG, expires: 2026-09-15}
       flights:
         - {date: 2026-05-01, class: TMG, minutes: {total: 60, pic: 60}, takeoffs: {day: 2}, landings: {day: 2}, launches: 2}
-    expect: { status: current, message: rating.sfcl_tmg_exempt }
+    outcome: current
+    expect: { message: rating.sfcl_tmg_exempt }
   - name: recency-experience-current
     evaluation: recency
     says: Twelve hours including 6 hours, 12 take-offs and landings and a 1-hour training flight on TMGs keep the SPL TMG privileges current; sailplane hours count toward the 12 hours, and a flight on the window's first day counts.
@@ -43,7 +45,8 @@ examples:
         - {date: 2024-09-15, class: TMG, minutes: {total: 60, dual: 60}, takeoffs: {day: 2}, landings: {day: 2}, launches: 2}
         - {date: 2026-03-01, class: TMG, minutes: {total: 300, pic: 300}, takeoffs: {day: 10}, landings: {day: 10}, launches: 10}
         - {date: 2026-06-01, class: GLIDER, launchMethod: winch, minutes: {total: 360, pic: 300, spic: 60}, launches: 8, landings: {day: 8}}
-    expect: { status: current, message: rating.recency_current }
+    outcome: current
+    expect: { message: rating.recency_current }
   - name: recency-expired-part-fcl-tmg-not-exempt
     evaluation: recency
     says: A Part-FCL TMG class rating that expired the day before does not exempt; neither does a TMG rating on a DULV ultralight licence. SFCL.160(b) applies again.
@@ -57,7 +60,8 @@ examples:
         - {id: r-tmg, licenceId: l-spl, class: TMG}
         - {id: r-ppl-tmg, licenceId: l-ppl, class: TMG, expires: 2026-09-14}
         - {id: r-ul-tmg, licenceId: l-ul, class: TMG}
-    expect: { status: lapsed, message: rating.recency_not_met }
+    outcome: lapsed
+    expect: { message: rating.recency_not_met }
   - name: passengers-day-and-night
     evaluation: passengers
     says: With a TMG night rating valid on its expiry day, one of the three take-offs and landings flown at night allows passengers by day and by night.
@@ -72,7 +76,8 @@ examples:
       flights:
         - {date: 2026-08-01, class: TMG, minutes: {total: 60, pic: 60, night: 30}, takeoffs: {day: 2}, landings: {day: 1, night: 1}, launches: 2}
         - {date: 2026-08-02, class: TMG, minutes: {total: 60, pic: 60, night: 60}, takeoffs: {night: 1}, landings: {day: 1}, launches: 1}
-    expect: { status: current, message: pax.current_day_night }
+    outcome: current
+    expect: { message: pax.current_day_night }
   - name: passengers-not-current
     evaluation: passengers
     says: Three landings but two take-offs as PIC do not make three take-offs and landings; take-offs the day before the window and dual flights do not count.
@@ -86,7 +91,8 @@ examples:
         - {date: 2026-06-16, class: TMG, minutes: {total: 60, pic: 60}, takeoffs: {day: 3}, landings: {day: 3}, launches: 3}
         - {date: 2026-07-01, class: TMG, minutes: {total: 60, dual: 60}, takeoffs: {day: 3}, landings: {day: 3}, launches: 3}
         - {date: 2026-08-01, class: TMG, minutes: {total: 60, pic: 60}, takeoffs: {day: 2}, landings: {day: 3}, launches: 2}
-    expect: { status: expired, message: pax.not_current }
+    outcome: expired
+    expect: { message: pax.not_current }
   - name: extension-training-complete
     evaluation: extension_training
     says: Six hours of TMG instruction with 4 hours dual, a 160 km solo cross-country flight and a TMG skill test complete the extension.
@@ -99,7 +105,8 @@ examples:
         - {date: 2026-05-01, class: TMG, minutes: {total: 150, spic: 150, crossCountry: 150}, distanceKm: 160, takeoffs: {day: 2}, landings: {day: 2}, launches: 2}
       events:
         - {date: 2026-06-01, kind: skill_test, class: TMG}
-    expect: { status: current, message: training.all_met }
+    outcome: current
+    expect: { message: training.all_met }
   - name: extension-training-in-progress
     evaluation: extension_training
     says: Sailplane instruction does not count, a dual cross-country flight is not solo and a 120 km solo flight is too short; the skill test is still to come.
@@ -111,7 +118,8 @@ examples:
         - {date: 2026-04-01, class: GLIDER, launchMethod: winch, minutes: {total: 600, dual: 600}, launches: 30, landings: {day: 30}}
         - {date: 2026-05-01, class: TMG, minutes: {total: 120, dual: 120, crossCountry: 120}, distanceKm: 200, takeoffs: {day: 2}, landings: {day: 2}, launches: 2}
         - {date: 2026-05-02, class: TMG, minutes: {total: 90, pic: 90, crossCountry: 90}, distanceKm: 120, takeoffs: {day: 2}, landings: {day: 2}, launches: 2}
-    expect: { status: lapsed, message: training.in_progress }
+    outcome: lapsed
+    expect: { message: training.in_progress }
   - name: passenger-prerequisite-not-met
     evaluation: passenger_prerequisite
     says: Two hours and five launches as PIC since the SPL was issued are not enough to carry passengers in a TMG.
@@ -123,4 +131,5 @@ examples:
         - {id: r-tmg, licenceId: l-spl, class: TMG}
       flights:
         - {date: 2026-05-01, class: TMG, minutes: {total: 120, pic: 120}, launches: 5, takeoffs: {day: 5}, landings: {day: 5}}
-    expect: { status: expired, message: pax.prerequisite_not_met, params: { needed: 480 } }
+    outcome: expired
+    expect: { message: pax.prerequisite_not_met, params: { needed: 480 } }

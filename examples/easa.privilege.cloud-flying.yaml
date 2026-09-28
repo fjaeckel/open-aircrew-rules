@@ -12,7 +12,8 @@ examples:
       privileges:
         - {id: p-cloud, licenceId: l-spl, kind: CLOUD_FLYING}
         - {id: p-bir, licenceId: l-ppl, kind: BIR, expires: 2027-06-30}
-    expect: { status: current, message: privilege.recency_credited }
+    outcome: current
+    expect: { message: privilege.recency_credited }
   - name: recency-proficiency-check-restores
     evaluation: recency
     shows: [check-restores]
@@ -25,7 +26,8 @@ examples:
         - {id: p-cloud, licenceId: l-spl, kind: CLOUD_FLYING}
       flights:
         - {date: 2026-03-10, class: GLIDER, checkRating: CLOUD_FLYING, minutes: {total: 60, pic: 60, ifr: 20}, launches: 1, landings: {day: 1}, flags: {proficiencyCheck: true, examinerOnBoard: true}}
-    expect: { status: current, message: privilege.recency_current }
+    outcome: current
+    expect: { message: privilege.recency_current }
   - name: recency-expired-ir-no-credit
     evaluation: recency
     says: An expired IR(A) and an FAA instrument rating give no credit; an expired cloud flying privilege is expired.
@@ -41,4 +43,5 @@ examples:
       privileges:
         - {id: p-cloud, licenceId: l-spl, kind: CLOUD_FLYING}
         - {id: p-cloud-old, licenceId: l-spl, kind: CLOUD_FLYING, expires: 2026-09-14}
-    expect: { subject: { kind: privilege, id: p-cloud, class:  }, status: lapsed, message: privilege.recency_not_met }
+    outcome: lapsed
+    expect: { subject: { kind: privilege, id: p-cloud, class:  }, message: privilege.recency_not_met }

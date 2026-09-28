@@ -88,13 +88,16 @@ func (r *RefList) UnmarshalYAML(n *yaml.Node) error {
 
 // Evaluation is one thing a credential needs.
 type Evaluation struct {
-	ID             string    `yaml:"id"`
-	Asks           string    `yaml:"asks"`
-	Source         string    `yaml:"source"`
-	AlsoCites      []string  `yaml:"also_cites"`
-	Uses           string    `yaml:"uses"`
-	With           yaml.Node `yaml:"with"`
-	Requires       []string  `yaml:"requires"`
+	ID        string    `yaml:"id"`
+	Asks      string    `yaml:"asks"`
+	Source    string    `yaml:"source"`
+	AlsoCites []string  `yaml:"also_cites"`
+	Uses      string    `yaml:"uses"`
+	With      yaml.Node `yaml:"with"`
+	// RequiresAll and RequiresAny name the credentials this one needs: every one of
+	// RequiresAll and at least one of RequiresAny (see Composite).
+	RequiresAll    []string  `yaml:"requires_all"`
+	RequiresAny    []string  `yaml:"requires_any"`
 	About          string    `yaml:"about"`
 	OnlyFor        *Scope    `yaml:"only_for"`
 	Scope          *Scope    `yaml:"scope"`

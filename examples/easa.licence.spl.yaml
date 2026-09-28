@@ -9,7 +9,8 @@ examples:
         - {id: l-1, authority: EASA, type: SPL}
       credentials:
         - {id: c-1, type: EASA_CLASS1_MEDICAL, expires: 2027-01-10}
-    expect: { status: current, message: licence.valid }
+    outcome: current
+    expect: { message: licence.valid }
   - name: medical-expired
     evaluation: medical
     says: An expired medical certificate does not allow exercising the licence.
@@ -19,7 +20,8 @@ examples:
         - {id: l-1, authority: EASA, type: SPL}
       credentials:
         - {id: c-1, type: EASA_LAPL_MEDICAL, expires: 2026-09-14}
-    expect: { status: expired, message: licence.medical_required }
+    outcome: expired
+    expect: { message: licence.medical_required }
   - name: recency-experience-current
     evaluation: recency
     says: Five hours as PIC, dual or supervised solo with 15 launches and two training flights in the last 24 months keep the glider rating current; a flight on the window's first day counts, and TMG hours count toward the 5 hours.
@@ -35,7 +37,22 @@ examples:
         - {date: 2026-06-01, class: GLIDER, launchMethod: winch, minutes: {total: 90, spic: 90}, launches: 6, landings: {day: 6}}
         - {date: 2026-07-01, class: GLIDER, launchMethod: aerotow, minutes: {total: 120, pic: 120}, launches: 7, landings: {day: 7}}
         - {date: 2026-08-01, class: TMG, minutes: {total: 60, pic: 60}, takeoffs: {day: 3}, landings: {day: 3}, launches: 3}
-    expect: { status: current, message: rating.recency_current }
+    outcome: current
+    expect: { message: rating.recency_current }
+  - name: recency-glider-rating-on-lapl-s-only
+    evaluation: recency
+    shows: [sailplane-privileges-sfcl-licences]
+    says: Of a GLIDER rating on an LAPL(S) and one on a PPL(A), only the LAPL(S) rating is a Part-SFCL sailplane privilege; it is the one result, and it is lapsed without recent flights.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-lapl, authority: LBA, type: LAPL(S)}
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      ratings:
+        - {id: r-gld, licenceId: l-lapl, class: GLIDER}
+        - {id: r-gld-ppl, licenceId: l-ppl, class: GLIDER}
+    outcome: lapsed
+    expect: { subject: { kind: rating }, message: rating.recency_not_met }
   - name: recency-lapsed
     evaluation: recency
     says: A flight one day before the 24-month window no longer counts; with too few hours, launches and training flights and no proficiency check the rating is lapsed, and each shortfall carries a remedy.
@@ -48,7 +65,8 @@ examples:
       flights:
         - {date: 2024-09-14, class: GLIDER, minutes: {total: 300, dual: 300}, launches: 20, landings: {day: 20}}
         - {date: 2026-04-01, class: GLIDER, minutes: {total: 45, dual: 45}, launches: 3, landings: {day: 3}}
-    expect: { status: lapsed, message: rating.recency_not_met }
+    outcome: lapsed
+    expect: { message: rating.recency_not_met }
   - name: launch-methods-towed-logged-methods
     evaluation: launch_methods_towed
     says: 'Each launch method logged on a sailplane is evaluated on its own: five winch launches, the first on the window''s first day, keep winch current; two aerotows in 24 months lapse aerotow, to be restored with three launches dual or supervised. Car was never logged or trained and is not listed; bungee and self-launch are separate evaluations.'
@@ -64,7 +82,8 @@ examples:
         - {date: 2023-06-01, class: GLIDER, launchMethod: aerotow, minutes: {total: 90, pic: 90}, launches: 6, landings: {day: 6}}
         - {date: 2026-06-01, class: GLIDER, launchMethod: aerotow, minutes: {total: 90, pic: 90}, launches: 2, landings: {day: 2}}
         - {date: 2026-07-01, class: GLIDER, launchMethod: bungee, minutes: {total: 20, pic: 20}, launches: 1, landings: {day: 1}}
-    expect: { subject: { kind: launch_method, id: r-gld, class: GLIDER, detail: winch }, status: current, message: launch_method.current }
+    outcome: current
+    expect: { subject: { kind: launch_method, id: r-gld, class: GLIDER, detail: winch }, message: launch_method.current }
   - name: launch-methods-towed-trained-never-logged
     evaluation: launch_methods_towed
     says: A car launch training recorded as a privilege lists car even without a logged car launch in the window; launches the day before the 24-month window do not count.
@@ -78,7 +97,8 @@ examples:
         - {id: p-car, licenceId: l-spl, kind: LAUNCH_METHOD_TRAINED, detail: car}
       flights:
         - {date: 2024-09-14, class: GLIDER, launchMethod: car, minutes: {total: 30, pic: 30}, launches: 5, landings: {day: 5}}
-    expect: { status: lapsed, message: launch_method.lapsed }
+    outcome: lapsed
+    expect: { message: launch_method.lapsed }
   - name: launch-method-self-tmg-takeoffs-count
     evaluation: launch_method_self
     shows: [self-launch-with-tmg]
@@ -94,7 +114,8 @@ examples:
         - {date: 2026-04-01, class: TMG, minutes: {total: 60, pic: 60}, takeoffs: {day: 2}, landings: {day: 2}, launches: 2}
         - {date: 2026-06-01, class: GLIDER, launchMethod: self-launch, minutes: {total: 240, pic: 240}, launches: 2, landings: {day: 2}}
         - {date: 2026-06-02, class: GLIDER, launchMethod: winch, minutes: {total: 10, pic: 10}, launches: 5, landings: {day: 5}}
-    expect: { status: current, message: launch_method.current }
+    outcome: current
+    expect: { message: launch_method.current }
   - name: launch-method-self-trained-lapsed
     evaluation: launch_method_self
     says: A trained self-launch never logged on a sailplane is evaluated from TMG take-offs; take-offs the day before the window do not count, leaving three launches to fly dual or supervised.
@@ -109,7 +130,8 @@ examples:
       flights:
         - {date: 2024-09-14, class: TMG, minutes: {total: 60, pic: 60}, takeoffs: {day: 5}, landings: {day: 5}, launches: 5}
         - {date: 2026-04-01, class: TMG, minutes: {total: 60, pic: 60}, takeoffs: {day: 2}, landings: {day: 2}, launches: 2}
-    expect: { status: lapsed, message: launch_method.lapsed }
+    outcome: lapsed
+    expect: { message: launch_method.lapsed }
   - name: launch-method-bungee-current
     evaluation: launch_method_bungee
     says: Two bungee launches in 24 months, one on the window's first day, keep bungee current.
@@ -122,7 +144,8 @@ examples:
       flights:
         - {date: 2024-09-15, class: GLIDER, launchMethod: bungee, minutes: {total: 30, pic: 30}, launches: 1, landings: {day: 1}}
         - {date: 2026-07-01, class: GLIDER, launchMethod: bungee, minutes: {total: 45, pic: 45}, launches: 1, landings: {day: 1}}
-    expect: { status: current, message: launch_method.current }
+    outcome: current
+    expect: { message: launch_method.current }
   - name: launch-method-bungee-lapsed
     evaluation: launch_method_bungee
     says: One bungee launch in 24 months is one short; the launch the day before the window does not count.
@@ -135,10 +158,11 @@ examples:
       flights:
         - {date: 2024-09-14, class: GLIDER, launchMethod: bungee, minutes: {total: 30, pic: 30}, launches: 1, landings: {day: 1}}
         - {date: 2026-07-01, class: GLIDER, launchMethod: bungee, minutes: {total: 45, pic: 45}, launches: 1, landings: {day: 1}}
-    expect: { status: lapsed, message: launch_method.lapsed }
+    outcome: lapsed
+    expect: { message: launch_method.lapsed }
   - name: passengers-current
     evaluation: passengers
-    says: Three winch launches as PIC logged as one series row with a single landing, on the first day of the 90-day window, allow passengers in sailplanes; launches count, not landings. A GLIDER rating on a second EASA licence gives no second evaluation.
+    says: Three winch launches as PIC logged as one series row with a single landing, on the first day of the 90-day window, allow passengers in sailplanes; launches count, not landings. A GLIDER rating on a PPL(A) is no Part-SFCL privilege and is not evaluated.
     asOf: 2026-09-15
     record:
       licences:
@@ -149,7 +173,8 @@ examples:
         - {id: r-gld2, licenceId: l-ppl, class: GLIDER}
       flights:
         - {date: 2026-06-17, class: GLIDER, launchMethod: winch, minutes: {total: 18, pic: 18}, launches: 3, landings: {day: 1}}
-    expect: { status: current, message: pax.current_day_no_night_privilege }
+    outcome: current
+    expect: { message: pax.current_day_no_night_privilege }
   - name: passengers-not-current
     evaluation: passengers
     says: Launches the day before the 90-day window, dual launches, supervised solo launches and TMG take-offs do not count; one launch as PIC leaves two to fly.
@@ -165,7 +190,8 @@ examples:
         - {date: 2026-07-02, class: GLIDER, launchMethod: winch, minutes: {total: 30, spic: 30}, launches: 4, landings: {day: 4}}
         - {date: 2026-08-01, class: TMG, minutes: {total: 60, pic: 60}, takeoffs: {day: 3}, landings: {day: 3}, launches: 3}
         - {date: 2026-09-01, class: GLIDER, launchMethod: aerotow, minutes: {total: 90, pic: 90}, launches: 1, landings: {day: 1}}
-    expect: { status: expired, message: pax.not_current }
+    outcome: expired
+    expect: { message: pax.not_current }
   - name: passenger-prerequisite-fi-s-holder
     evaluation: passenger_prerequisite
     shows: [fi-s-on-any-licence]
@@ -178,7 +204,8 @@ examples:
         - {id: r-gld, licenceId: l-spl, class: GLIDER}
       privileges:
         - {id: p-fis, licenceId: l-spl, kind: FI_S, expires: 2027-12-31}
-    expect: { status: current, message: pax.prerequisite_met }
+    outcome: current
+    expect: { message: pax.prerequisite_met }
   - name: passenger-prerequisite-issue-date-unknown
     evaluation: passenger_prerequisite
     shows: [since-recorded-issue]
@@ -191,7 +218,8 @@ examples:
         - {id: r-gld, licenceId: l-spl, class: GLIDER}
       flights:
         - {date: 2025-08-01, class: GLIDER, launchMethod: winch, minutes: {total: 900, pic: 900}, launches: 40, landings: {day: 40}}
-    expect: { status: unknown, message: pax.prerequisite_unknown }
+    outcome: unknown
+    expect: { message: pax.prerequisite_unknown }
   - name: passenger-prerequisite-not-met
     evaluation: passenger_prerequisite
     says: Flights before the SPL was issued (here the day before) do not count; with 2 hours and 12 launches since issue the pilot may not carry passengers yet.
@@ -204,7 +232,8 @@ examples:
       flights:
         - {date: 2025-03-31, class: GLIDER, launchMethod: winch, minutes: {total: 900, pic: 900}, launches: 60, landings: {day: 60}}
         - {date: 2025-08-01, class: GLIDER, launchMethod: winch, minutes: {total: 120, pic: 120}, launches: 12, landings: {day: 12}}
-    expect: { status: expired, message: pax.prerequisite_not_met }
+    outcome: expired
+    expect: { message: pax.prerequisite_not_met }
   - name: training-course-complete
     evaluation: training_course
     says: Fifteen hours of instruction with 10 hours dual, 2 hours supervised solo, 45 launches and a 55 km solo cross-country flight complete the SPL flight training; a PPL(A) holder with 70 hours as PIC in aeroplanes is shown the full 7-hour credit.
@@ -219,7 +248,8 @@ examples:
         - {date: 2026-05-01, class: GLIDER, launchMethod: winch, minutes: {total: 180, spic: 180}, launches: 10, landings: {day: 10}}
         - {date: 2026-06-01, class: GLIDER, launchMethod: aerotow, minutes: {total: 150, spic: 150, crossCountry: 150}, distanceKm: 55, launches: 1, landings: {day: 1}}
         - {date: 2020-06-01, class: SEP_LAND, minutes: {total: 4200, pic: 4200}, takeoffs: {day: 100}, landings: {day: 100}}
-    expect: { status: current, message: training.all_met }
+    outcome: current
+    expect: { message: training.all_met }
   - name: training-course-in-progress
     evaluation: training_course
     says: A student with 5 hours dual has open items; a 40 km solo cross-country flight is too short, TMG instruction counts toward the 15 hours but not toward the 7 hours in sailplanes, and 10 hours as PIC in aeroplanes earn a 1-hour credit.
@@ -234,4 +264,5 @@ examples:
         - {date: 2026-05-01, class: GLIDER, launchMethod: winch, minutes: {total: 90, spic: 90, crossCountry: 90}, distanceKm: 40, launches: 1, landings: {day: 1}}
         - {date: 2026-05-02, class: TMG, minutes: {total: 200, dual: 200}, takeoffs: {day: 10}, landings: {day: 10}, launches: 10}
         - {date: 2021-06-01, class: SEP_LAND, minutes: {total: 600, pic: 600}, takeoffs: {day: 20}, landings: {day: 20}}
-    expect: { status: lapsed, message: training.in_progress }
+    outcome: lapsed
+    expect: { message: training.in_progress }

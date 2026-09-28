@@ -31,25 +31,31 @@ func (k *Keys) Get(key string) (*KeyDef, bool) {
 	return d, ok
 }
 
-// LoadKeys reads messages/keys.yaml.
-func LoadKeys(path string) (*Keys, error) {
-	b, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	var k Keys
-	if err := yaml.Unmarshal(b, &k); err != nil {
-		return nil, fmt.Errorf("%s: %w", path, err)
-	}
-	k.byID = map[string]*KeyDef{}
-	for i := range k.Keys {
-		d := &k.Keys[i]
-		if _, dup := k.byID[d.Key]; dup {
-			return nil, fmt.Errorf("%s: duplicate key %s", path, d.Key)
+// LoadKeys reads messages/keys.yaml and any further key files (fragments); a key defined
+// twice is an error.
+func LoadKeys(path string, more ...string) (*Keys, error) {
+	k := &Keys{byID: map[string]*KeyDef{}}
+	for _, p := range append([]string{path}, more...) {
+		b, err := os.ReadFile(p)
+		if err != nil {
+			return nil, err
 		}
-		k.byID[d.Key] = d
+		var f Keys
+		if err := yaml.Unmarshal(b, &f); err != nil {
+			return nil, fmt.Errorf("%s: %w", p, err)
+		}
+		for _, d := range f.Keys {
+			if _, dup := k.byID[d.Key]; dup {
+				return nil, fmt.Errorf("%s: duplicate key %s", p, d.Key)
+			}
+			k.Keys = append(k.Keys, d)
+			k.byID[d.Key] = &k.Keys[len(k.Keys)-1]
+		}
 	}
-	return &k, nil
+	for i := range k.Keys {
+		k.byID[k.Keys[i].Key] = &k.Keys[i]
+	}
+	return k, nil
 }
 
 // Catalogue is a set of rules with the vocabulary and message keys they use. The credential

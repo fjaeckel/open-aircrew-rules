@@ -354,25 +354,16 @@ credential_vocabulary:
     rating: { subject: rating, selects: ratings, description: "Each selected rating (for a licence credential: the ratings that carry its privileges)." }
     training: { subject: training, selects: licence, description: "A training programme (only_for.programme names it)." }
     pilot: { subject: flight_review, selects: licence, description: "The pilot as a whole (one result per pilot)." }
+    variants: { subject: type, selects: ratings, description: "Each variant recorded on a selected rating (one result per variant)." }
 
   # Reference authorities: `<prefix>:<article><paragraph labels>` resolves to
   # sources/<directory>/<file>.md. file: lower_dashed turns "FCL.740.A" into fcl-740-a;
-  # as_is keeps "61.57". `policy:` refs mark a condition with no legal text behind it (a
-  # presentation or implementation choice) and must be declared under policy_refs.
+  # as_is keeps "61.57". `policy:<id>` refs mark a condition with no legal text behind it (a
+  # presentation or implementation choice); the ids are declared in policies.yaml.
   ref_authorities:
     easa: { directory: easa, file: lower_dashed, cite: "EASA {article}" }
     faa: { directory: faa, file: as_is, cite: "14 CFR {article}" }
     de: { directory: de, file: lower_dashed, cite: "{article}" }
-
-  policy_refs:
-    expiring-notice: "'expiring' is reported a fixed number of days before an expiry date or the end of a recency period; no regulation sets the threshold."
-    window-not-open: "A rating is reported current with a note while its revalidation period has not opened yet."
-    no-expiry-recorded: "Without a recorded or derivable expiry date the result is unknown, with a message asking for it."
-    unknown-input: "Missing input is unknown, never met: the result is unknown with a message saying what to record."
-    medical-not-recorded: "When no medical certificate is recorded at all the result is unknown rather than expired, because many pilots do not record their medical."
-    informational-row: "A row shown for information that never changes the status."
-    not-applicable: "not_applicable is reported where the requirement does not apply to the holder."
-    status-mapping: "The status reported for an unmet requirement (expired, lapsed or expiring) is a presentation choice, not the text."
 
   # Counts: leaf words of passes_if. metric: the engine metric; amount: how the minimum is
   # written (count: min; time: min_hours or min_minutes); id, name, unit, remedy: the
@@ -403,6 +394,11 @@ credential_vocabulary:
     holds: { metric: holds, amount: count, id: holds, name: requirement.holds, unit: holds, remedy: remedy.fly_more }
     intercept_and_track: { metric: intercept_and_track, amount: count, id: intercept_track, name: requirement.intercept_track, unit: flights, remedy: remedy.fly_more }
     tows: { metric: tows, amount: count, id: tows, name: requirement.tows, unit: tows, remedy: remedy.fly_more }
+    route_sectors: { metric: route_sectors, amount: count, id: route_sectors, name: requirement.route_sectors, unit: sectors, remedy: remedy.fly_more }
+    solo_time: { metric: minutes.picOrSpic, amount: time, id: solo_time, name: requirement.solo_time, unit: minutes, remedy: remedy.fly_more }
+    instruction_given_time: { metric: minutes.dualGiven, amount: time, id: instruction_given, name: requirement.instruction_given, unit: minutes, remedy: remedy.fly_more }
+    instruction_or_examining_time: { metric: minutes.instructorOrExaminer, amount: time, id: instruction_given, name: requirement.instruction_given, unit: minutes, remedy: remedy.fly_more }
+    mountain_landings: { metric: mountain_landings, amount: count, id: mountain_landings, name: requirement.mountain_landings, unit: landings, remedy: remedy.fly_more }
     not_recorded: { metric: not_recorded, amount: count, id: not_recorded, name: requirement.untracked, unit: flights }
     # Events: checks, reviews, tests and courses (record.events and flagged flights).
     proficiency_check: { metric: events, events: [proficiency_check], amount: count, id: proficiency_check, name: requirement.proficiency_check, unit: check, remedy: remedy.proficiency_check }
@@ -432,12 +428,18 @@ credential_vocabulary:
     launch_methods: { filter: launchMethods, description: "Launched by one of these methods." }
     by_this_launch_method: { filter: launchMethods, value: subject, description: "Launched by the launch method evaluated." }
     in_type: { filter: typeDesignators, value: subject, description: "In the type of the rating evaluated." }
+    in_variant: { filter: variants, value: subject, description: "In the variant evaluated (about: variants)." }
     as: { filter: role, description: "pilot_flying, sole_manipulator, or a list of roles (pic, dual, spic, picus, sic, instructor, examiner) with time on the flight." }
     with_time: { filter: withMinutes, description: "Flights with time of these kinds (ifr, crossCountry, dual ...)." }
     without_time: { filter: withoutMinutes, description: "Flights without time of these kinds." }
     simulator: { filter: simulator, description: "exclude (default), include or only FSTD sessions." }
     fstd: { filter: fstdTypes, description: "Only these FSTD types count when simulators are included." }
     tailwheel: { filter: tailwheel, description: "In an aircraft with (true) or without (false) a tailwheel." }
+    flagged: { filter: flags, description: "Flights with these flags set or unset ({ examinerOnBoard: true })." }
+    min_landings: { filter: minLandings, description: "Flights with at least n landings." }
+    max_engines: { filter: maxEngines, description: "In an aircraft with at most n engines." }
+    max_mtom_kg: { filter: maxMtomKg, description: "In an aircraft of at most n kg maximum take-off mass." }
+    tow_kinds: { filter: towKinds, description: "Tow flights of these kinds (glider, banner, ul_glider)." }
     min_distance_km: { filter: minDistanceKm, description: "Flights of at least n km." }
     for_rating: { filter: eventRatings, description: "Events for this rating (for example CLOUD_FLYING)." }
     also: { filter: eventKinds, description: "Events of these kinds count as well." }
@@ -446,10 +448,24 @@ credential_vocabulary:
 
   # Outcome presets: the status and message stages an evaluation reports, so authors rarely
   # write stages. The stages each generates are listed in docs/credential-format.md.
+  # `conventions` names, per stage id, the policy (policies.yaml) behind a status the preset
+  # sets by convention rather than by the text; every evaluation using the preset cites it.
   outcome_presets:
-    revalidation: "A rating with an expiry date revalidated inside a period before expiry (rating.* keys)."
-    recency: "Rolling recency: current or lapsed (rating.recency_* keys unless messages says otherwise)."
-    privilege_recency: "A licence privilege with an optional expiry and rolling recency (privilege.* keys)."
-    passengers: "Passenger recency: current, unknown when the input is not logged, else not met with the missing count of the last listed unmet requirement."
-    validity: "A certificate that is valid until its (recorded or derived) expiry date (credential.* keys)."
-    training: "A training programme: complete, unknown when the input is not logged, else in progress."
+    revalidation:
+      description: "A rating with an expiry date revalidated inside a period before expiry (rating.* keys)."
+      conventions: { no_expiry: policy:no-expiry-recorded, window_not_open: policy:window-not-open, met_expiring: policy:expiring-notice, not_met: policy:revalidation-not-met-expiring }
+    recency:
+      description: "Rolling recency: current or lapsed (rating.* keys unless messages says otherwise)."
+      conventions: { lapsed: policy:recency-lapsed }
+    privilege_recency:
+      description: "A licence privilege with an optional expiry and rolling recency (privilege.* keys)."
+      conventions: { lapsed: policy:recency-lapsed }
+    passengers:
+      description: "Passenger recency: current, unknown when the input is not logged, else not met with the missing count of the last listed unmet requirement."
+      conventions: { unknown: policy:unknown-input, not_met: policy:passengers-expired }
+    validity:
+      description: "A certificate that is valid until its (recorded or derived) expiry date (credential.* keys)."
+      conventions: { date_of_birth: policy:unknown-input, no_expiry: policy:no-expiry-recorded, expiring: policy:expiring-notice }
+    training:
+      description: "A training programme: complete, unknown when the input is not logged, else in progress."
+      conventions: { unknown: policy:unknown-input, in_progress: policy:training-in-progress-lapsed }

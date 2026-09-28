@@ -45,7 +45,7 @@ func TestResolve(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	rs := NewResolver("..", v)
+	rs := NewResolver("..", v, pols(t))
 	for _, ok := range []string{"easa:FCL.740.A(b)(1)(ii)(C)", "easa:FCL.740.A(b)(2)", "easa:SFCL.130(a)(2)(iv)(B)(a)", "easa:SFCL.130(a)(2)(v)(B)", "faa:61.57(c)(1)(iii)", "faa:61.56(i)", "policy:expiring-notice", "de:LuftPersV.45a"} {
 		if err := rs.Resolve(ok); err != nil {
 			t.Errorf("%s: %v", ok, err)
@@ -56,7 +56,7 @@ func TestResolve(t *testing.T) {
 		"easa:FCL.740.A(c)(1)(ii)":  "paragraph (c)(1)(ii) not found",
 		"easa:FCL.999":              "no source file",
 		"xx:FCL.740":                "unknown ref prefix",
-		"policy:nope":               "policy ref not declared",
+		"policy:nope":               "policy not declared",
 		"policy:expiring-notice(a)": "has no paragraph labels",
 		"not a ref":                 "want <prefix>",
 	} {
@@ -104,6 +104,7 @@ func writeRoot(t *testing.T, files map[string]string) string {
 	}
 	cp("vocabulary.yaml", "vocabulary.yaml")
 	cp("messages/keys.yaml", "messages/keys.yaml")
+	cp("policies.yaml", "policies.yaml")
 	cp("sources/easa/fcl-740-a.md", "sources/easa/fcl-740-a.md")
 	for p, s := range files {
 		write(t, root, p, s)
@@ -185,7 +186,15 @@ evaluations:
   - id: nine
     uses: nobody#x
   - id: ten
-    requires: [easa.rating.nope]
+    requires_all: [easa.rating.nope]
+  - id: ten_b
+    source: easa:FCL.740.A(b)(1)
+    requires_any: [easa.rating.bee]
+  - id: thirteen
+    asks: Status override without a ref, and stage ids the preset lacks.
+    source: easa:FCL.740.A(b)(1)
+    passes_if: { takeoffs: { min: 1, ref: easa:FCL.740.A(b)(1) } }
+    outcomes: { preset: recency, statuses: { lapsed: expired, nope: { status: expired, ref: policy:recency-lapsed } }, messages: { gone: x }, omit: [missing] }
   - id: eleven
     asks: No outcomes.
     source: easa:FCL.740.A(b)(1)
@@ -214,6 +223,8 @@ evaluations:
     with: { extra: 1 }
   - id: q
     uses: easa.shared.p
+  - id: r
+    requires_all: [easa.rating.a]
 `,
 		"credentials/easa/shared/p.yaml": `
 shared: P
@@ -235,8 +246,12 @@ evaluation: { asks: x }
 		"examples/easa.rating.a.yaml": `
 credential: easa.rating.a
 examples:
-  - { name: x, evaluation: nope, asOf: 2026-01-01, record: {}, expect: { status: current } }
-  - { name: x, evaluation: ten, asOf: 2026-01-01, record: {}, expect: { status: current } }
+  - { name: x, evaluation: nope, asOf: 2026-01-01, record: {}, outcome: current }
+  - { name: x, evaluation: ten, asOf: 2026-01-01, record: {}, outcome: current }
+  - { name: y, evaluation: ten, asOf: 2026-01-01, record: {} }
+  - { name: z, composite: true, evaluation: ten, asOf: 2026-01-01, record: {}, outcome: current }
+  - { name: w, composite: true, asOf: 2026-01-01, record: {}, outcome: current, expect: { message: x } }
+  - { name: v, composite: true, asOf: 2026-01-01, record: {}, outcome: current }
 `,
 		"examples/wrong-name.yaml": "credential: easa.rating.bee\nexamples: []\n",
 		"examples/gone.yaml":       "credential: easa.rating.gone\nexamples: []\n",
@@ -266,12 +281,16 @@ examples:
 		"selects no licence part", "passengers preset needs requirements", `expiring_notice: unknown key "colour"`,
 		"preset revalidation needs expiring_notice", "date_of_birth is when_no_expiry or required", "has no evaluation none",
 		"no shared evaluation", "no credential nobody", "requires easa.rating.nope, which is no credential",
+		"easa.rating.a#ten_b: an evaluation with requires_all or requires_any has only id, asks and those", "requirement cycle: easa.rating.a -> easa.rating.bee -> easa.rating.a",
+		"outcomes.statuses.lapsed: write { status, ref: policy:<id> }", `outcomes.statuses: preset recency has no stage "nope"`, `outcomes.messages: preset recency has no stage "gone"`,
+		`outcomes.omit: preset recency has no stage "missing"`, "outcome is required", "a composite example names no evaluation",
+		"a composite example expects only subject and decidedBy", "the record holds no easa.rating.a for the subject", "composites: no passing composite example",
 		`evaluation id "one" missing or repeated`, "no outcomes", `affects "nope", which is no evaluation here`, "id missing or repeated",
-		"needs reading and affects", "no ref to the paragraph", "approved_by and approved_on go together", "policy ref not declared",
+		"needs reading and affects", "no ref to the paragraph", "approved_by and approved_on go together", "policy not declared",
 		"description key nope_key", "message no.such.key", `kind "flavour" is not one of the credential kinds`,
 		"must be <authority>.<kind>.<file name>", "does not start with the authority", "has no parameter \"extra\"", `parameter "n" not given`,
 		"must be <authority>.shared.<file name>", "no credential uses easa.shared.unused-wrong", "duplicate shared id", "duplicate credential id",
-		"no evaluation easa.rating.a#nope", "only references other credentials", `example name "x" missing or repeated`,
+		"no evaluation easa.rating.a#nope", "only names required credentials", `example name "x" missing or repeated`,
 		"file name must be easa.rating.bee.yaml", "no credential easa.rating.gone", "easa.rating.a and easa.rating.bee both select ratings items",
 	} {
 		if !strings.Contains(report, want) {
@@ -316,22 +335,21 @@ examples:
     record:
       licences: [{ id: l1, authority: EASA, type: PPL(A) }, { id: l2, authority: LBA, type: CPL(A) }]
       ratings: [{ id: r1, licenceId: l1, class: SEP_LAND }, { id: r2, licenceId: l2, class: SEP_LAND }]
-    expect: { status: current }
+    outcome: current
   - name: none
     evaluation: one
     asOf: 2026-01-01
     record: {}
-    expect: { status: current }
+    outcome: current
   - name: no-status
     evaluation: one
     asOf: 2026-01-01
     record: {}
-    expect: {}
   - name: lapsed
     evaluation: two
     asOf: 2026-01-01
     record: {}
-    expect: { status: expired }
+    outcome: expired
 `,
 		"coverage/articles.yaml": `
 articles:
@@ -352,7 +370,7 @@ articles:
 	cov := CheckCoverage(cat)
 	report := strings.Join(append(f.ExampleErrs, cov.Problems...), "\n")
 	for _, want := range []string{
-		"2 results; name the subject", "no result for the subject", "expect.status is required", `shows "nothing"`,
+		"2 results; name the subject", "no result for the subject", "outcome is required", `shows "nothing"`,
 		"no passing example", "no failing example", "listed twice", "pending credentials/easa/ratings/a.yaml exists",
 		"easa.rating.a#nope is no compiled evaluation", "no source file",
 		"needs evaluations, pending or not_evaluated", "article easa:FCL.060 of the scope is missing",

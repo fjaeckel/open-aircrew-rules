@@ -20,10 +20,12 @@ type report struct {
 	sources      sourcesResult
 	coverage     string
 	coverageFail bool
+	frags        map[string][]string
+	fragFail     []string
 }
 
 func (r *report) problems() int {
-	n := len(r.schema) + len(r.sources.problems) + count(r.vocabUnimpl)
+	n := len(r.schema) + len(r.sources.problems) + count(r.vocabUnimpl) + len(r.fragFail)
 	if r.f != nil {
 		n += r.f.Problems()
 	}
@@ -73,8 +75,10 @@ func (r *report) print(w io.Writer, o options) {
 	if r.coverageFail {
 		fail = 1
 	}
-	section(w, "Engine statement coverage", fail)
+	section(w, "Engine and credentials statement coverage", fail)
 	fmt.Fprintf(w, "  %s\n", r.coverage)
+	section(w, "No unmerged fragments", len(r.fragFail))
+	list(w, r.fragFail)
 
 	auths := keys(c.PendingByAuthority)
 	per := make([]string, 0, len(auths))
@@ -92,6 +96,10 @@ func (r *report) print(w io.Writer, o options) {
 	}
 	for _, k := range keys(byFile) {
 		fmt.Fprintf(w, "  %s (%d): %s\n", k, len(byFile[k]), strings.Join(byFile[k], ", "))
+	}
+	if o.fragments {
+		fmt.Fprintf(w, "\n== Fragments pending integration (report only, -fragments): %d\n", count(r.frags))
+		groups(w, r.frags)
 	}
 	summary(w, r, o)
 }

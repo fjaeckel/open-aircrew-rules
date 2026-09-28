@@ -213,3 +213,14 @@ func (p *prepared) subjects(r *Rule, v *Vocabulary, asOf Date) []subjectRef {
 	}
 	return out
 }
+
+// Holdings returns the record items applies_to selects on asOf: the subjects a rule with it
+// evaluates, before its holds condition.
+func Holdings(c *Catalogue, rec *Record, a AppliesTo, asOf Date) []Subject {
+	p := prepare(rec, c.Vocabulary)
+	var out []Subject
+	for _, s := range p.subjects(&Rule{AppliesTo: a}, c.Vocabulary, asOf) {
+		out = append(out, s.Subject)
+	}
+	return out
+}

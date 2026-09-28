@@ -9,7 +9,10 @@ import (
 // requirement, the any_of branches met, window edges, restoring events, unknown inputs and
 // where asOf fell relative to the expiry date. Tests use it to show that a feature ran.
 type Trace struct {
-	Stage        string
+	Stage string
+	// Root is the state of the requirement tree on asOf: met, unmet, unknown, or "" when the
+	// rule has no requirements.
+	Root         string
 	Requirements map[string]string
 	AnyOf        []string
 	NOf          map[string]bool
