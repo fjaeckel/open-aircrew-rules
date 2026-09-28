@@ -8,10 +8,11 @@ pilot in command is responsible for meeting every requirement that applies to a 
 Nothing in this NOTICE or in sources/README.md is legal advice about copyright either.
 
 LICENCE SCOPE. The MIT License (see LICENSE) covers the code (engine/, credentials/*.go,
-cmd/, gen/), the catalogue (credentials/, vocabulary.yaml, messages/, schema/, scope/,
-coverage/, docs/), the worked examples (examples/) and the tools. It does not cover the
-texts under sources/: they are not ours to license, keep their own status, described below
-and in sources/README.md, and are not relicensed under the MIT License.
+cmd/, gen/), the catalogue (credentials/, vocabulary.yaml, policies.yaml, associations.yaml,
+messages/, schema/, scope/, coverage/, docs/, reviews/), the worked examples (examples/) and
+the tools. It does not cover the texts under sources/: they are not ours to license, keep
+their own status, described below and in sources/README.md, and are not relicensed under the
+MIT License.
 
 TEXTS UNDER sources/. Each is taken verbatim from one of the following publications, with
 the retrieval date recorded in the file's header. All of them are consolidated,
