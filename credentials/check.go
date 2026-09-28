@@ -111,16 +111,18 @@ func (f *Findings) checkFiles(cat *Catalogue) {
 			}
 		}
 	}
+	used := map[*Shared]bool{}
+	for _, c := range cat.Compiled {
+		for s := c.Eval.Shared; s != nil && !used[s]; s = cat.Shared[sharedUses(s)] {
+			used[s] = true
+		}
+	}
 	for id, s := range cat.Shared {
 		where := rel(cat.Root, s.File)
 		if !strings.HasSuffix(id, "."+strings.TrimSuffix(filepath.Base(s.File), ".yaml")) || !strings.Contains(id, ".shared.") {
 			f.Files = append(f.Files, fmt.Sprintf("%s: id %q must be <authority>.shared.<file name>", where, id))
 		}
-		used := false
-		for _, c := range cat.Compiled {
-			used = used || (c.Eval.Shared == s)
-		}
-		if !used {
+		if !used[s] {
 			f.Files = append(f.Files, fmt.Sprintf("%s: no credential uses %s", where, id))
 		}
 	}
@@ -160,8 +162,11 @@ func (cat *Catalogue) interpretationsFor(c *Credential, e *Evaluation) []string 
 				}
 			}
 		}
-	} else if s, found := cat.Shared[e.Uses]; found {
-		add(s.Interpretations, "evaluation")
+	} else {
+		for s, seen := cat.Shared[e.Uses], map[*Shared]bool{}; s != nil && !seen[s]; s = cat.Shared[sharedUses(s)] {
+			seen[s] = true
+			add(s.Interpretations, "evaluation")
+		}
 	}
 	return out
 }

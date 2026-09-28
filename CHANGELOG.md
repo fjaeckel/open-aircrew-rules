@@ -278,3 +278,11 @@ catalogue changes are grouped by authority and name the credential or evaluation
   override is written `{ status, ref: policy:<id> }`. `credential_vocabulary.policy_refs`
   moved to `policies.yaml`.
 - The gate measures statement coverage of the engine and the credentials package together.
+- `uses:` cycles are detected by following the uses graph and reported with their full path
+  (`uses cycle: a#x -> easa.shared.y -> a#x`), replacing the fixed depth limit; chains of any
+  depth resolve. A shared evaluation may use another shared evaluation, never a credential's
+  evaluation; `uses:` may not name a requirement-only entry, and a credential may not
+  require itself. The gate fails on each.
+- `docs/dependencies.md` (written by `go generate`): the requires and uses graphs per
+  authority as Mermaid diagrams, a table per credential and the most depended-on shared
+  evaluations and credentials.

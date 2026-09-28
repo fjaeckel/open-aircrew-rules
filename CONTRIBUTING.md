@@ -53,6 +53,12 @@ When several contributors work at once, steps 8 and 9 and any new message key or
 into fragments instead of the shared files (`fragments/`, see its README), and the gate
 runs with `-fragments`.
 
+Before changing a shared evaluation (`credentials/<authority>/shared/`) or an evaluation
+other credentials borrow with `uses:`, look it up in
+[docs/dependencies.md](docs/dependencies.md): every credential listed there changes with it,
+and its worked examples must still pass. `go generate ./...` rewrites that file; commit it
+with your change.
+
 A new vocabulary word or message key is a larger change: add it to `vocabulary.yaml` or
 `messages/keys.yaml`, implement it in the compiler or engine, add a schema entry if needed,
 and show it in a worked example.

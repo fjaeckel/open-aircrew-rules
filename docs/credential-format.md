@@ -139,6 +139,18 @@ An evaluation is one of three things.
    (below). Requirements point from the dependent credential to the one it depends on (a
    rating names its licence; a licence does not list its ratings); a cycle is an error.
 
+**Dependency rules** (the gate enforces them; [dependencies.md](dependencies.md) shows the
+current graphs):
+
+- `uses:` chains may be of any depth but never form a cycle; the gate names every cycle
+  with its path (`uses cycle: easa.rating.a#x -> easa.shared.y -> easa.rating.a#x`).
+- A shared evaluation may itself be `evaluation: { uses: <shared id>, with: { ... } }`,
+  passing its own parameters on (`with: { n: $m }`). It never uses a credential's
+  evaluation, and `uses:` names an evaluation, never a parameter (`uses: $x`).
+- `uses:` never names a `requires_all` / `requires_any` entry: name that credential in a
+  requirement of your own.
+- `requires_all` and `requires_any` never name the credential itself and never form a cycle.
+
 ### Composite: may the credential be exercised?
 
 For every item the record holds of a credential (what `selects` picks, the licence for a

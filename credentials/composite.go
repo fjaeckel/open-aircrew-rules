@@ -63,6 +63,9 @@ func (cat *Catalogue) checkRequirement(key string, e *Evaluation) {
 		if _, ok := cat.byID[id]; !ok {
 			cat.Errors = append(cat.Errors, fmt.Sprintf("%s: requires %s, which is no credential", key, id))
 		}
+		if e.Owner != nil && id == e.Owner.ID {
+			cat.Errors = append(cat.Errors, fmt.Sprintf("%s: requires the credential itself", key))
+		}
 	}
 }
 
@@ -101,6 +104,9 @@ func (cat *Catalogue) checkRequirementCycles() {
 		state[id] = open
 		path = append(path, id)
 		for _, r := range requires(c) {
+			if r == id {
+				continue // reported by checkRequirement
+			}
 			visit(r)
 		}
 		path = path[:len(path)-1]

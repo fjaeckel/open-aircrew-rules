@@ -1,6 +1,7 @@
 package credentials
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -37,6 +38,9 @@ type Catalogue struct {
 	byID         map[string]*Credential
 	// held is what each credential selects in a record (its own part).
 	held map[string]engine.AppliesTo
+	// resolved memoises resolve; following holds the uses nodes being expanded.
+	resolved  map[*Evaluation]resolution
+	following map[string]bool
 }
 
 // Options changes what Load reads.
@@ -99,7 +103,7 @@ func LoadWith(root string, o Options) (*Catalogue, error) {
 	if err != nil {
 		return nil, err
 	}
-	cat := &Catalogue{Root: root, Vocab: v, Policies: pol, Options: o, Shared: map[string]*Shared{}, Compiled: map[string]*Compiled{}, ByEvaluation: map[string]string{}, byID: map[string]*Credential{}, held: map[string]engine.AppliesTo{}}
+	cat := &Catalogue{Root: root, Vocab: v, Policies: pol, Options: o, Shared: map[string]*Shared{}, Compiled: map[string]*Compiled{}, ByEvaluation: map[string]string{}, byID: map[string]*Credential{}, held: map[string]engine.AppliesTo{}, resolved: map[*Evaluation]resolution{}, following: map[string]bool{}}
 	assoc, err := LoadAssociations(root)
 	if err != nil {
 		return nil, err
@@ -143,11 +147,15 @@ func LoadWith(root string, o Options) (*Catalogue, error) {
 		cat.byID[c.ID] = c
 		cat.Credentials = append(cat.Credentials, c)
 	}
+	cat.checkUses()
 	var rules []*engine.Rule
 	for _, c := range cat.Credentials {
 		for _, e := range c.Evaluations {
 			key := c.ID + "#" + e.ID
-			re, err := cat.resolve(c, e, 0)
+			re, err := cat.resolve(c, e)
+			if errors.Is(err, errReported) {
+				continue
+			}
 			if err != nil {
 				cat.Errors = append(cat.Errors, fmt.Sprintf("%s: %v", key, err))
 				continue
@@ -212,14 +220,33 @@ func decodeCredential(b []byte) (*Credential, error) {
 	return &c, nil
 }
 
-// resolve returns the evaluation with `uses` expanded.
-func (cat *Catalogue) resolve(c *Credential, e *Evaluation, depth int) (*Evaluation, error) {
+// resolve returns the evaluation with `uses` expanded, memoised per evaluation.
+func (cat *Catalogue) resolve(c *Credential, e *Evaluation) (*Evaluation, error) {
 	if e.Uses == "" {
 		return e, nil
 	}
-	if depth > 3 {
-		return nil, fmt.Errorf("uses %s: too deep", e.Uses)
+	if r, ok := cat.resolved[e]; ok {
+		return r.eval, r.err
 	}
+	r, err := cat.follow(c, e, c.ID+"#"+e.ID)
+	cat.resolved[e] = resolution{r, err}
+	return r, err
+}
+
+// resolution is a memoised resolve result.
+type resolution struct {
+	eval *Evaluation
+	err  error
+}
+
+// follow expands the `uses` of e, which is the evaluation node named node; a node met again
+// on the way is a cycle, which checkUses reports.
+func (cat *Catalogue) follow(c *Credential, e *Evaluation, node string) (*Evaluation, error) {
+	if cat.following[node] {
+		return nil, errReported
+	}
+	cat.following[node] = true
+	defer delete(cat.following, node)
 	var base *Evaluation
 	if credID, evalID, ok := strings.Cut(e.Uses, "#"); ok {
 		oc, found := cat.byID[credID]
@@ -227,14 +254,18 @@ func (cat *Catalogue) resolve(c *Credential, e *Evaluation, depth int) (*Evaluat
 			return nil, fmt.Errorf("uses %s: no credential %s", e.Uses, credID)
 		}
 		for _, x := range oc.Evaluations {
-			if x.ID == evalID {
-				b, err := cat.resolve(oc, x, depth+1)
-				if err != nil {
-					return nil, err
-				}
-				cp := *b
-				base = &cp
+			if x.ID != evalID {
+				continue
 			}
+			if x.isRequirement() {
+				return nil, fmt.Errorf("uses %s: it only names required credentials; name them in requires_all or requires_any instead", e.Uses)
+			}
+			b, err := cat.resolve(oc, x)
+			if err != nil {
+				return nil, err
+			}
+			cp := *b
+			base = &cp
 		}
 		if base == nil {
 			return nil, fmt.Errorf("uses %s: %s has no evaluation %s", e.Uses, credID, evalID)
@@ -247,6 +278,14 @@ func (cat *Catalogue) resolve(c *Credential, e *Evaluation, depth int) (*Evaluat
 		b, err := instantiate(s, &e.With)
 		if err != nil {
 			return nil, fmt.Errorf("uses %s: %v", e.Uses, err)
+		}
+		if b.Uses != "" {
+			if strings.HasPrefix(b.Uses, "$") || strings.Contains(b.Uses, "#") {
+				return nil, errReported
+			}
+			if b, err = cat.follow(c, b, s.ID); err != nil {
+				return nil, err
+			}
 		}
 		base = b
 		base.Shared = s

@@ -41,7 +41,7 @@ schema/                                          JSON Schema 2020-12 for every Y
 engine/, engine/hatches/                         the evaluator (package engine)
 gen/                                             generated constants and tests (never edited by hand)
 cmd/rulesgen, cmd/rulescheck, cmd/evaluate       generator, gate, command-line evaluator
-docs/                                            format reference, AMC/GM notes, ADRs
+docs/                                            format reference, AMC/GM notes, ADRs, dependencies.md (generated)
 ```
 
 Kind directories: `licences`, `ratings`, `privileges`, `endorsements`, `instructors`,
@@ -60,6 +60,16 @@ or examiner certificate, medical) lists every evaluation it needs:
   take part in the credential's composite answer (section 5). Requirements point from the
   dependent credential to the one it depends on (a rating to its licence, a licence to its
   medical), never back, and a requirement cycle is an error.
+
+**Dependency rules.** The requires and uses graphs are acyclic; the gate reports every cycle with its
+full path (`uses cycle: a#x -> b#y -> a#x`, `requirement cycle: a -> b -> a`); a chain of
+`uses:` may be of any depth. Borrowing flows one way: a credential's evaluation uses a shared
+evaluation or another credential's evaluation, and a shared evaluation uses only another
+shared evaluation (its `evaluation:` may itself be `uses:` with `with:`), never a
+credential's. A credential does not require itself, and `uses:` never names an entry that
+only has `requires_all` / `requires_any`. `go generate` writes both graphs to
+[docs/dependencies.md](docs/dependencies.md): Mermaid diagrams per authority, a table per
+credential and the most depended-on shared evaluations and credentials.
 
 `selects` says which record items the credential is (a licence, ratings on a licence, a
 licence privilege, a certificate); no two credential files may select the same item. Ids:
@@ -246,7 +256,8 @@ already exists fails the gate.
 ## 10. The gate
 
 `go run ./cmd/rulescheck -strict` fails on: schema errors in any YAML file; credentials that
-do not load or compile, requirement cycles; references that do not resolve, policies no
+do not load or compile, requirement and uses cycles, shared evaluations that use a
+credential's evaluation; references that do not resolve, policies no
 reference cites; unknown message keys or statuses; missing or failing worked examples; two
 credentials that select the same record item; malformed interpretations; vocabulary entries
 the engine does not implement; articles of the scope missing from the coverage map, unknown

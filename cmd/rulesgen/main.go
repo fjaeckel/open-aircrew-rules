@@ -1,8 +1,8 @@
 // Command rulesgen generates Go from vocabulary.yaml, messages/keys.yaml and the credential
 // catalogue: engine/zz_metrics_gen.go (the metric dispatch the engine must implement),
-// gen/constants.go (credential and evaluation ids, message keys, metric names) and one test
-// file per credential under gen/ that runs its worked examples. Run it with
-// `go generate ./...`.
+// gen/constants.go (credential and evaluation ids, message keys, metric names), one test
+// file per credential under gen/ that runs its worked examples, and docs/dependencies.md
+// (the requires and uses graphs). Run it with `go generate ./...`.
 package main
 
 import (
@@ -37,6 +37,12 @@ func generate(root string) error {
 		return err
 	}
 	if err := write(filepath.Join(root, "engine", "zz_metrics_gen.go"), metricsFile(cat.Engine.Vocabulary)); err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Join(root, "docs"), 0o755); err != nil {
+		return err
+	}
+	if err := os.WriteFile(filepath.Join(root, "docs", "dependencies.md"), dependenciesFile(cat), 0o644); err != nil {
 		return err
 	}
 	genDir := filepath.Join(root, "gen")
