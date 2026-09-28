@@ -122,27 +122,34 @@ is reported untracked and never met, and the status says what to record.
 
 On 2026-09-28:
 
-| Authority | Licences | Ratings | Privileges | Endorsements | Instructor / examiner | Medicals | Shared evaluations | Articles in scope | Evaluated | Pending | Not evaluated |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| EASA (Part-FCL, Part-SFCL, Part-BFCL, Part-MED) | 14 | 15 | 8 | 1 | 10 / 2 | 3 | 6 | 66 | 42 | 0 | 24 |
-| FAA (14 CFR Parts 61, 68) | 11 | 1 | 3 | 0 | 2 / 0 | 4 | 7 | 32 | 19 | 0 | 13 |
-| Germany (LuftPersV, LuftVZO) | 1 | 6 | 2 | 0 | 1 / 0 | 0 | 1 | 15 | 7 | 0 | 8 |
-| **Total** | **26** | **22** | **13** | **1** | **13 / 2** | **7** | **14** | **113** | **68** | **0** | **45** |
+| Authority | Licences | Ratings | Privileges | Endorsements | Instructor / examiner | Medicals | Documents | Shared evaluations | Articles in scope | Evaluated | Pending | Not evaluated |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| EASA (Part-FCL, Part-SFCL, Part-BFCL, Part-MED) | 14 | 15 | 8 | 1 | 10 / 2 | 3 | 0 | 6 | 66 | 42 | 0 | 24 |
+| FAA (14 CFR Parts 61, 68) | 13 | 1 | 3 | 0 | 2 / 0 | 4 | 1 | 7 | 32 | 19 | 0 | 13 |
+| Germany (LuftPersV, LuftVZO) | 1 | 6 | 2 | 0 | 1 / 0 | 0 | 0 | 1 | 15 | 7 | 0 | 8 |
+| **Total** | **28** | **22** | **13** | **1** | **13 / 2** | **7** | **1** | **14** | **113** | **68** | **0** | **45** |
 
 Every article in scope is evaluated or says why it is not (for example, not a currency rule,
-or the record cannot show what it needs); no credential file is pending. The 84 credentials
-hold 280 evaluations (189 compiled rules and 81 requirement entries; evaluations reused
-through `uses:` share a rule), 792 worked examples (66 of them composite), 1591 references
-(policies and association documents included), 147 verbatim source texts (87 EU legal acts,
-40 US federal regulations, 20 German statutes and ordinances), 10 policies, 6 association
-documents (none verified) and 407 interpretations, none signed off yet. See
-[CHANGELOG.md](CHANGELOG.md) for the list.
+or the record cannot show what it needs); no credential file is pending. The 87 credentials
+hold 321 evaluations (204 compiled rules and 105 requirement entries; evaluations reused
+through `uses:` share a rule), 975 worked examples (114 of them composite), 1975 references
+(policies and association documents included), 148 verbatim source texts (87 EU legal acts,
+40 US federal regulations, 21 German statutes and ordinances), 10 policies, 9 association
+documents (all verified against the published document) and 422 interpretations: 77
+approved by the maintainer, 345 awaiting approval. See [CHANGELOG.md](CHANGELOG.md) for
+the list.
 
 ## Review status
 
 Every interpretation has had a first-pass review against the verbatim text under `sources/`.
-A review is not a sign-off: **no interpretation is approved yet** (`approved_by` and
-`approved_on` are empty everywhere). Each review gives, per interpretation, a verdict:
+A review is not a sign-off. On 2026-09-28 the maintainer, Frederic Jung, confirmed the five
+interpretation principles (DESIGN.md section 14) and decided all 76 needs-decision items,
+accepting each recommendation of `reviews/recommendations-*.md`; the decisions are applied
+([docs/decisions-2026-09-28.md](docs/decisions-2026-09-28.md)). **77 interpretations are
+approved** (`approved_by: Frederic Jung`, `approved_on: 2026-09-28`): 74 of the 76 decided
+ones and three that carry decision 50 into the kind ratings (EASA 38, FAA 11, Germany 28).
+Decisions 74 and 76 were applied, but their readings changed afterwards, so they await
+re-approval with the other 343 (345 in total). Each review gives, per interpretation, a verdict:
 **supported** (the cited paragraph says what the reading says), **needs-decision** (the
 text or the record leaves real room; the owner picks an option) or **fixed** (the reading
 or the result contradicted the text and was corrected, by the review or at integration).
@@ -156,8 +163,9 @@ or the result contradicted the text and was corrected, by the review or at integ
 
 The EASA verdicts add up to 252: `easa.rating.powered-lift-type` / `part-fcl-type-ratings`
 was fixed in one review and found supported in another, and is counted in both.
-[reviews/README.md](reviews/README.md) lists the 76 needs-decision items in one table, the
-owner's decision list.
+[reviews/README.md](reviews/README.md) lists the 76 needs-decision items with the decision
+taken on each, and the items still open (three-axis LL entries up to 120 kg, self-launching
+gliders logged as TMG, and three EASA follow-ups).
 
 ## Keeping up with regulation
 

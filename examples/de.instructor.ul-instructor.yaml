@@ -20,13 +20,13 @@ examples:
   - name: met-by-instruction-and-course
     evaluation: extension
     shows: [three-years-from-valid-from, instruction-as-instructor-or-examiner, refresher-course-event]
-    says: 'Rating valid from 10 January 2024, so valid until 9 January 2027 (§§ 187(2), 188(2) BGB). Sixty take-offs and landings instructing on ultralights (the first flight on the first day of the three years) and a refresher course on the first day of the validity meet two of the three items; PIC time and instruction in an SEP aeroplane do not count.'
+    says: 'Rating for three-axis and weight-shift ultralights, valid from 10 January 2024, so valid until 9 January 2027 (§§ 186, 187(2), 188(2) BGB). Sixty take-offs and sixty landings instructing on ultralights of those kinds (the first flight on the first day of the three years) and a refresher course on the first day of the validity meet two of the three items; PIC time and instruction in an SEP aeroplane do not count.'
     asOf: 2026-09-15
     record:
       licences:
         - { id: l-ul, authority: DULV, type: UL }
       privileges:
-        - { id: p-fi, licenceId: l-ul, kind: UL_INSTRUCTOR, validFrom: 2024-01-10 }
+        - { id: p-fi, licenceId: l-ul, kind: UL_INSTRUCTOR, detail: THREE_AXIS WEIGHT_SHIFT, validFrom: 2024-01-10 }
       events:
         - { date: 2024-01-10, kind: instructor_refresher }
       flights:
@@ -41,7 +41,8 @@ examples:
       params: { date: "2027-01-09" }
       expiresOn: 2027-01-09
       requirements:
-        instruction_takeoffs_landings: { current: 60, met: true }
+        instruction_takeoffs: { current: 60, required: 60, met: true }
+        instruction_landings: { current: 60, required: 60, met: true }
         instruction_time: { current: 300, met: false }
         refresher_course: { current: 1, met: true }
         assessment: { current: 0, met: false }
@@ -55,7 +56,7 @@ examples:
       licences:
         - { id: l-ul, authority: DULV, type: UL }
       privileges:
-        - { id: p-fi, licenceId: l-ul, kind: UL_INSTRUCTOR, issued: 2021-01-10, validFrom: 2024-01-10 }
+        - { id: p-fi, licenceId: l-ul, kind: UL_INSTRUCTOR, detail: THREE_AXIS, issued: 2021-01-10, validFrom: 2024-01-10 }
       events:
         - { date: 2026-01-08, kind: assessment_of_competence }
         - { date: 2026-01-09, kind: assessment_of_competence }
@@ -67,7 +68,7 @@ examples:
       subject: { kind: privilege, id: p-fi }
       message: privilege.revalidation_current
       requirements:
-        instruction_takeoffs_landings: { current: 12, met: false }
+        instruction_takeoffs: { current: 12, met: false }
         instruction_time: { current: 600, met: true }
         assessment: { current: 1, met: true }
 
@@ -109,7 +110,7 @@ examples:
       licences:
         - { id: l-ul, authority: DULV, type: UL }
       privileges:
-        - { id: p-fi, licenceId: l-ul, kind: UL_INSTRUCTOR, validFrom: 2024-01-10, expires: 2026-06-30 }
+        - { id: p-fi, licenceId: l-ul, kind: UL_INSTRUCTOR, detail: THREE_AXIS, validFrom: 2024-01-10, expires: 2026-06-30 }
       events:
         - { date: 2025-01-10, kind: instructor_refresher }
       flights:
@@ -129,7 +130,7 @@ examples:
       licences:
         - { id: l-ul, authority: DAeC, type: UL }
       privileges:
-        - { id: p-fi, licenceId: l-ul, kind: UL_INSTRUCTOR, issued: 2024-01-10 }
+        - { id: p-fi, licenceId: l-ul, kind: UL_INSTRUCTOR, detail: THREE_AXIS WEIGHT_SHIFT, issued: 2024-01-10 }
       events:
         - { date: 2024-01-08, kind: instructor_refresher }
         - { date: 2026-03-01, kind: assessment_of_competence }
@@ -142,6 +143,56 @@ examples:
       message: privilege.revalidation_not_met
       params: { date: "2027-01-09" }
       requirements:
-        instruction_takeoffs_landings: { current: 40, met: false, remedyParams: { missing: 20, unit: landings } }
+        instruction_takeoffs: { current: 40, met: false, remedyParams: { missing: 20, unit: takeoffs } }
+        instruction_landings: { current: 40, met: false, remedyParams: { missing: 20, unit: landings } }
         refresher_course: { current: 0, met: false }
         assessment: { current: 1, met: true }
+
+  - name: instruction-in-other-kind
+    evaluation: extension
+    shows: [instruction-as-instructor-or-examiner]
+    says: 'The rating covers three-axis ultralights only: the forty take-offs and landings instructing on weight-shift ultralights do not count, so item 1 is not met and the refresher course alone is one item, not two.'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      privileges:
+        - { id: p-fi, licenceId: l-ul, kind: UL_INSTRUCTOR, detail: THREE_AXIS, validFrom: 2024-01-10 }
+      events:
+        - { date: 2024-01-10, kind: instructor_refresher }
+      flights:
+        - { date: 2024-01-10, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 120, dualGiven: 120 }, takeoffs: { day: 20 }, landings: { day: 20 } }
+        - { date: 2025-05-01, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 180, dualGiven: 180 }, takeoffs: { day: 40 }, landings: { day: 40 } }
+    outcome: expiring
+    expect:
+      subject: { kind: privilege, id: p-fi }
+      message: privilege.revalidation_not_met
+      params: { date: "2027-01-09" }
+      requirements:
+        instruction_takeoffs: { current: 20, met: false, remedyParams: { missing: 40 } }
+        instruction_landings: { current: 20, met: false }
+        refresher_course: { current: 1, met: true }
+
+  - name: instruction-kind-not-recorded
+    evaluation: extension
+    shows: [instruction-as-instructor-or-examiner]
+    says: 'The rating records no ultralight kind, so the instruction flights cannot be placed in the kinds it covers; with the refresher course met and no assessment, whether two items are met is unknown and the result asks for the kind.'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      privileges:
+        - { id: p-fi, licenceId: l-ul, kind: UL_INSTRUCTOR, validFrom: 2024-01-10 }
+      events:
+        - { date: 2024-01-10, kind: instructor_refresher }
+      flights:
+        - { date: 2025-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 600, dualGiven: 600 }, takeoffs: { day: 60 }, landings: { day: 60 } }
+    outcome: unknown
+    expect:
+      subject: { kind: privilege, id: p-fi }
+      message: privilege.ul_instructor_kind_unknown
+      params: { date: "2027-01-09" }
+      requirements:
+        instruction_takeoffs: { tracked: false }
+        instruction_landings: { tracked: false }
+        refresher_course: { current: 1, met: true }

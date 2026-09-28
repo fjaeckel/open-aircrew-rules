@@ -42,8 +42,62 @@ examples:
         - { date: 2026-02-01, class: SEP_LAND, minutes: { total: 240, pic: 240, ifr: 240 }, takeoffs: { day: 1 }, landings: { day: 1 }, approaches: 2 }
         - { date: 2026-03-01, class: SEP_LAND, minutes: { total: 120, pic: 120, ifr: 120 }, takeoffs: { day: 1 }, landings: { day: 1 }, approaches: 1 }
         - { date: 2026-04-01, class: SEP_LAND, minutes: { total: 70, dual: 70, ifr: 70 }, takeoffs: { day: 1 }, landings: { day: 1 }, approaches: 1 }
+      events:
+        - { date: 2025-11-01, kind: skill_test, class: SEP_LAND, rating: BIR }
     outcome: current
     expect: { subject: { kind: privilege, id: p-1 }, requirements: {ifr_pic_time: {current: 360, met: true}, approaches: {current: 3, met: true}, training_flight: {current: 70, met: true}, proficiency_check: {current: 0, met: false}} }
+  - name: revalidation-experience-after-check-in-aeroplane
+    evaluation: revalidation
+    shows: [alternate-check-not-tracked]
+    says: After a revalidation by a BIR check in an aeroplane 13 months before expiry, the experience route may be used for this revalidation.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: BIR, issued: 2024-11-01, validFrom: 2025-11-01, expires: 2026-11-01 }
+      events:
+        - { date: 2025-10-01, kind: proficiency_check, class: SEP_LAND, rating: BIR }
+      flights:
+        - { date: 2026-02-01, class: SEP_LAND, minutes: { total: 240, pic: 240, ifr: 240 }, takeoffs: { day: 1 }, landings: { day: 1 }, approaches: 2 }
+        - { date: 2026-03-01, class: SEP_LAND, minutes: { total: 120, pic: 120, ifr: 120 }, takeoffs: { day: 1 }, landings: { day: 1 }, approaches: 1 }
+        - { date: 2026-04-01, class: SEP_LAND, minutes: { total: 70, dual: 70, ifr: 70 }, takeoffs: { day: 1 }, landings: { day: 1 }, approaches: 1 }
+    outcome: current
+    expect: { subject: { kind: privilege, id: p-1 } }
+  - name: revalidation-experience-no-previous-check
+    evaluation: revalidation
+    shows: [alternate-check-not-tracked]
+    says: The experience is met, but no BIR check in an aeroplane is recorded in the 24 months before expiry; since every alternate revalidation must be such a check, whether the experience revalidates is unknown; the BIR stays valid until its expiry date (expiring within 90 days).
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: BIR, issued: 2023-11-01, validFrom: 2025-11-01, expires: 2026-11-01 }
+      flights:
+        - { date: 2026-02-01, class: SEP_LAND, minutes: { total: 240, pic: 240, ifr: 240 }, takeoffs: { day: 1 }, landings: { day: 1 }, approaches: 2 }
+        - { date: 2026-03-01, class: SEP_LAND, minutes: { total: 120, pic: 120, ifr: 120 }, takeoffs: { day: 1 }, landings: { day: 1 }, approaches: 1 }
+        - { date: 2026-04-01, class: SEP_LAND, minutes: { total: 70, dual: 70, ifr: 70 }, takeoffs: { day: 1 }, landings: { day: 1 }, approaches: 1 }
+    outcome: expiring
+    expect: { subject: { kind: privilege, id: p-1 }, message: privilege.bir_alternate_check_not_recorded }
+  - name: revalidation-experience-previous-check-in-fstd
+    evaluation: revalidation
+    shows: [alternate-check-not-tracked]
+    says: A previous BIR check flown in an FSTD does not satisfy the alternate check in an aeroplane, so whether the experience revalidates stays unknown.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: BIR, issued: 2023-11-01, validFrom: 2025-11-01, expires: 2026-11-01 }
+      events:
+        - { date: 2025-10-01, kind: proficiency_check, class: SEP_LAND, rating: BIR, isSimulator: true, fstdType: FNPT_II }
+      flights:
+        - { date: 2026-02-01, class: SEP_LAND, minutes: { total: 240, pic: 240, ifr: 240 }, takeoffs: { day: 1 }, landings: { day: 1 }, approaches: 2 }
+        - { date: 2026-03-01, class: SEP_LAND, minutes: { total: 120, pic: 120, ifr: 120 }, takeoffs: { day: 1 }, landings: { day: 1 }, approaches: 1 }
+        - { date: 2026-04-01, class: SEP_LAND, minutes: { total: 70, dual: 70, ifr: 70 }, takeoffs: { day: 1 }, landings: { day: 1 }, approaches: 1 }
+    outcome: expiring
+    expect: { subject: { kind: privilege, id: p-1 }, message: privilege.bir_alternate_check_not_recorded }
   - name: revalidation-expired-day-after
     evaluation: revalidation
     says: The day after its expiry date the BIR is expired.

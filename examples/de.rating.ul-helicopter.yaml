@@ -153,7 +153,66 @@ examples:
 
   - name: pax-current
     evaluation: passengers
-    says: Three take-offs and landings on an ultralight helicopter in the last 90 days and a recorded passenger authorisation; passengers may be carried by day.
+    says: Three take-offs and landings on an ultralight helicopter in the last 90 days and a passenger authorisation recorded for ultralight helicopters; passengers may be carried by day.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-heli, licenceId: l-ul, class: ULTRALIGHT, ulKind: HELICOPTER }
+      privileges:
+        - { id: p-pax, licenceId: l-ul, kind: UL_PASSENGER_AUTH, detail: HELICOPTER }
+      flights:
+        - { date: 2026-08-01, class: ULTRALIGHT, ulKind: HELICOPTER, minutes: { total: 60, pic: 60 }, takeoffs: { day: 3 }, landings: { day: 3 } }
+    outcome: current
+    expect:
+      subject: { kind: passengers, id: l-ul, ulKind: HELICOPTER }
+      message: pax.current_day_no_night_privilege
+
+  - name: training-flight-instructor-aboard
+    evaluation: recency
+    shows: [training-flight-as-dual]
+    says: 'The 65-minute training flight is logged as PIC time and flagged as flown with an instructor aboard (§ 45b no. 3); with the other flights, 6 hours, 6 take-offs and 6 landings on ultralight helicopters in 12 months are met.'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-heli, licenceId: l-ul, class: ULTRALIGHT, ulKind: HELICOPTER }
+      flights:
+        - { date: 2026-03-01, class: ULTRALIGHT, ulKind: HELICOPTER, minutes: { total: 65, pic: 65 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { instructorOnBoard: true } }
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: HELICOPTER, minutes: { total: 300, pic: 300 }, takeoffs: { day: 5 }, landings: { day: 5 } }
+    outcome: current
+    expect:
+      subject: { kind: rating, id: r-heli }
+      message: rating.recency_current
+      requirements:
+        training_flight: { current: 65, met: true }
+
+  - name: training-flight-pic-without-flag
+    evaluation: recency
+    shows: [training-flight-as-dual]
+    says: 'The same flights without the instructor flag: a flight logged as PIC cannot be recognised as the training flight, so the privileges lapse.'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-heli, licenceId: l-ul, class: ULTRALIGHT, ulKind: HELICOPTER }
+      flights:
+        - { date: 2026-03-01, class: ULTRALIGHT, ulKind: HELICOPTER, minutes: { total: 65, pic: 65 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: HELICOPTER, minutes: { total: 300, pic: 300 }, takeoffs: { day: 5 }, landings: { day: 5 } }
+    outcome: lapsed
+    expect:
+      subject: { kind: rating, id: r-heli }
+      message: rating.recency_not_met
+      requirements:
+        training_flight: { current: 0, met: false }
+
+  - name: pax-authorisation-kind-not-recorded
+    evaluation: passengers
+    shows: [authorisation-recorded]
+    says: Passenger recency on ultralight helicopters is met, but the authorisation records no kind; whether it covers helicopters is unknown and the result asks for the kind.
     asOf: 2026-09-15
     record:
       licences:
@@ -164,7 +223,45 @@ examples:
         - { id: p-pax, licenceId: l-ul, kind: UL_PASSENGER_AUTH }
       flights:
         - { date: 2026-08-01, class: ULTRALIGHT, ulKind: HELICOPTER, minutes: { total: 60, pic: 60 }, takeoffs: { day: 3 }, landings: { day: 3 } }
-    outcome: current
+    outcome: unknown
     expect:
       subject: { kind: passengers, id: l-ul, ulKind: HELICOPTER }
-      message: pax.current_day_no_night_privilege
+      message: pax.ul_authorisation_kind_missing
+
+  - name: composite-current-with-medical
+    composite: true
+    shows: [medical-above-120-kg]
+    says: With the § 45(2a) experience met and a valid class 2 medical the ultralight helicopter privileges may be exercised.
+    asOf: 2026-09-15
+    record:
+      holder: { dateOfBirth: 1980-01-01 }
+      credentials:
+        - { id: c-med, type: EASA_CLASS2_MEDICAL, issued: 2025-06-01, expires: 2027-06-01 }
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-heli, licenceId: l-ul, class: ULTRALIGHT, ulKind: HELICOPTER }
+      flights:
+        - { date: 2026-03-01, class: ULTRALIGHT, ulKind: HELICOPTER, minutes: { total: 75, dual: 75 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: HELICOPTER, minutes: { total: 300, pic: 300 }, takeoffs: { day: 5 }, landings: { day: 5 } }
+    outcome: current
+    expect: { subject: { kind: rating, id: r-heli } }
+
+  - name: composite-class-1-at-lapl-level
+    composite: true
+    shows: [medical-above-120-kg]
+    says: 'A class 1 certificate issued at 45 on 1 March 2025 is past its 12-month class 1 period, but a class 1 certificate also gives LAPL privileges for the LAPL period (24 months at that age); with no expiry date recorded it still meets the medical requirement.'
+    asOf: 2026-09-15
+    record:
+      holder: { dateOfBirth: 1980-01-01 }
+      credentials:
+        - { id: c-med, type: EASA_CLASS1_MEDICAL, issued: 2025-03-01 }
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-heli, licenceId: l-ul, class: ULTRALIGHT, ulKind: HELICOPTER }
+      flights:
+        - { date: 2026-03-01, class: ULTRALIGHT, ulKind: HELICOPTER, minutes: { total: 75, dual: 75 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: HELICOPTER, minutes: { total: 300, pic: 300 }, takeoffs: { day: 5 }, landings: { day: 5 } }
+    outcome: current
+    expect: { subject: { kind: rating, id: r-heli } }

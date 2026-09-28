@@ -831,7 +831,10 @@ func (cp *compiler) restoredBy(n *yaml.Node) []engine.EventHook {
 }
 
 func (cp *compiler) validity(v *ValidFor, line int) *engine.Validity {
-	out := &engine.Validity{From: "issued", RecordedWins: v.RecordedExpiryWins}
+	out := &engine.Validity{From: "issued", RecordedWins: v.RecordedExpiryWins, RecordedMin: v.RecordedExpiryMinimum}
+	if v.RecordedExpiryWins && v.RecordedExpiryMinimum {
+		cp.errs = append(cp.errs, fmt.Sprintf("%s: valid_for has both recorded_expiry_wins and recorded_expiry_minimum", cp.where))
+	}
 	switch v.CountedFrom {
 	case "", "issue":
 	case "valid_from":

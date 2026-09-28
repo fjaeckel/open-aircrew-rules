@@ -2,11 +2,11 @@ credential: faa.licence.powered-lift-airship
 examples:
   - name: passengers-day-current
     evaluation: passengers_day
-    says: Three takeoffs and landings as sole manipulator in the AIRSHIP class on 1 July allow a commercial pilot holder to carry passengers there on 16 August.
+    says: Three takeoffs and landings as sole manipulator in the AIRSHIP class on 1 July allow a private pilot certificate holder to carry passengers there on 16 August.
     asOf: 2026-08-16
     record:
       licences:
-        - {id: l-faa, authority: FAA, type: COMMERCIAL}
+        - {id: l-faa, authority: FAA, type: PRIVATE}
       ratings:
         - {id: r-1, licenceId: l-faa, class: AIRSHIP}
       flights:
@@ -19,7 +19,7 @@ examples:
     asOf: 2026-08-16
     record:
       licences:
-        - { id: l-faa, authority: FAA, type: COMMERCIAL }
+        - { id: l-faa, authority: FAA, type: PRIVATE }
       ratings:
         - { id: r-ship, licenceId: l-faa, class: AIRSHIP }
       flights:
@@ -31,11 +31,11 @@ examples:
       params: { needed: 3 }
   - name: passengers-day-type-current
     evaluation: passengers_day_type
-    says: Three takeoffs and landings as sole manipulator in an AW609 powered-lift on 1 July allow a commercial pilot holder to carry passengers there on 16 August.
+    says: Three takeoffs and landings as sole manipulator in an AW609 powered-lift on 1 July allow a private pilot certificate holder to carry passengers there on 16 August.
     asOf: 2026-08-16
     record:
       licences:
-        - {id: l-faa, authority: FAA, type: COMMERCIAL}
+        - {id: l-faa, authority: FAA, type: PRIVATE}
       ratings:
         - {id: r-1, licenceId: l-faa, class: POWERED_LIFT, typeDesignator: AW609}
       flights:
@@ -48,7 +48,7 @@ examples:
     asOf: 2026-08-16
     record:
       licences:
-        - { id: l-faa, authority: FAA, type: COMMERCIAL }
+        - { id: l-faa, authority: FAA, type: PRIVATE }
       ratings:
         - { id: r-ship, licenceId: l-faa, class: POWERED_LIFT, typeDesignator: AW609 }
       flights:
@@ -60,15 +60,15 @@ examples:
       params: { needed: 3 }
   - name: passengers-night-current
     evaluation: passengers_night
-    says: Three night takeoffs and three full-stop night landings as sole manipulator in the AIRSHIP class on 10 July allow a commercial pilot holder to carry passengers at night there.
+    says: Three night takeoffs and three full-stop night landings as sole manipulator in the AIRSHIP class on 10 July allow a private pilot certificate holder to carry passengers at night there.
     asOf: 2026-08-16
     record:
       licences:
-        - {id: l-faa, authority: FAA, type: COMMERCIAL}
+        - {id: l-faa, authority: FAA, type: PRIVATE}
       ratings:
         - {id: r-1, licenceId: l-faa, class: AIRSHIP}
       flights:
-        - {date: 2026-07-10, class: AIRSHIP, minutes: {total: 90, pic: 90, night: 60}, takeoffs: {night: 3}, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
+        - {date: 2026-07-10, class: AIRSHIP, minutes: {total: 90, pic: 90, night: 60}, takeoffs: {night: 3}, nightPeriodTakeoffs: 3, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
     outcome: current
     expect: { message: pax.night_current }
   - name: passengers-night-day-only
@@ -77,7 +77,7 @@ examples:
     asOf: 2026-08-16
     record:
       licences:
-        - {id: l-faa, authority: FAA, type: COMMERCIAL}
+        - {id: l-faa, authority: FAA, type: PRIVATE}
       ratings:
         - {id: r-1, licenceId: l-faa, class: AIRSHIP}
       flights:
@@ -86,15 +86,15 @@ examples:
     expect: { message: pax.night_not_current, params: { needed: 3 } }
   - name: passengers-night-type-current
     evaluation: passengers_night_type
-    says: Three night takeoffs and three full-stop night landings as sole manipulator in an AW609 powered-lift on 10 July allow a commercial pilot holder to carry passengers at night there.
+    says: Three night takeoffs and three full-stop night landings as sole manipulator in an AW609 powered-lift on 10 July allow a private pilot certificate holder to carry passengers at night there.
     asOf: 2026-08-16
     record:
       licences:
-        - {id: l-faa, authority: FAA, type: COMMERCIAL}
+        - {id: l-faa, authority: FAA, type: PRIVATE}
       ratings:
         - {id: r-1, licenceId: l-faa, class: POWERED_LIFT, typeDesignator: AW609}
       flights:
-        - {date: 2026-07-10, class: POWERED_LIFT, typeDesignator: AW609, minutes: {total: 90, pic: 90, night: 60}, takeoffs: {night: 3}, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
+        - {date: 2026-07-10, class: POWERED_LIFT, typeDesignator: AW609, minutes: {total: 90, pic: 90, night: 60}, takeoffs: {night: 3}, nightPeriodTakeoffs: 3, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
     outcome: current
     expect: { message: pax.night_current }
   - name: passengers-night-type-day-only
@@ -103,7 +103,7 @@ examples:
     asOf: 2026-08-16
     record:
       licences:
-        - {id: l-faa, authority: FAA, type: COMMERCIAL}
+        - {id: l-faa, authority: FAA, type: PRIVATE}
       ratings:
         - {id: r-1, licenceId: l-faa, class: POWERED_LIFT, typeDesignator: AW609}
       flights:
@@ -112,54 +112,85 @@ examples:
     expect: { message: pax.night_not_current, params: { needed: 3 } }
   - name: flight-review-current
     evaluation: flight_review
-    says: A commercial pilot certificate holder with a flight review on 1 September 2025 may act as pilot in command through 30 September 2027.
+    says: A private pilot with a flight review on 1 September 2025 may act as pilot in command through 30 September 2027.
     asOf: 2026-08-16
     record:
       licences:
-        - {id: l-faa, authority: FAA, type: COMMERCIAL}
+        - {id: l-faa, authority: FAA, type: PRIVATE}
       events:
-        - {date: 2025-09-01, kind: flight_review}
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
     outcome: current
     expect: { message: flight_review.current }
   - name: flight-review-none
     evaluation: flight_review
-    says: A commercial pilot certificate holder with no flight review, proficiency check or practical test on record may not act as pilot in command.
+    says: A private pilot with no flight review, proficiency check or practical test on record may not act as pilot in command.
     asOf: 2026-08-16
     record:
       licences:
-        - {id: l-faa, authority: FAA, type: COMMERCIAL}
+        - {id: l-faa, authority: FAA, type: PRIVATE}
     outcome: expired
     expect: { message: flight_review.none_on_record }
-  - name: composite-airship-second-class
-    composite: true
-    says: The airship rating on a commercial pilot certificate may be exercised with a second-class medical certificate examined in March 2026.
-    asOf: 2026-08-16
-    record:
-      holder: {dateOfBirth: 1990-01-01}
-      licences:
-        - {id: l-faa, authority: FAA, type: COMMERCIAL}
-      ratings:
-        - {id: r-ship, licenceId: l-faa, class: AIRSHIP}
-      credentials:
-        - {id: c-med, type: FAA_CLASS2_MEDICAL, issued: 2026-03-01}
-      events:
-        - {date: 2025-09-01, kind: flight_review}
-    outcome: current
-    expect: { subject: { kind: rating, id: r-ship } }
-  - name: composite-airship-second-class-lapsed
+  - name: composite-airship-third-class
     composite: true
     shows: [medical-grade-not-recorded]
-    says: A second-class medical certificate examined in June 2025 supported commercial privileges only through June 2026; the airship rating on the commercial certificate may not be exercised commercially.
+    says: The airship rating on a private pilot certificate may be exercised with a third-class medical certificate examined in March 2026; a second-class certificate is not needed for private privileges.
     asOf: 2026-08-16
     record:
       holder: {dateOfBirth: 1990-01-01}
       licences:
-        - {id: l-faa, authority: FAA, type: COMMERCIAL}
+        - {id: l-faa, authority: FAA, type: PRIVATE}
       ratings:
         - {id: r-ship, licenceId: l-faa, class: AIRSHIP}
       credentials:
-        - {id: c-med, type: FAA_CLASS2_MEDICAL, issued: 2025-06-10}
+        - {id: c-med, type: FAA_CLASS3_MEDICAL, issued: 2026-03-01}
       events:
-        - {date: 2025-09-01, kind: flight_review}
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
+    outcome: current
+    expect: { subject: { kind: rating, id: r-ship } }
+  - name: composite-airship-medical-expired
+    composite: true
+    says: A pilot aged 54 whose third-class certificate was examined in June 2024 had it through June 2026; on 16 August the airship rating on the private pilot certificate may not be exercised.
+    asOf: 2026-08-16
+    record:
+      holder: {dateOfBirth: 1972-01-01}
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-ship, licenceId: l-faa, class: AIRSHIP}
+      credentials:
+        - {id: c-med, type: FAA_CLASS3_MEDICAL, issued: 2024-06-10}
+      events:
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
     outcome: expired
-    expect: { subject: { kind: rating, id: r-ship }, decidedBy: { evaluation: medical, credential: faa.medical.second-class } }
+    expect: { subject: { kind: rating, id: r-ship }, decidedBy: { evaluation: medical, credential: faa.medical.third-class } }
+  - name: certificate-grade-glider-certificate
+    evaluation: certificate_grade
+    shows: [medical-grade-not-recorded]
+    says: A powered-lift rating recorded on a certificate that reads only as a glider pilot certificate does not show the certificate's grade, so which medical applies is unknown; the rating on the private pilot certificate is not affected.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-glider, authority: FAA, type: GLIDER}
+        - {id: l-ppl, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-pl, licenceId: l-glider, class: POWERED_LIFT}
+        - {id: r-ship, licenceId: l-ppl, class: AIRSHIP}
+    outcome: unknown
+    expect: { subject: { kind: rating, id: r-pl }, message: licence.certificate_grade_not_recorded }
+  - name: composite-glider-certificate-unknown
+    composite: true
+    shows: [medical-grade-not-recorded]
+    says: Even with a valid medical certificate, a powered-lift rating on a certificate recorded only as a glider pilot certificate reads unknown until the certificate's grade is recorded.
+    asOf: 2026-08-16
+    record:
+      holder: {dateOfBirth: 1990-01-01}
+      licences:
+        - {id: l-glider, authority: FAA, type: GLIDER}
+      ratings:
+        - {id: r-pl, licenceId: l-glider, class: POWERED_LIFT}
+      credentials:
+        - {id: c-med, type: FAA_CLASS3_MEDICAL, issued: 2026-03-01}
+      events:
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
+    outcome: unknown
+    expect: { subject: { kind: rating, id: r-pl }, decidedBy: { evaluation: certificate_grade } }

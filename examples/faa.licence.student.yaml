@@ -62,7 +62,7 @@ examples:
         - {id: l-ppl, authority: FAA, type: PRIVATE}
         - {id: l-student, authority: FAA, type: STUDENT}
       events:
-        - {date: 2025-09-01, kind: flight_review}
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
     outcome: current
     expect: { message: flight_review.current }
   - name: flight-review-student-certificate-listed-first
@@ -75,10 +75,23 @@ examples:
         - {id: l-student, authority: FAA, type: STUDENT}
         - {id: l-ppl, authority: FAA, type: PRIVATE}
       events:
-        - {date: 2023-09-01, kind: flight_review}
+        - {date: 2023-09-01, kind: flight_review, authority: FAA}
         - {date: 2026-07-01, kind: solo_endorsement}
     outcome: expired
     expect: { message: flight_review.expired }
+  - name: flight-review-student-with-foreign-licence
+    evaluation: flight_review
+    shows: [student-exemption]
+    says: A student pilot who also holds a foreign private pilot licence recorded with the type word PRIVATE is still exempt; only an FAA pilot certificate ends the student exemption.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-student, authority: FAA, type: STUDENT}
+        - {id: l-foreign, authority: EASA, type: PRIVATE}
+      events:
+        - {date: 2026-07-01, kind: solo_endorsement}
+    outcome: not_applicable
+    expect: { message: flight_review.not_applicable }
   - name: composite-solo-and-medical
     composite: true
     says: With a solo endorsement in the last 90 days and a valid third-class medical certificate the student may fly solo.

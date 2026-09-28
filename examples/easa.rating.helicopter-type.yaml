@@ -44,7 +44,8 @@ examples:
     expect: { subject: { kind: rating, id: r-type, class: HELICOPTER }, message: rating.expired }
   - name: revalidation-fstd-check
     evaluation: revalidation
-    says: A proficiency check in an FSTD representing the type counts as the check but its time does not count toward the 2 hours.
+    shows: [validity-period-is-twelve-months]
+    says: A proficiency check in an FSTD representing the type counts as the check, and its duration counts toward the 2 hours with the hour flown in the type.
     asOf: 2026-09-15
     record:
       licences:
@@ -55,7 +56,23 @@ examples:
         - { date: 2026-03-10, class: HELICOPTER, typeDesignator: R44, engines: 1, mtomKg: 1134, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
         - { date: 2026-08-20, class: HELICOPTER, typeDesignator: R44, engines: 1, mtomKg: 1134, isSimulator: true, fstdType: FFS, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { proficiencyCheck: true } }
     outcome: expiring
-    expect: { subject: { kind: rating, id: r-type, class: HELICOPTER }, message: rating.revalidation_not_met_prof_check, requirements: {proficiency_check: {current: 1, met: true}, type_time: {current: 60, met: false}} }
+    expect: { subject: { kind: rating, id: r-type, class: HELICOPTER }, message: rating.revalidation_expiring_met, requirements: {proficiency_check: {current: 1, met: true}, type_time: {current: 120, met: true}} }
+  - name: revalidation-fstd-training-not-counted
+    evaluation: revalidation
+    shows: [validity-period-is-twelve-months]
+    says: Only the duration of the check itself counts from an FSTD; a further FSTD training session in the type does not count toward the 2 hours.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(H) }
+      ratings:
+        - { id: r-type, licenceId: l-1, class: HELICOPTER, typeDesignator: R44, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-03-10, class: HELICOPTER, typeDesignator: R44, engines: 1, mtomKg: 1134, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-08-01, class: HELICOPTER, typeDesignator: R44, engines: 1, mtomKg: 1134, isSimulator: true, fstdType: FFS, minutes: { total: 60, dual: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-08-20, class: HELICOPTER, typeDesignator: R44, engines: 1, mtomKg: 1134, isSimulator: true, fstdType: FFS, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { proficiencyCheck: true } }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-type, class: HELICOPTER }, message: rating.revalidation_not_met_prof_check, requirements: {proficiency_check: {current: 1, met: true}, type_time: {current: 90, met: false}} }
   - name: revalidation-met-current
     evaluation: revalidation
     says: With 92 days to expiry, on the first day of the check window, a met rating is current.
@@ -294,6 +311,34 @@ examples:
         - { date: 2026-08-20, class: HELICOPTER, minutes: { total: 60, pic: 60 }, takeoffs: { day: 3 }, landings: { day: 3 }, pilotFlying: true, typeDesignator: R44 }
     outcome: expired
     expect: { subject: { kind: passengers, id: l-1, class: HELICOPTER }, message: pax.night_not_current }
+  - name: passengers-day-type-not-recorded
+    evaluation: passengers_day
+    shows: [class-for-type]
+    says: A helicopter type rating recorded without a type designator is reported unknown (record the type), not left without a passenger result.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(H) }
+      ratings:
+        - { id: r-1, licenceId: l-1, class: HELICOPTER, expires: 2027-06-30 }
+      flights:
+        - { date: 2026-08-20, class: HELICOPTER, minutes: { total: 60, pic: 60 }, takeoffs: { day: 3 }, landings: { day: 3 }, pilotFlying: true, typeDesignator: R44 }
+    outcome: unknown
+    expect: { message: selection.input_missing, params: { input: typeRated } }
+  - name: passengers-night-type-not-recorded
+    evaluation: passengers_night
+    shows: [class-for-type]
+    says: The same for passengers at night; the type rating without a designator is unknown.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: PPL(H) }
+      ratings:
+        - { id: r-1, licenceId: l-1, class: HELICOPTER, expires: 2027-06-30 }
+      flights:
+        - { date: 2026-08-20, class: HELICOPTER, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 1 }, landings: { night: 1 }, pilotFlying: true, typeDesignator: R44 }
+    outcome: unknown
+    expect: { message: selection.input_missing, params: { input: typeRated } }
   - name: variants-flown
     evaluation: variants
     shows: [variant-is-recorded-variant]

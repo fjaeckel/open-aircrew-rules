@@ -45,3 +45,48 @@ examples:
         - {id: p-cloud-old, licenceId: l-spl, kind: CLOUD_FLYING, expires: 2026-09-14}
     outcome: lapsed
     expect: { subject: { kind: privilege, id: p-cloud, class:  }, message: privilege.recency_not_met }
+  - name: recency-pic-cloud-time
+    evaluation: recency
+    shows: [dual-counts]
+    says: One hour of cloud flying as PIC in a sailplane within 24 months meets point (e).
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-spl, authority: EASA, type: SPL}
+      privileges:
+        - {id: p-cloud, licenceId: l-spl, kind: CLOUD_FLYING}
+      flights:
+        - {date: 2026-03-10, class: GLIDER, minutes: {total: 120, pic: 120, ifr: 60}, launches: 1, landings: {day: 1}}
+    outcome: current
+    expect: { message: privilege.recency_current }
+  - name: recency-dual-make-up
+    evaluation: recency
+    shows: [dual-counts]
+    says: Thirty minutes of cloud flying as PIC fall short of (e); a dual cloud flight of 30 minutes with an instructor makes up the missing time under (f)(2).
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-spl, authority: EASA, type: SPL}
+      privileges:
+        - {id: p-cloud, licenceId: l-spl, kind: CLOUD_FLYING}
+      flights:
+        - {date: 2025-10-10, class: GLIDER, minutes: {total: 90, pic: 90, ifr: 30}, launches: 1, landings: {day: 1}}
+        - {date: 2026-06-10, class: GLIDER, minutes: {total: 60, dual: 60, ifr: 30}, launches: 1, landings: {day: 1}}
+    outcome: current
+    expect: { message: privilege.recency_current }
+  - name: recency-pic-short
+    evaluation: recency
+    shows: [dual-counts]
+    says: Three cloud flights as PIC totalling 45 minutes, with no dual make-up, do not meet (e).
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-spl, authority: EASA, type: SPL}
+      privileges:
+        - {id: p-cloud, licenceId: l-spl, kind: CLOUD_FLYING}
+      flights:
+        - {date: 2026-03-10, class: GLIDER, minutes: {total: 60, pic: 60, ifr: 15}, launches: 1, landings: {day: 1}}
+        - {date: 2026-03-11, class: GLIDER, minutes: {total: 60, pic: 60, ifr: 15}, launches: 1, landings: {day: 1}}
+        - {date: 2026-03-12, class: GLIDER, minutes: {total: 60, pic: 60, ifr: 15}, launches: 1, landings: {day: 1}}
+    outcome: lapsed
+    expect: { message: privilege.recency_not_met }

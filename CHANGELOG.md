@@ -7,6 +7,227 @@ catalogue changes are grouped by authority and name the credential or evaluation
 
 ## Unreleased — initial catalogue
 
+### Maintainer decisions of 2026-09-28
+
+Frederic Jung decided every row of the decision table in `reviews/README.md` on
+2026-09-28: the recommendation of `reviews/recommendations-*.md` for each (EASA 38, FAA 11,
+Germany 27 rows), the bugs found beyond them, and the interpretation principles P1 to P5
+(DESIGN.md section 14). `docs/decisions-2026-09-28.md` maps each row to the change. Open
+items are listed in `reviews/README.md`.
+
+What pilots will notice most:
+
+- EASA: a CPL or ATPL with only a class 2 medical (or a class 1 still valid at class 2) now
+  reads usable within its private privileges, with the commercial privileges listed as a
+  limitation; ratings on it follow. A class 1 certificate keeps giving class 2 and LAPL
+  privileges after its class 1 period. More results read unknown where the record lacks the
+  data that decides (an IR without an expiry for the night waiver, a training flight for SPL
+  passengers, a variant's engine type, a BIR check in an aeroplane).
+- FAA: commercial and ATP certificates with a medical that supports only private privileges
+  read usable, commercial and ATP privileges limited; SEP and SET pool for passenger recency
+  (land and sea apart); flight reviews count only when recorded under the FAA and never in a
+  device; night take-offs must fall in the 61.57(b) period. Sport pilots need a driver's
+  license or medical for powered classes.
+- Germany: passenger authorisations count only for the kind they name; three-axis,
+  helicopter, gyroplane and weight-shift ratings need a medical; recency counts take-offs as
+  well as landings, and check alternatives are added where the association rules have them.
+
+#### EASA
+
+##### Added
+
+- `easa.medical.class-1#validity_class_2` and `#validity_lapl`: a class 1 certificate is also
+  evaluated at its class 2 and LAPL validity (levels `class_2` and `lapl`, MED.A.030(c),
+  MED.A.045(a)(3)-(4)); licences needing only those privileges require
+  `easa.medical.class-1@class_2` or `@lapl`.
+- `easa.licence.gpl#recency_type`: recency of a gyroplane type privilege, counting only
+  flights in that type (unknown for flights without a type).
+- `easa.licence.cpl-a`, `cpl-h`, `cpl-as`, `atpl-a`, `atpl-h` `#medical_private`: the
+  medical for the private privileges the licence includes.
+
+##### Changed
+
+- Owner decisions of 2026-09-28 applied; the 38 decided interpretations are approved by
+  Frederic Jung and name the principle they follow.
+- `easa.medical.class-1`, `class-2`, `lapl` `#validity`: the holder's age is taken on the
+  examination date, no longer on the date the period starts.
+- `easa.licence.cpl-a`, `cpl-h`, `cpl-as`, `atpl-a`, `atpl-h`: with a class 2 medical (or a
+  class 1 medical still valid at class 2) the licence may be exercised within its private
+  privileges; the commercial privileges are listed as a limitation (`commercial_privileges`)
+  when no valid class 1 medical is held. Ratings held on such a licence follow.
+- `easa.shared.instructor-certificate-validity`: a recorded expiry date decides; 3 years are
+  derived only without one (FTI, MCCI, SFI, STI, TRI).
+- `easa.shared.passengers-night`: only a valid IR of the aircraft category waives the night
+  recency, on any EASA or LBA licence; an IR of the category without a recorded expiry gives
+  unknown.
+- `easa.shared.sfcl-passenger-prerequisite`: the training flight on carrying passengers is
+  required (event `passenger_training_flight`); unknown until recorded.
+- `easa.rating.sep-land`, `sep-sea`, `easa.licence.lapl-a` `#variants`: only SEP variants with
+  a different type of engine are evaluated; unknown when the record does not say.
+- `easa.privilege.cloud-flying#recency`: point (e) counts PIC cloud flying only; dual cloud
+  flights count as the (f)(2) make-up.
+- `easa.privilege.sfcl-banner-towing`, `sfcl-sailplane-towing` `#recency`: only tows of the
+  rating's kind count (banner, sailplane), as for the Part-FCL ratings.
+- `easa.rating.sep-land#revalidation` (and SEP sea): a class check in an FFS counts; the
+  refresher exemption counts within the 24-month validity period; the SEP land and sea route
+  of FCL.740.A(b)(4) is applied; ultralight motorglider time is credited to TMG only with a
+  recorded fixed engine. `easa.rating.tmg#revalidation` is now its own evaluation without the
+  land and sea route.
+- `easa.rating.bir#revalidation`: the experience route needs a BIR check (or skill test) in an
+  aeroplane in the 24 months before expiry; unknown whether it revalidates without one.
+- `easa.rating.helicopter-type#revalidation`: the duration of an FSTD proficiency check counts
+  toward the 2 hours.
+- `easa.licence.lapl-a#recency`: only a check recorded for the LAPL(A) counts; three-axis
+  ultralight hours count toward the 1 hour in the SEP land class.
+- `easa.licence.lapl-h#recency`: only a proficiency check in the helicopter counts.
+- `easa.licence.spl#training_course`: up to 7 hours of other-category credit toward the 15
+  hours and up to 10 launches toward the 45; the TMG part of SFCL.130(a)(2)(v) is evaluated
+  when the training seeks TMG privileges.
+- `easa.instructor.fi#revalidation`: instruction counts in the category of the licence the FI
+  is on; an FI(As) needs 20 hours.
+- `easa.instructor.cri#revalidation`: the 10 hours of CRI instruction are untracked; the
+  refresher and the assessment of competence decide.
+
+##### Fixed
+
+- `easa.medical.class-1`: a class 1 certificate past its class 1 period was reported invalid
+  for class 2 and LAPL privileges (PPL, GPL, LAPL, SPL, BPL, CPL/ATPL private privileges).
+  The recorded expiry date is the class 1 date: the class 2 and LAPL levels run their own
+  periods from the examination date and last at least until it
+  (`valid_for.recorded_expiry_minimum`); without a date of birth they are unknown after it.
+- `easa.instructor.fi#revalidation`: an FI(As) was held to 50 hours instead of 20
+  (FCL.940.FI(a)(1)(i)(B)).
+- `easa.instructor.cri#revalidation`: the equal single-engine and multi-engine split of
+  FCL.940.CRI(a)(1) is now part of the untracked instruction item, no longer silently met.
+- `easa.licence.spl#recency`: a training flight with an FI(S) counts for 24 months from the end
+  of its month (SFCL.160(a)(1)(ii), AMC1 SFCL.160).
+- `easa.rating.sep-land`, `tmg`, `mep-land`, `set-land` (and SEP sea, MEP sea, SET sea): a
+  proficiency check recorded only for the IR or BIR no longer counts as a class rating check.
+- `easa.shared.passengers-day`, `-night` (type ratings and the LAPL(H)): a type rating recorded
+  without a type designator is reported unknown instead of getting no passenger result.
+
+#### FAA
+
+##### Added
+
+- `faa.document.drivers-license` U.S. driver's license (kind `document`): validity by its
+  recorded expiry (61.23(c)(1)(ii), 61.113(i)).
+- `faa.licence.powered-lift-airship-commercial` and `faa.licence.powered-lift-airship-atp`:
+  powered-lift and airship ratings on commercial and airline transport pilot certificates,
+  with passenger recency, the flight review and the medical of their grade.
+- `faa.licence.sport#medical_or_drivers_license`: a sport pilot certificate with a rating
+  other than glider or balloon requires a valid U.S. driver's license or medical certificate
+  (a requirement narrowed to those classes); a medical recorded by its examination date alone
+  counts at its derived private-privilege validity; unknown while neither is recorded or a
+  driver's license has no expiry date.
+- `faa.licence.sport#class_not_recorded` and `faa.licence.powered-lift-airship#certificate_grade`:
+  unknown for a sport rating recorded as OTHER and for a powered-lift or airship rating on a
+  glider-only certificate.
+- `faa.privilege.category-ii-iii#instrument_rating`: an instrument rating or an airline
+  transport pilot certificate is required (61.67(a)(1), 61.68(a)(1)).
+
+##### Changed
+
+- Owner decisions of 2026-09-28 applied; the 11 decided interpretations are approved by
+  Frederic Jung.
+- `faa.rating.instrument-airplane#instrument_experience`: counts only in the IR rating's
+  recorded category (unknown without one), and an IPC restores only in that category
+  (61.57(c)(1), (d)(2)); the six months after lapse report `lapsed`, no longer `expiring`.
+- `faa.shared.flight-review`: only reviews, checks and practical tests recorded under the FAA
+  count (unknown without an authority); a flight review in a device no longer counts; only
+  FAA certificates end the student exemption.
+- `faa.shared.passengers-day`, `-night`, `-tailwheel`: SEP and SET count as one FAA class
+  (land and sea apart), one result per class; night take-offs must fall in the 61.57(b)
+  period (`nightPeriodTakeoffs`, unknown on a night flight without it).
+- `faa.licence.powered-lift-airship`: private and glider certificates only; the medical
+  follows the certificate grade.
+- `faa.licence.sport`: powered parachute and weight-shift-control classes (land, sea).
+- FAA commercial and ATP certificates (airplane, rotorcraft, powered-lift and airship): a
+  medical certificate that still supports private privileges decides; commercial and ATP
+  privileges are reported as limitations (`faa.medical.first-class` levels `atp`,
+  `commercial`, `private`; `faa.medical.second-class` levels `commercial`, `private`).
+- `faa.privilege.category-ii-iii` and `faa.privilege.glider-towing`: the certificate
+  requirement names every powered-category certificate credential.
+
+#### Germany
+
+##### Added
+
+- `de.rating.ul-gyroplane#recency_daec`: the DAeC recency rule for ultralight gyroplanes
+  (12 hours, 12 take-offs, 12 landings and a 1-hour training flight in 24 months, no PIC
+  minimum, or a check on an ultralight gyroplane) for DAeC-issued licences;
+  `de.rating.ul-gyroplane#recency` now applies to LBA and DULV licences only.
+- A `medical` requirement (valid LAPL or class 2 medical, or a class 1 at its LAPL level,
+  § 45(1) second sentence)
+  in `de.rating.ul-three-axis`, `ul-helicopter`, `ul-gyroplane` and `ul-weight-shift`: the
+  composite is unknown with no medical recorded and expired with only an expired one.
+- `associations.yaml`: `daec:ul-recency-gyroplane` and `dulv:ausbildungshandbuch-1-40`
+  (DULV training manual, version 1.40) declared; every German association document is now
+  `verified: true`, with the published page or document, its date and URL in the title.
+- `de.rating.ul-powered-paraglider` and `de.rating.ul-sailplane` `#medical_above_120_kg`: the
+  medical needed above 120 kg empty mass (a powered paraglider trike, a heavier ultralight
+  sailplane) is listed as a limitation (`above_120_kg`) and never decides, because the record
+  holds no empty mass; the rating itself stays usable without a medical.
+
+##### Changed
+
+- Owner decisions of 2026-09-28 applied to all 27 German decision rows; the 27 decided
+  interpretations, and the three `medical-above-120-kg` readings that carry decision 50 into
+  the gyroplane, helicopter and weight-shift ratings, name their principle where one
+  applies and carry `approved_by: Frederic Jung`, `approved_on: 2026-09-28`.
+- `de.shared.ul-passengers` (all six kind ratings): a passenger authorisation counts only
+  for the kind its detail names (three-axis and UL motorglider being one kind); one without
+  a kind is unknown (`pax.ul_authorisation_kind_missing`). The readings on § 84a(3) and on
+  the 200 km flights are corrected.
+- `de.rating.ul-three-axis#recency`, `de.rating.ul-helicopter#recency`: the training flight
+  also counts when logged as pilot time and flagged `instructorOnBoard` (§ 45b no. 3).
+- `de.rating.ul-weight-shift#recency_dulv`: a proficiency check on a weight-shift ultralight
+  now replaces the 12 hours as PIC (the file said the DULV rule had no check).
+- `de.rating.ul-weight-shift#recency_daec`: 12 take-offs are counted as well as landings; the
+  safety training is required (event `safety_training` in the 24 months; unknown with
+  `rating.ul_safety_training_not_recorded` while none is recorded); a check on a
+  weight-shift ultralight replaces all of it.
+- `de.rating.ul-gyroplane#recency`: only ultralight gyroplanes count; Part-FCL gyroplane
+  time and checks are no longer credited, and 12 take-offs are counted.
+- `de.rating.ul-powered-paraglider#recency`: 30 take-offs as well as 30 landings, or a
+  proficiency check on a powered paraglider.
+- `de.rating.ul-sailplane#recency`: 5 take-offs as well as 5 landings (DAeC rule for every
+  issuer).
+- `de.privilege.ul-towing#recency`: counts tow flights (landings on flights flagged
+  `towFlight`, a double tow once) of the kind the rating's detail names (tow kind and
+  take-up, e.g. `glider ground`); a detail or a tow flight without them is unknown
+  (`privilege.ul_tow_kind_unknown`). Ultralight tows only, as before.
+- `de.instructor.ul-instructor#extension`: item 1 is 60 take-offs and 60 landings (separate
+  rows) or 10 hours, in the kinds the rating's detail names; a rating without a kind is
+  unknown when item 1 decides (`privilege.ul_instructor_kind_unknown`). The reading of the
+  three years cites §§ 186, 187(2), 188(2) BGB (period ends the day before).
+- Open, not decided: three-axis LL entries up to 120 kg (own association rule under
+  § 45(4), no medical) are not told apart from ultralight entries
+  (`de.rating.ul-three-axis#ll-entries-not-distinguished`).
+
+##### Fixed
+
+- `de.instructor.ul-instructor#extension`: with a UL instructor rating recorded without a
+  kind, the instruction flights were silently excluded (rows tracked at 0); they are now
+  unknown input and the rows untracked, so the result asks for the kind.
+
+#### Tools and format
+
+##### Added
+
+- `valid_for.recorded_expiry_minimum`: the recorded expiry is a higher level's date, a
+  lower bound for this level (class 1 medical at its class 2 and LAPL levels).
+- A requirement (`requires_all` / `requires_any`) may carry `only_for: { classes }` or
+  `not_classes` with a `ref`: it applies only to items that are, or hold, ratings of those
+  classes.
+- Limitation scope `above_120_kg`.
+
+##### Fixed
+
+- A `$subject` filter the subject cannot supply (a privilege without a detail for
+  `in_ul_kind`, a subject without a class, type or variant) is no longer compared against an
+  empty list, which excluded every item; the items are unknown input (P1).
+
 ### Added
 
 #### EASA

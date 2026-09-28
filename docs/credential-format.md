@@ -138,7 +138,10 @@ An evaluation is one of three things.
    `requires_any: [credential ids]` (at least one) say that this credential needs others
    (the licence's medical and language endorsement, the rating's licence). An id may name
    one level of the credential, `<credential id>@<level>` (below). The entry has only
-   `id`, `asks`, these two keys and optionally `level` or `limits`. It compiles to no rule; each required credential
+   `id`, `asks`, these two keys and optionally `level` or `limits`, and `only_for` with
+   `classes` or `not_classes` and a `ref`: the requirement then applies to a held item only
+   when it is a rating of such a class, or a licence holding one (a sport pilot certificate
+   needs a driver's license or a medical only for powered classes). It compiles to no rule; each required credential
    evaluates itself, and the requirement takes part in this credential's **composite**
    (below). Requirements point from the dependent credential to the one it depends on (a
    rating names its licence; a licence does not list its ratings); a cycle is an error.
@@ -182,7 +185,10 @@ licence), the composite combines:
   scopes are declared in `credential_vocabulary.limitation_scopes`. A CPL with a class 2
   medical: `requires_any: [easa.medical.class-2, easa.medical.class-1@class_2]` decides
   (private privileges), and `requires_any: [easa.medical.class-1]` with
-  `limits: commercial_privileges` says whether the commercial privileges may be used.
+  `limits: commercial_privileges` says whether the commercial privileges may be used. A
+  scope may name privileges the record cannot tell apart: `above_120_kg` reports the medical
+  a German ultralight above 120 kg empty mass needs on the powered paraglider and
+  ultralight sailplane ratings, whose aircraft are mostly lighter.
 
 The composite status is the worst member status, in the order expired or lapsed, unknown,
 expiring, current; `decidedBy` names the first member in file order with that status
@@ -202,7 +208,7 @@ evaluations), not only the part the requiring credential needs.
 | `passes_if` | The requirement tree (below). May be absent when the outcomes decide on holdings or dates alone. |
 | `restored_by` | Events that make the tree count as met for the evaluation's period: `- { ipc: { simulator: include }, ref: faa:61.57(d)(1) }`. |
 | `effective_from`, `effective_to` | The dates the evaluation applies to, both inclusive (`YYYY-MM-DD`). When a regulation changes, the old evaluation gets `effective_to` and its successor (a new id, e.g. `revalidation_2027`) `effective_from`; outside its period an evaluation reports nothing. A `uses:` evaluation may set its own. |
-| `valid_for` | A derived expiry: `counted_from` (`issue` or `valid_from`), `age_on` (`issue` or `valid_from`: the date the age is taken on, default `counted_from`; `issue` is the examination date of a medical), `recorded_expiry_wins` (the derived end applies only without a recorded expiry), `periods` of `{ age_under?, age_from?, months, ends_at_age?, end_of_month?, ref }`; the first period whose ages hold applies, the earlier of the derived and a recorded expiry wins. An authority convention may move the derived end (below). |
+| `valid_for` | A derived expiry: `counted_from` (`issue` or `valid_from`), `age_on` (`issue` or `valid_from`: the date the age is taken on, default `counted_from`; `issue` is the examination date of a medical), `recorded_expiry_wins` (the derived end applies only without a recorded expiry), `recorded_expiry_minimum` (the recorded expiry is another level's date, such as the class 1 date of a class 1 certificate evaluated at its class 2 level: the later of the derived and the recorded date applies, and without a derived date the recorded one holds until it passes, after which the expiry is unknown), `periods` of `{ age_under?, age_from?, months, ends_at_age?, end_of_month?, ref }`; the first period whose ages hold applies, the earlier of the derived and a recorded expiry wins. An authority convention may move the derived end (below). |
 | `outcomes` | Status and message stages (below). |
 | `description_key` | Rule description key from `messages/keys.yaml`. |
 | `level`, `limits` | The composite level of the entry, or the limitation scope it reports (above). |

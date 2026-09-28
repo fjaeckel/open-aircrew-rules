@@ -3,17 +3,89 @@ examples:
   - name: instrument-experience-grace-last-day
     evaluation: instrument_experience
     shows: [grace-from-last-met]
-    says: Tasks in January 2026 keep the pilot current through July; the six grace months (August to January) end on 31 January 2027.
+    says: Tasks in January 2026 keep the pilot current through July. On 31 January 2027, the last day of the six further months, the pilot may not fly under IFR as pilot in command (lapsed) but can still become current with a safety pilot, without an instrument proficiency check.
     asOf: 2027-01-31
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-ir, licenceId: l-faa, class: IR, category: aeroplane}
+      flights:
+        - {date: 2026-01-15, class: SEP_LAND, minutes: {total: 120, pic: 120, simulatedInstrument: 90}, approaches: 6, holds: 1, interceptAndTrack: true}
+    outcome: lapsed
+    expect: { message: rating.ir_lapsed_safety_pilot }
+  - name: instrument-experience-grace-first-day
+    evaluation: instrument_experience
+    shows: [grace-from-last-met]
+    says: Tasks in January 2026 keep the pilot current through 31 July; on 1 August the pilot may no longer fly under IFR as pilot in command.
+    asOf: 2026-08-01
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-ir, licenceId: l-faa, class: IR, category: aeroplane}
+      flights:
+        - {date: 2026-01-15, class: SEP_LAND, minutes: {total: 120, pic: 120, simulatedInstrument: 90}, approaches: 6, holds: 1, interceptAndTrack: true}
+    outcome: lapsed
+    expect: { message: rating.ir_lapsed_safety_pilot }
+  - name: instrument-experience-helicopter-category
+    evaluation: instrument_experience
+    shows: [any-powered-category]
+    says: A helicopter instrument rating is kept current by the tasks flown in a helicopter.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: COMMERCIAL}
+      ratings:
+        - {id: r-irh, licenceId: l-faa, class: IR, category: helicopter}
+      flights:
+        - {date: 2026-06-10, class: HELICOPTER, minutes: {total: 120, pic: 120, simulatedInstrument: 90}, approaches: 6, holds: 1, interceptAndTrack: true}
+    outcome: current
+    expect: { message: rating.ir_current }
+  - name: instrument-experience-other-category-not-counted
+    evaluation: instrument_experience
+    shows: [any-powered-category]
+    says: Approaches, holding and tracking flown in a helicopter do not keep an airplane instrument rating current; with no airplane tasks on record the pilot needs an instrument proficiency check.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: COMMERCIAL}
+      ratings:
+        - {id: r-ira, licenceId: l-faa, class: IR, category: aeroplane}
+      flights:
+        - {date: 2026-06-10, class: HELICOPTER, minutes: {total: 120, pic: 120, simulatedInstrument: 90}, approaches: 6, holds: 1, interceptAndTrack: true}
+    outcome: expired
+    expect: { message: rating.ir_expired_ipc }
+  - name: instrument-experience-category-not-recorded
+    evaluation: instrument_experience
+    shows: [any-powered-category]
+    says: An instrument rating recorded without its aircraft category cannot be evaluated, however many tasks are logged; record the category.
+    asOf: 2026-08-16
     record:
       licences:
         - {id: l-faa, authority: FAA, type: PRIVATE}
       ratings:
         - {id: r-ir, licenceId: l-faa, class: IR}
       flights:
-        - {date: 2026-01-15, class: SEP_LAND, minutes: {total: 120, pic: 120, simulatedInstrument: 90}, approaches: 6, holds: 1, interceptAndTrack: true}
-    outcome: expiring
-    expect: { message: rating.ir_lapsed_safety_pilot }
+        - {date: 2026-06-10, class: SEP_LAND, minutes: {total: 120, pic: 120, simulatedInstrument: 90}, approaches: 6, holds: 1, interceptAndTrack: true}
+    outcome: unknown
+    expect: { message: selection.input_missing }
+  - name: instrument-experience-ipc-other-category
+    evaluation: instrument_experience
+    shows: [ipc-restores]
+    says: An instrument proficiency check flown in a helicopter does not restore an airplane instrument rating whose tasks lapsed in 2024.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-ir, licenceId: l-faa, class: IR, category: aeroplane}
+      flights:
+        - {date: 2024-03-01, class: SEP_LAND, minutes: {total: 90, pic: 90}, approaches: 6, holds: 1, interceptAndTrack: true}
+      events:
+        - {date: 2026-06-10, kind: ipc, class: HELICOPTER}
+    outcome: expired
+    expect: { message: rating.ir_expired_ipc }
   - name: instrument-experience-ipc-restores
     evaluation: instrument_experience
     shows: [ipc-restores]
@@ -23,7 +95,7 @@ examples:
       licences:
         - {id: l-faa, authority: FAA, type: PRIVATE}
       ratings:
-        - {id: r-ir, licenceId: l-faa, class: IR}
+        - {id: r-ir, licenceId: l-faa, class: IR, category: aeroplane}
       flights:
         - {date: 2024-03-01, class: SEP_LAND, minutes: {total: 90, pic: 90}, approaches: 6, holds: 1, interceptAndTrack: true}
         - {date: 2026-06-10, class: SEP_LAND, minutes: {total: 90, dual: 90, simulatedInstrument: 80}, interceptAndTrack: false, flags: {ipc: true}}
@@ -38,7 +110,7 @@ examples:
       licences:
         - {id: l-faa, authority: FAA, type: PRIVATE}
       ratings:
-        - {id: r-ir, licenceId: l-faa, class: IR}
+        - {id: r-ir, licenceId: l-faa, class: IR, category: aeroplane}
       flights:
         - {date: 2026-05-10, class: SEP_LAND, minutes: {total: 90, pic: 90, simulatedInstrument: 60}, approaches: 6, holds: 2}
     outcome: unknown
@@ -51,7 +123,7 @@ examples:
       licences:
         - {id: l-faa, authority: FAA, type: COMMERCIAL}
       ratings:
-        - {id: r-ir, licenceId: l-faa, class: IR}
+        - {id: r-ir, licenceId: l-faa, class: IR, category: aeroplane}
       flights:
         - {date: 2026-02-05, class: MEP_LAND, minutes: {total: 120, pic: 120, actualInstrument: 60}, approaches: 6, holds: 1, interceptAndTrack: true}
     outcome: current
@@ -64,7 +136,7 @@ examples:
       licences:
         - {id: l-faa, authority: FAA, type: PRIVATE}
       ratings:
-        - {id: r-ir, licenceId: l-faa, class: IR, expires: 2030-01-01}
+        - {id: r-ir, licenceId: l-faa, class: IR, category: aeroplane, expires: 2030-01-01}
       flights:
         - {date: 2026-01-15, class: SEP_LAND, minutes: {total: 120, pic: 120, simulatedInstrument: 90}, approaches: 6, holds: 1, interceptAndTrack: true}
     outcome: expired
@@ -82,7 +154,7 @@ examples:
       ratings:
         - {id: r-sport-ir, licenceId: l-sport, class: IR}
         - {id: r-rec-ir, licenceId: l-rec, class: IR}
-        - {id: r-ppl-ir, licenceId: l-ppl, class: IR}
+        - {id: r-ppl-ir, licenceId: l-ppl, class: IR, category: aeroplane}
         - {id: r-easa-ir, licenceId: l-easa, class: IR}
         - {id: r-sport-sep, licenceId: l-sport, class: SEP_LAND}
     outcome: not_applicable

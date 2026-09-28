@@ -131,7 +131,7 @@ examples:
       credentials:
         - {id: c-med, type: FAA_CLASS1_MEDICAL, issued: 2026-03-01}
       events:
-        - {date: 2025-09-01, kind: flight_review}
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
       flights:
         - {date: 2026-05-10, class: HELICOPTER, minutes: {total: 60, pic: 60}, takeoffs: {day: 3}, landings: {day: 3}, towKind: glider, towedGliders: 3, flags: {towFlight: true, accompanied: true}}
     outcome: current
@@ -149,7 +149,7 @@ examples:
       privileges:
         - {id: p-tow, licenceId: l-faa, kind: SAILPLANE_TOWING}
       events:
-        - {date: 2025-09-01, kind: flight_review}
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
       flights:
         - {date: 2026-05-10, class: SEP_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 3}, landings: {day: 3}, towKind: glider, towedGliders: 3, flags: {towFlight: true, accompanied: true}}
     outcome: unknown

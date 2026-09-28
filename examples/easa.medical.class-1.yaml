@@ -20,3 +20,120 @@ examples:
         - {id: c-med, type: EASA_CLASS1_MEDICAL, issued: 2026-03-01}
     outcome: expired
     expect: { message: credential.expired }
+  - name: validity-age-on-examination-date
+    evaluation: validity
+    shows: [counted-from]
+    says: Examined at 59 and revalidated from the previous expiry date after the 60th birthday, the holder gets 12 months, because the age is taken on the examination date.
+    asOf: 2027-06-01
+    record:
+      holder: {dateOfBirth: 1966-10-01}
+      credentials:
+        - {id: c-med, type: EASA_CLASS1_MEDICAL, issued: 2026-09-01, validFrom: 2026-10-15}
+    outcome: current
+    expect: { message: credential.valid, expiresOn: 2027-10-15 }
+  - name: validity-age-on-examination-date-ends
+    evaluation: validity
+    shows: [counted-from]
+    says: The same certificate is expired the day after its 12 months from the previous expiry date.
+    asOf: 2027-10-16
+    record:
+      holder: {dateOfBirth: 1966-10-01}
+      credentials:
+        - {id: c-med, type: EASA_CLASS1_MEDICAL, issued: 2026-09-01, validFrom: 2026-10-15}
+    outcome: expired
+    expect: { message: credential.expired }
+  - name: class-2-level-after-class-1-period
+    evaluation: validity_class_2
+    shows: [lower-class-validity]
+    says: Issued at 44 with no expiry date recorded, the certificate is past its 12 class 1 months but still valid for class 2 privileges for 24 months.
+    asOf: 2026-09-15
+    record:
+      holder: {dateOfBirth: 1980-05-20}
+      credentials:
+        - {id: c-med, type: EASA_CLASS1_MEDICAL, issued: 2025-03-01}
+    outcome: current
+    expect: { message: credential.valid, expiresOn: 2027-03-01 }
+  - name: class-2-level-ends
+    evaluation: validity_class_2
+    shows: [lower-class-validity]
+    says: After the class 2 period the certificate no longer supports class 2 privileges either.
+    asOf: 2027-03-02
+    record:
+      holder: {dateOfBirth: 1980-05-20}
+      credentials:
+        - {id: c-med, type: EASA_CLASS1_MEDICAL, issued: 2025-03-01}
+    outcome: expired
+    expect: { message: credential.expired }
+  - name: class-2-level-recorded-expiry
+    evaluation: validity_class_2
+    shows: [lower-class-validity]
+    says: The recorded expiry date is the class 1 date; the class 2 level runs its own 24 months from the examination at 44 and is still valid after the class 1 date.
+    asOf: 2026-09-15
+    record:
+      holder: {dateOfBirth: 1980-05-20}
+      credentials:
+        - {id: c-med, type: EASA_CLASS1_MEDICAL, issued: 2025-03-01, expires: 2026-03-01}
+    outcome: current
+    expect: { message: credential.valid, expiresOn: 2027-03-01 }
+  - name: class-2-level-recorded-expiry-no-date-of-birth
+    evaluation: validity_class_2
+    shows: [lower-class-validity]
+    says: Without a date of birth the class 2 period cannot be derived; the certificate is valid at class 2 at least until its recorded class 1 date.
+    asOf: 2025-12-01
+    record:
+      credentials:
+        - {id: c-med, type: EASA_CLASS1_MEDICAL, issued: 2025-03-01, expires: 2026-03-01}
+    outcome: current
+    expect: { message: credential.valid, expiresOn: 2026-03-01 }
+  - name: class-2-level-after-recorded-expiry-no-date-of-birth
+    evaluation: validity_class_2
+    shows: [lower-class-validity]
+    says: Past the recorded class 1 date and without a date of birth, whether the class 2 period still runs cannot be told; the result asks for the date of birth instead of reporting the certificate expired.
+    asOf: 2026-09-15
+    record:
+      credentials:
+        - {id: c-med, type: EASA_CLASS1_MEDICAL, issued: 2025-03-01, expires: 2026-03-01}
+    outcome: unknown
+    expect: { message: credential.date_of_birth_required }
+  - name: lapl-level-after-class-1-period
+    evaluation: validity_lapl
+    shows: [lower-class-validity]
+    says: Issued at 62 with no expiry date recorded, the certificate ran 6 months for class 1 and 12 for class 2, but supports LAPL privileges for 24 months.
+    asOf: 2026-09-15
+    record:
+      holder: {dateOfBirth: 1963-01-01}
+      credentials:
+        - {id: c-med, type: EASA_CLASS1_MEDICAL, issued: 2025-06-01}
+    outcome: current
+    expect: { message: credential.valid, expiresOn: 2027-06-01 }
+  - name: lapl-level-ends
+    evaluation: validity_lapl
+    shows: [lower-class-validity]
+    says: After 24 months the certificate no longer supports LAPL privileges.
+    asOf: 2027-06-02
+    record:
+      holder: {dateOfBirth: 1963-01-01}
+      credentials:
+        - {id: c-med, type: EASA_CLASS1_MEDICAL, issued: 2025-06-01}
+    outcome: expired
+    expect: { message: credential.expired }
+  - name: composite-class-1-period-over
+    composite: true
+    says: The certificate as a whole (class 1 privileges) is expired once the class 1 period is over, whatever its lower levels still allow.
+    asOf: 2026-09-15
+    record:
+      holder: {dateOfBirth: 1980-05-20}
+      credentials:
+        - {id: c-med, type: EASA_CLASS1_MEDICAL, issued: 2025-03-01}
+    outcome: expired
+    expect: { subject: { kind: credential, id: c-med }, decidedBy: { evaluation: validity } }
+  - name: composite-valid
+    composite: true
+    says: Within its class 1 period the certificate is valid.
+    asOf: 2026-09-15
+    record:
+      holder: {dateOfBirth: 1980-05-20}
+      credentials:
+        - {id: c-med, type: EASA_CLASS1_MEDICAL, issued: 2026-03-01}
+    outcome: current
+    expect: { subject: { kind: credential, id: c-med } }

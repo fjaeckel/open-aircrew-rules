@@ -50,6 +50,10 @@ type resolvedFilter struct {
 	unresolved []string
 }
 
+// resolved reports whether the filter name's $subject was supplied; an unresolved filter
+// leaves every item unknown and is not compared.
+func (f *resolvedFilter) resolved(name string) bool { return !slices.Contains(f.unresolved, name) }
+
 const subjectToken = "$subject"
 
 // resolveList replaces $subject in l by vals; ok is false when l has $subject and vals is empty.
@@ -178,7 +182,7 @@ func (e *evalCtx) matchFlight(f *resolvedFilter, fl *Flight) *matcher {
 	default:
 		m.check(!fl.IsSimulator)
 	}
-	if f.classes != nil {
+	if f.classes != nil && f.resolved("classes") {
 		e.matchFlightClass(f, fl, m)
 	}
 	if len(f.ExcludeClasses) > 0 {
@@ -193,15 +197,15 @@ func (e *evalCtx) matchFlight(f *resolvedFilter, fl *Flight) *matcher {
 			m.no()
 		case fl.ULKind == "":
 			m.unknownBy("ulKinds")
-		default:
+		case f.resolved("ulKinds"):
 			m.check(slices.Contains(f.ULKinds, fl.ULKind))
 		}
 	}
-	if f.Has("launchMethods") {
+	if f.Has("launchMethods") && f.resolved("launchMethods") {
 		m.check(fl.LaunchMethod != "" && slices.Contains(f.LaunchMethods, fl.LaunchMethod))
 	}
-	stringFilter(m, f.Has("typeDesignators"), "typeDesignators", f.TypeDesignators, fl.TypeDesignator)
-	stringFilter(m, f.Has("variants"), "variants", f.Variants, fl.Variant)
+	stringFilter(m, f.Has("typeDesignators") && f.resolved("typeDesignators"), "typeDesignators", f.TypeDesignators, fl.TypeDesignator)
+	stringFilter(m, f.Has("variants") && f.resolved("variants"), "variants", f.Variants, fl.Variant)
 	if len(f.Roles) > 0 {
 		m.check(slices.ContainsFunc(f.Roles, func(r string) bool { return roleMinutes(fl.Minutes, r) > 0 }))
 	}
@@ -397,7 +401,7 @@ func (e *evalCtx) matchEvent(f *resolvedFilter, ev *Event) *matcher {
 			m.check(slices.Contains(f.FSTDTypes, ev.FSTDType))
 		}
 	}
-	if f.classes != nil {
+	if f.classes != nil && f.resolved("classes") {
 		if ev.Class == "" {
 			m.unknownBy("classes")
 		} else {
@@ -424,12 +428,12 @@ func (e *evalCtx) matchEvent(f *resolvedFilter, ev *Event) *matcher {
 			m.no()
 		case ev.ULKind == "":
 			m.unknownBy("ulKinds")
-		default:
+		case f.resolved("ulKinds"):
 			m.check(slices.Contains(f.ULKinds, ev.ULKind))
 		}
 	}
-	stringFilter(m, f.Has("typeDesignators"), "typeDesignators", f.TypeDesignators, ev.TypeDesignator)
-	stringFilter(m, f.Has("variants"), "variants", f.Variants, ev.Variant)
+	stringFilter(m, f.Has("typeDesignators") && f.resolved("typeDesignators"), "typeDesignators", f.TypeDesignators, ev.TypeDesignator)
+	stringFilter(m, f.Has("variants") && f.resolved("variants"), "variants", f.Variants, ev.Variant)
 	if len(f.anyOf) > 0 {
 		e.matchAny(m, f.anyOf, func(sub *resolvedFilter) *matcher { return e.matchEvent(sub, ev) })
 	}

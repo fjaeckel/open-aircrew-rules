@@ -43,6 +43,20 @@ examples:
         - { date: 2026-06-01, class: HELICOPTER, typeDesignator: R44, minutes: { total: 60, pic: 60 }, takeoffs: { day: 2 }, landings: { day: 2 }, flags: { proficiencyCheck: true } }
     outcome: current
     expect: { subject: { kind: rating, id: r-r44 }, message: rating.recency_current, requirements: {proficiency_check: {current: 1, met: true}, type_time: {current: 60, met: false}, refresher: {current: 0, met: false}} }
+  - name: recency-fstd-check-not-counted
+    evaluation: recency
+    shows: [check-on-type]
+    says: A proficiency check on the R44 flown in an FSTD does not count; only a check in the helicopter keeps the LAPL(H) usable on the type.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-laplh, authority: EASA, type: LAPL(H) }
+      ratings:
+        - { id: r-r44, licenceId: l-laplh, class: HELICOPTER, typeDesignator: R44 }
+      flights:
+        - { date: 2026-06-01, class: HELICOPTER, typeDesignator: R44, isSimulator: true, fstdType: FFS, minutes: { total: 60, pic: 60 }, flags: { proficiencyCheck: true } }
+    outcome: lapsed
+    expect: { subject: { kind: rating, id: r-r44 }, message: rating.recency_not_met, requirements: {proficiency_check: {current: 0, met: false}} }
   - name: recency-type-not-recorded
     evaluation: recency
     says: Helicopter flights that record no type designator cannot be attributed to the R44; with nothing else logged the recency is unknown.

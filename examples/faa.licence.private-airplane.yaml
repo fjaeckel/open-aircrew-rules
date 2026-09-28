@@ -126,8 +126,8 @@ examples:
       ratings:
         - {id: r-sep, licenceId: l-faa, class: SEP_LAND}
       flights:
-        - {date: 2026-07-10, class: SEP_LAND, minutes: {total: 60, pic: 60, night: 60}, takeoffs: {night: 4}, landings: {night: 4}, fullStopNightLandings: 1, soleManipulator: true}
-        - {date: 2026-07-24, class: SEP_LAND, minutes: {total: 60, pic: 60, night: 50}, takeoffs: {day: 1, night: 2}, landings: {night: 3}, fullStopNightLandings: 2, soleManipulator: true}
+        - {date: 2026-07-10, class: SEP_LAND, minutes: {total: 60, pic: 60, night: 60}, takeoffs: {night: 4}, nightPeriodTakeoffs: 4, landings: {night: 4}, fullStopNightLandings: 1, soleManipulator: true}
+        - {date: 2026-07-24, class: SEP_LAND, minutes: {total: 60, pic: 60, night: 50}, takeoffs: {day: 1, night: 2}, nightPeriodTakeoffs: 2, landings: {night: 3}, fullStopNightLandings: 2, soleManipulator: true}
     outcome: current
     expect: { message: pax.night_current }
   - name: passengers-night-none-at-night
@@ -153,8 +153,8 @@ examples:
       ratings:
         - {id: r-sep, licenceId: l-faa, class: SEP_LAND, typeDesignator: PC6}
       flights:
-        - {date: 2026-07-10, class: SEP_LAND, typeDesignator: PC6, minutes: {total: 60, pic: 60, night: 60}, takeoffs: {night: 4}, landings: {night: 4}, fullStopNightLandings: 1, soleManipulator: true}
-        - {date: 2026-07-24, class: SEP_LAND, typeDesignator: PC6, minutes: {total: 60, pic: 60, night: 50}, takeoffs: {day: 1, night: 2}, landings: {night: 3}, fullStopNightLandings: 2, soleManipulator: true}
+        - {date: 2026-07-10, class: SEP_LAND, typeDesignator: PC6, minutes: {total: 60, pic: 60, night: 60}, takeoffs: {night: 4}, nightPeriodTakeoffs: 4, landings: {night: 4}, fullStopNightLandings: 1, soleManipulator: true}
+        - {date: 2026-07-24, class: SEP_LAND, typeDesignator: PC6, minutes: {total: 60, pic: 60, night: 50}, takeoffs: {day: 1, night: 2}, nightPeriodTakeoffs: 2, landings: {night: 3}, fullStopNightLandings: 2, soleManipulator: true}
     outcome: current
     expect: { message: pax.night_current }
   - name: passengers-night-type-takeoffs-short
@@ -167,7 +167,7 @@ examples:
       ratings:
         - {id: r-mep, licenceId: l-faa, class: MEP_LAND, typeDesignator: B350}
       flights:
-        - {date: 2026-06-15, class: MEP_LAND, typeDesignator: B350, minutes: {total: 240, pic: 240, night: 80}, takeoffs: {day: 2, night: 1}, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
+        - {date: 2026-06-15, class: MEP_LAND, typeDesignator: B350, minutes: {total: 240, pic: 240, night: 80}, takeoffs: {day: 2, night: 1}, nightPeriodTakeoffs: 1, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
     outcome: lapsed
     expect: { message: pax.night_not_current }
   - name: flight-review-glider-flights-not-a-review
@@ -196,8 +196,8 @@ examples:
       licences:
         - {id: l-faa, authority: FAA, type: PRIVATE}
       events:
-        - {date: 2023-05-02, kind: flight_review}
-        - {date: 2025-06-12, kind: practical_test, class: SEP_LAND, rating: IR}
+        - {date: 2023-05-02, kind: flight_review, authority: FAA}
+        - {date: 2025-06-12, kind: practical_test, class: SEP_LAND, rating: IR, authority: FAA}
     outcome: current
     expect: { message: flight_review.substituted }
   - name: flight-review-student-exempt
@@ -220,7 +220,7 @@ examples:
       licences:
         - {id: l-faa, authority: FAA, type: PRIVATE}
       events:
-        - {date: 2024-11-10, kind: flight_review, class: SEP_LAND}
+        - {date: 2024-11-10, kind: flight_review, class: SEP_LAND, authority: FAA}
     outcome: current
     expect: { message: flight_review.current }
   - name: flight-review-expired-day-before
@@ -231,9 +231,142 @@ examples:
       licences:
         - {id: l-faa, authority: FAA, type: PRIVATE}
       events:
-        - {date: 2024-07-31, kind: flight_review}
+        - {date: 2024-07-31, kind: flight_review, authority: FAA}
     outcome: expired
     expect: { message: flight_review.expired }
+  - name: flight-review-easa-check-not-counted
+    evaluation: flight_review
+    shows: [who-and-endorsement-not-checked]
+    says: A proficiency check for an EASA licence in May 2026 does not replace the FAA flight review, however similar its content; with no FAA review or check on record the pilot may not act as pilot in command.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+        - {id: l-easa, authority: EASA, type: PPL(A)}
+      events:
+        - {date: 2026-05-10, kind: proficiency_check, class: SEP_LAND, authority: EASA}
+    outcome: expired
+    expect: { message: flight_review.none_on_record }
+  - name: flight-review-authority-not-recorded
+    evaluation: flight_review
+    shows: [who-and-endorsement-not-checked]
+    says: A flight review in 2025 recorded without the authority it was given under cannot be told from a review under another authority; the result is unknown until the authority is recorded.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      events:
+        - {date: 2025-09-01, kind: flight_review}
+    outcome: unknown
+    expect: { message: flight_review.authority_not_recorded }
+  - name: flight-review-in-device-not-counted
+    evaluation: flight_review
+    shows: [simulator-counts]
+    says: A flight review flown in a flight training device does not count, because the part 142 course and the other conditions for a device cannot be shown from the record; the pilot needs a review in an aircraft.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      events:
+        - {date: 2025-09-01, kind: flight_review, authority: FAA, isSimulator: true, fstdType: FTD}
+    outcome: expired
+    expect: { message: flight_review.expired }
+  - name: flight-review-check-in-simulator-counts
+    evaluation: flight_review
+    shows: [simulator-counts]
+    says: A proficiency check for an FAA type rating passed in a full flight simulator in March 2026 still stands in for the flight review.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      events:
+        - {date: 2026-03-15, kind: proficiency_check, class: MEP_LAND, authority: FAA, isSimulator: true, fstdType: FFS}
+    outcome: current
+    expect: { message: flight_review.substituted }
+  - name: passengers-day-turbine-single-counts-for-sep
+    evaluation: passengers_day
+    shows: [class-or-type]
+    says: Single-engine land is one FAA class whatever the engine, so three takeoffs and landings in a turbine single (logged SET land) on 1 July allow passengers in the pilot's piston single (SEP land) on 16 August.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-sep, licenceId: l-faa, class: SEP_LAND}
+      flights:
+        - {date: 2026-07-01, class: SET_LAND, minutes: {total: 90, pic: 90}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    outcome: current
+    expect: { subject: { kind: passengers, id: l-faa, class: SEP_LAND }, message: pax.day_current }
+  - name: passengers-day-sea-not-for-land
+    evaluation: passengers_day
+    shows: [class-or-type]
+    says: Land and sea are separate FAA classes; takeoffs and landings in a single-engine seaplane do not count for the single-engine land class.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-sep, licenceId: l-faa, class: SEP_LAND}
+      flights:
+        - {date: 2026-07-01, class: SEP_SEA, minutes: {total: 90, pic: 90}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    outcome: lapsed
+    expect: { subject: { kind: passengers, id: l-faa, class: SEP_LAND }, message: pax.not_current }
+  - name: passengers-night-turbine-single-counts-for-sep
+    evaluation: passengers_night
+    shows: [class-or-type, logged-night-takeoffs]
+    says: Three takeoffs and three full-stop landings in the night period in a turbine single (SET land) keep night passenger privileges in the single-engine land class, which includes the pilot's SEP land rating.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-sep, licenceId: l-faa, class: SEP_LAND}
+      flights:
+        - {date: 2026-07-10, class: SET_LAND, minutes: {total: 90, pic: 90, night: 60}, takeoffs: {night: 3}, nightPeriodTakeoffs: 3, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
+    outcome: current
+    expect: { message: pax.night_current }
+  - name: passengers-night-takeoffs-before-period
+    evaluation: passengers_night
+    shows: [logged-night-takeoffs]
+    says: Three takeoffs logged at night, but two of them less than 1 hour after sunset; only one falls in the 61.57(b) period, so night passenger recency has lapsed although three full-stop landings were made in the period.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-sep, licenceId: l-faa, class: SEP_LAND}
+      flights:
+        - {date: 2026-07-10, class: SEP_LAND, minutes: {total: 120, pic: 120, night: 90}, takeoffs: {night: 3}, nightPeriodTakeoffs: 1, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
+    outcome: lapsed
+    expect: { message: pax.night_not_current }
+  - name: passengers-night-period-takeoffs-not-recorded
+    evaluation: passengers_night
+    shows: [logged-night-takeoffs]
+    says: A night flight with three night takeoffs that does not record how many were in the period from 1 hour after sunset cannot be counted; the result is unknown until nightPeriodTakeoffs is recorded.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-sep, licenceId: l-faa, class: SEP_LAND}
+      flights:
+        - {date: 2026-07-10, class: SEP_LAND, minutes: {total: 120, pic: 120, night: 90}, takeoffs: {night: 3}, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
+    outcome: unknown
+    expect: { message: pax.experience_not_logged }
+  - name: passengers-tailwheel-turbine-single-counts
+    evaluation: passengers_tailwheel
+    shows: [faa-class]
+    says: Three full-stop landings in a turbine tailwheel single (SET land) count for tailwheel passenger recency in the single-engine land class, which includes the pilot's SEP land rating.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-sep, licenceId: l-faa, class: SEP_LAND}
+      flights:
+        - {date: 2026-08-02, class: SET_LAND, tailwheel: true, minutes: {total: 60, pic: 60}, takeoffs: {day: 3}, landings: {day: 3}, fullStopLandings: 3, soleManipulator: true}
+    outcome: current
+    expect: { message: pax.tailwheel_current }
   - name: passengers-day-sep-on-glider-certificate
     evaluation: passengers_day
     shows: [glider-certificate-powered-ratings]

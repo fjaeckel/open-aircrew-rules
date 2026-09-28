@@ -181,3 +181,67 @@ examples:
       flights: []
     outcome: current
     expect: {subject: {kind: privilege, id: p-1}, message: privilege.revalidation_not_met, requirements: {refresher: {current: 0, met: false}, assessment: {current: 0, met: false}}}
+  - name: revalidation-instruction-other-category
+    evaluation: revalidation
+    shows: [instruction-any-category]
+    says: An FI on a CPL(A) is an FI(A); 50 hours of instruction given in helicopters do not count toward its 50 hours in aeroplanes, so with the refresher only one item is met.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(A) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: FI, issued: 2024-01-15 }
+      events:
+        - { date: 2026-02-01, kind: instructor_refresher, rating: FI }
+      flights:
+        - { date: 2026-03-01, class: HELICOPTER, typeDesignator: R44, minutes: { total: 3000, dualGiven: 3000 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect: {subject: {kind: privilege, id: p-1}, message: privilege.revalidation_not_met, requirements: {instruction: {current: 0, met: false}}}
+  - name: revalidation-fi-as-twenty-hours
+    evaluation: revalidation
+    shows: [instruction-any-category]
+    says: An FI on a CPL(As) is an FI(As); 20 hours of instruction in airships with the refresher revalidate it.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(As) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: FI, issued: 2024-01-15 }
+      events:
+        - { date: 2026-02-01, kind: instructor_refresher, rating: FI }
+      flights:
+        - { date: 2026-03-01, class: AIRSHIP, typeDesignator: LZN07, minutes: { total: 1200, dualGiven: 1200 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect: {subject: {kind: privilege, id: p-1}, message: privilege.revalidation_current, requirements: {instruction_airships: {current: 1200, met: true}}}
+  - name: revalidation-fi-as-short
+    evaluation: revalidation
+    shows: [instruction-any-category]
+    says: Fifteen hours of airship instruction fall short of the 20 hours of an FI(As).
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: CPL(As) }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: FI, issued: 2024-01-15 }
+      events:
+        - { date: 2026-02-01, kind: instructor_refresher, rating: FI }
+      flights:
+        - { date: 2026-03-01, class: AIRSHIP, typeDesignator: LZN07, minutes: { total: 900, dualGiven: 900 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect: {subject: {kind: privilege, id: p-1}, message: privilege.revalidation_not_met, requirements: {instruction_airships: {current: 900, met: false}}}
+  - name: revalidation-fi-g-gyroplane-hours
+    evaluation: revalidation
+    shows: [instruction-any-category]
+    says: An FI on a GPL is an FI(G); 50 hours of instruction in gyroplanes with the refresher revalidate it.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-1, authority: EASA, type: GPL }
+      privileges:
+        - { id: p-1, licenceId: l-1, kind: FI, issued: 2024-01-15 }
+      events:
+        - { date: 2026-02-01, kind: instructor_refresher, rating: FI }
+      flights:
+        - { date: 2026-03-01, class: GYROPLANE, minutes: { total: 3000, dualGiven: 3000 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: current
+    expect: {subject: {kind: privilege, id: p-1}, message: privilege.revalidation_current, requirements: {instruction: {current: 3000, met: true}}}

@@ -1,0 +1,30 @@
+credential: faa.document.drivers-license
+examples:
+  - name: validity-current
+    evaluation: validity
+    says: A U.S. driver's license recorded as valid through 2030 is valid on 16 August 2026.
+    asOf: 2026-08-16
+    record:
+      credentials:
+        - {id: c-dl, type: US_DRIVERS_LICENSE, expires: 2030-05-31}
+    outcome: current
+    expect: { message: credential.valid }
+  - name: validity-expired
+    evaluation: validity
+    says: A U.S. driver's license that expired on 31 July 2026 no longer counts on 16 August.
+    asOf: 2026-08-16
+    record:
+      credentials:
+        - {id: c-dl, type: US_DRIVERS_LICENSE, expires: 2026-07-31}
+    outcome: expired
+    expect: { message: credential.expired }
+  - name: validity-no-expiry
+    evaluation: validity
+    shows: [recorded-expiry]
+    says: A U.S. driver's license recorded without its expiry date cannot be shown valid; record the date.
+    asOf: 2026-08-16
+    record:
+      credentials:
+        - {id: c-dl, type: US_DRIVERS_LICENSE}
+    outcome: unknown
+    expect: { message: credential.no_expiry_date }

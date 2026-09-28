@@ -18,7 +18,7 @@ examples:
     expect: { message: rating.revalidation_not_met }
   - name: revalidation-pooled-with-sep-land
     evaluation: revalidation
-    shows: [pooling-same-licence]
+    shows: [revalidation-as-sep-land]
     says: With SEP land and TMG ratings on the same licence, SEP land flights revalidate the TMG rating too.
     asOf: 2026-09-15
     record:
@@ -83,3 +83,50 @@ examples:
         - {date: 2026-08-20, class: TMG, minutes: {total: 60, pic: 60}, takeoffs: {day: 3}, landings: {day: 3}, pilotFlying: true}
     outcome: expired
     expect: { message: pax.night_not_current }
+  - name: revalidation-ul-motorglider-fixed-engine
+    evaluation: revalidation
+    shows: [revalidation-as-sep-land]
+    says: Ultralight motorglider hours recorded with a fixed engine and propeller count toward the TMG rating's 12 hours and 6 hours as PIC (easa.rating.sep-land ul-credit-time-only).
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-tmg, licenceId: l-ppl, class: TMG, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-04-01, class: TMG, minutes: { total: 120, pic: 60, dual: 60 }, takeoffs: { day: 12 }, landings: { day: 12 } }
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS_MOTORGLIDER, fixedEngine: true, minutes: { total: 600, pic: 600 }, takeoffs: { day: 5 }, landings: { day: 5 } }
+    outcome: expiring
+    expect: { message: rating.revalidation_expiring_met }
+  - name: revalidation-ul-motorglider-engine-not-recorded
+    evaluation: revalidation
+    shows: [revalidation-as-sep-land]
+    says: The same ultralight motorglider hours without a recorded fixed engine are not credited, so the 12 hours are not reached.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-tmg, licenceId: l-ppl, class: TMG, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-04-01, class: TMG, minutes: { total: 120, pic: 60, dual: 60 }, takeoffs: { day: 12 }, landings: { day: 12 } }
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS_MOTORGLIDER, minutes: { total: 600, pic: 600 }, takeoffs: { day: 5 }, landings: { day: 5 } }
+    outcome: expiring
+    expect: { message: rating.revalidation_not_met }
+  - name: revalidation-no-land-sea-route
+    evaluation: revalidation
+    shows: [revalidation-as-sep-land]
+    says: SEP sea flights never count toward a TMG rating, even when SEP land and SEP sea ratings are held on the same licence.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2026-10-31 }
+        - { id: r-sea, licenceId: l-ppl, class: SEP_SEA, expires: 2026-10-31 }
+        - { id: r-tmg, licenceId: l-ppl, class: TMG, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-03-10, class: TMG, minutes: { total: 360, pic: 300, dual: 60 }, takeoffs: { day: 6 }, landings: { day: 6 } }
+        - { date: 2026-06-10, class: SEP_SEA, minutes: { total: 360, pic: 360 }, takeoffs: { day: 6 }, landings: { day: 6 } }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-tmg }, message: rating.revalidation_not_met }

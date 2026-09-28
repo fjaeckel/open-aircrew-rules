@@ -161,3 +161,29 @@ privileges: [{ id: p1, licenceId: h, kind: FI }, { id: p2, licenceId: x, kind: F
 		t.Errorf("category not known and not asked for: %+v", evs)
 	}
 }
+
+// TestRecordedExpiryMinimum: the recorded expiry (another level's date) is a lower bound;
+// without a derived end it holds until it passes, then the expiry is unknown.
+func TestRecordedExpiryMinimum(t *testing.T) {
+	c := testCatalogue(t, dedent(`
+id: t.min
+applies_to: { subject: credential }
+validity: { from: issued, age_on: issued, recorded_min: true, periods: [{ when: { age_under: 40 }, months: 60 }, { months: 24 }] }
+stages: [{ when: always, status: current, messageKey: credential.valid }]
+`))
+	for _, tc := range []struct{ rec, asOf, want string }{
+		{"holder: { dateOfBirth: 1980-05-20 }\ncredentials: [{ id: m, type: OTHER, issued: 2025-03-01, expires: 2026-03-01 }]", "2026-09-15", "2027-03-01"},
+		{"holder: { dateOfBirth: 1980-05-20 }\ncredentials: [{ id: m, type: OTHER, issued: 2025-03-01, expires: 2028-03-01 }]", "2026-09-15", "2028-03-01"},
+		{"credentials: [{ id: m, type: OTHER, issued: 2025-03-01, expires: 2026-03-01 }]", "2026-03-01", "2026-03-01"},
+		{"credentials: [{ id: m, type: OTHER, issued: 2025-03-01, expires: 2026-03-01 }]", "2026-03-02", ""},
+	} {
+		evs, _ := evalOne(t, c, tc.rec, tc.asOf)
+		got := ""
+		if evs[0].ExpiresOn != nil {
+			got = evs[0].ExpiresOn.String()
+		}
+		if got != tc.want {
+			t.Errorf("%s on %s: expires %q, want %q", tc.rec, tc.asOf, got, tc.want)
+		}
+	}
+}

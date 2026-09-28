@@ -363,8 +363,9 @@ validity:
   period_conditions: [age_under, age_at_least]
   period_fields: [months, cap_at_age, end_of_month]
   # age_on: the anchor the age is taken on; recorded_wins: the derived end applies only
-  # without a recorded expiry; end_offset_days: moves the derived end (authority_conventions).
-  options: [age_on, recorded_wins, end_offset_days]
+  # without a recorded expiry; recorded_min: the recorded expiry (another level's date) is a
+  # lower bound; end_offset_days: moves the derived end (authority_conventions).
+  options: [age_on, recorded_wins, recorded_min, end_offset_days]
 
 hatches:
   sfcl-130b-credit: "SFCL.130(b): 10 % of the PIC time on other aircraft categories, at most 7 hours."
@@ -550,6 +551,7 @@ credential_vocabulary:
     commercial_privileges: "The privileges beyond those of a private pilot licence (commercial and airline transport privileges)."
     airline_transport_privileges: "The privileges of an airline transport pilot beyond those of a commercial pilot."
     night_privileges: "The privileges of flying at night."
+    above_120_kg: "The privileges on ultralights above 120 kg empty mass, which need a valid medical certificate (LuftPersV § 45(1) second sentence); the record holds no empty mass."
 
   # Conventions every evaluation of an authority's credentials follows, keyed by the
   # credential file's `authority`. validity_ends: day_before ends a derived validity period

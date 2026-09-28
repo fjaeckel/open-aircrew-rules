@@ -3,7 +3,7 @@ examples:
   - name: current-edge-in
     evaluation: recency
     shows: [association-rule-unverified]
-    says: Five landings with ultralight sailplanes in 12 months, the first on the first day of the window; winch-launched flights count.
+    says: Five take-offs and five landings with ultralight sailplanes in 12 months, the first on the first day of the window; winch-launched and aerotowed flights count.
     asOf: 2026-09-15
     record:
       licences:
@@ -11,14 +11,15 @@ examples:
       ratings:
         - { id: r-sail, licenceId: l-ul, class: ULTRALIGHT, ulKind: SAILPLANE }
       flights:
-        - { date: 2025-09-15, class: ULTRALIGHT, ulKind: SAILPLANE, launchMethod: winch, minutes: { total: 20, pic: 20 }, landings: { day: 1 } }
-        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: SAILPLANE, launchMethod: aerotow, minutes: { total: 240, pic: 240 }, landings: { day: 4 } }
+        - { date: 2025-09-15, class: ULTRALIGHT, ulKind: SAILPLANE, launchMethod: winch, minutes: { total: 20, pic: 20 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: SAILPLANE, launchMethod: aerotow, minutes: { total: 240, pic: 240 }, takeoffs: { day: 4 }, landings: { day: 4 } }
     outcome: current
     expect:
       subject: { kind: rating, id: r-sail, ulKind: SAILPLANE }
       message: rating.recency_current
       validUntil: 2026-09-15
       requirements:
+        takeoffs: { current: 5, required: 5, met: true }
         landings: { current: 5, required: 5, met: true }
 
   - name: kind-unknown
@@ -107,10 +108,45 @@ examples:
       ratings:
         - { id: r-sail, licenceId: l-ul, class: ULTRALIGHT, ulKind: SAILPLANE }
       privileges:
-        - { id: p-pax, licenceId: l-ul, kind: UL_PASSENGER_AUTH }
+        - { id: p-pax, licenceId: l-ul, kind: UL_PASSENGER_AUTH, detail: SAILPLANE }
       flights:
         - { date: 2026-08-10, class: ULTRALIGHT, ulKind: SAILPLANE, launchMethod: winch, minutes: { total: 30, pic: 30 }, takeoffs: { day: 3 }, landings: { day: 3 } }
     outcome: current
     expect:
       subject: { kind: passengers, id: l-ul, ulKind: SAILPLANE }
       message: pax.current_day_no_night_privilege
+
+  - name: takeoffs-short
+    evaluation: recency
+    shows: [association-rule-unverified]
+    says: Five landings but only four take-offs logged in 12 months (one launch not logged); the DAeC rule counts take-offs as well as landings.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DAeC, type: UL }
+      ratings:
+        - { id: r-sail, licenceId: l-ul, class: ULTRALIGHT, ulKind: SAILPLANE }
+      flights:
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: SAILPLANE, launchMethod: winch, minutes: { total: 60, pic: 60 }, takeoffs: { day: 4 }, landings: { day: 5 } }
+    outcome: lapsed
+    expect:
+      subject: { kind: rating, id: r-sail }
+      message: rating.recency_not_met
+      requirements:
+        takeoffs: { current: 4, met: false, remedyParams: { missing: 1, unit: takeoffs } }
+        landings: { current: 5, met: true }
+
+  - name: composite-current-medical-limited-above-120-kg
+    composite: true
+    shows: [above-120-kg-not-named]
+    says: 'With the recency met and no medical recorded, the rating may be exercised; the privileges on an ultralight sailplane above 120 kg empty mass are listed as a limitation, because they need a medical and the record holds none.'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DAeC, type: UL }
+      ratings:
+        - { id: r-sail, licenceId: l-ul, class: ULTRALIGHT, ulKind: SAILPLANE }
+      flights:
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: SAILPLANE, launchMethod: winch, minutes: { total: 240, pic: 240 }, takeoffs: { day: 5 }, landings: { day: 5 } }
+    outcome: current
+    expect: { subject: { kind: rating, id: r-sail } }

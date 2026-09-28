@@ -3,7 +3,7 @@ examples:
   - name: current-edge-in
     evaluation: recency
     shows: [association-rule-unverified]
-    says: Thirty landings with powered paragliders in 24 months, the first on the first day of the window.
+    says: Thirty take-offs and thirty landings with powered paragliders in 24 months, the first on the first day of the window.
     asOf: 2026-09-15
     record:
       licences:
@@ -11,15 +11,17 @@ examples:
       ratings:
         - { id: r-ppg, licenceId: l-ul, class: ULTRALIGHT, ulKind: POWERED_PARAGLIDER }
       flights:
-        - { date: 2024-09-15, class: ULTRALIGHT, ulKind: POWERED_PARAGLIDER, minutes: { total: 60, pic: 60 }, landings: { day: 10 } }
-        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: POWERED_PARAGLIDER, minutes: { total: 120, pic: 120 }, landings: { day: 20 } }
+        - { date: 2024-09-15, class: ULTRALIGHT, ulKind: POWERED_PARAGLIDER, minutes: { total: 60, pic: 60 }, takeoffs: { day: 10 }, landings: { day: 10 } }
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: POWERED_PARAGLIDER, minutes: { total: 120, pic: 120 }, takeoffs: { day: 20 }, landings: { day: 20 } }
     outcome: current
     expect:
       subject: { kind: rating, id: r-ppg, ulKind: POWERED_PARAGLIDER }
       message: rating.recency_current
       validUntil: 2026-09-15
       requirements:
+        takeoffs: { current: 30, required: 30, met: true }
         landings: { current: 30, required: 30, met: true }
+        proficiency_check: { current: 0, met: false }
 
   - name: kind-unknown
     evaluation: recency
@@ -103,10 +105,66 @@ examples:
       ratings:
         - { id: r-ppg, licenceId: l-ul, class: ULTRALIGHT, ulKind: POWERED_PARAGLIDER }
       privileges:
-        - { id: p-pax, licenceId: l-ul, kind: UL_PASSENGER_AUTH }
+        - { id: p-pax, licenceId: l-ul, kind: UL_PASSENGER_AUTH, detail: POWERED_PARAGLIDER }
       flights:
         - { date: 2026-08-01, class: ULTRALIGHT, ulKind: POWERED_PARAGLIDER, minutes: { total: 60, pic: 60 }, takeoffs: { day: 3 }, landings: { day: 3 } }
     outcome: current
     expect:
       subject: { kind: passengers, id: l-ul, ulKind: POWERED_PARAGLIDER }
       message: pax.current_day_no_night_privilege
+
+  - name: takeoffs-short
+    evaluation: recency
+    shows: [association-rule-unverified]
+    says: Thirty landings but only 25 take-offs logged in 24 months; both associations count take-offs as well as landings.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-ppg, licenceId: l-ul, class: ULTRALIGHT, ulKind: POWERED_PARAGLIDER }
+      flights:
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: POWERED_PARAGLIDER, minutes: { total: 180, pic: 180 }, takeoffs: { day: 25 }, landings: { day: 30 } }
+    outcome: lapsed
+    expect:
+      subject: { kind: rating, id: r-ppg }
+      message: rating.recency_not_met
+      requirements:
+        takeoffs: { current: 25, met: false, remedyParams: { missing: 5, unit: takeoffs } }
+        landings: { current: 30, met: true }
+
+  - name: proficiency-check
+    evaluation: recency
+    shows: [association-rule-unverified]
+    says: A proficiency check on a powered paraglider replaces the 30 take-offs and landings for 24 months; a check on a trike does not.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DAeC, type: UL }
+      ratings:
+        - { id: r-ppg, licenceId: l-ul, class: ULTRALIGHT, ulKind: POWERED_PARAGLIDER }
+      events:
+        - { date: 2025-01-10, kind: proficiency_check, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+        - { date: 2025-02-10, kind: proficiency_check, class: ULTRALIGHT, ulKind: POWERED_PARAGLIDER }
+    outcome: current
+    expect:
+      subject: { kind: rating, id: r-ppg }
+      message: rating.recency_current
+      validUntil: 2027-02-10
+      requirements:
+        proficiency_check: { current: 1, met: true }
+
+  - name: composite-current-medical-limited-above-120-kg
+    composite: true
+    shows: [above-120-kg-not-named]
+    says: 'With the recency met and no medical recorded, the rating may be exercised; the privileges above 120 kg empty mass (a trike) are listed as a limitation, because they need a medical and the record holds none.'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-ppg, licenceId: l-ul, class: ULTRALIGHT, ulKind: POWERED_PARAGLIDER }
+      flights:
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: POWERED_PARAGLIDER, minutes: { total: 600, pic: 600 }, takeoffs: { day: 30 }, landings: { day: 30 } }
+    outcome: current
+    expect: { subject: { kind: rating, id: r-ppg } }

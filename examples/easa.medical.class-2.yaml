@@ -42,3 +42,25 @@ examples:
         - {id: c-med, type: EASA_CLASS2_MEDICAL, issued: 2026-03-01}
     outcome: expired
     expect: { message: credential.expired }
+  - name: validity-age-on-examination-date
+    evaluation: validity
+    shows: [counted-from]
+    says: Examined at 49 and revalidated from the previous expiry date after the 50th birthday, the 24-month band of the examination age applies, capped at the 51st birthday.
+    asOf: 2027-09-30
+    record:
+      holder: {dateOfBirth: 1976-10-01}
+      credentials:
+        - {id: c-med, type: EASA_CLASS2_MEDICAL, issued: 2026-09-01, validFrom: 2026-10-15}
+    outcome: expiring
+    expect: { message: credential.revalidation_window_open, expiresOn: 2027-10-01 }
+  - name: validity-age-on-examination-date-capped
+    evaluation: validity
+    shows: [counted-from]
+    says: The certificate ends on the 51st birthday; the 12 months the age at the start of the period would give (to 15 October) do not apply.
+    asOf: 2027-10-05
+    record:
+      holder: {dateOfBirth: 1976-10-01}
+      credentials:
+        - {id: c-med, type: EASA_CLASS2_MEDICAL, issued: 2026-09-01, validFrom: 2026-10-15}
+    outcome: expired
+    expect: { message: credential.expired }

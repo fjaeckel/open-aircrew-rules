@@ -119,8 +119,8 @@ examples:
       privileges:
         - { id: p-night, licenceId: l-sport-night, kind: SPORT_NIGHT, issued: 2026-01-10 }
       flights:
-        - { date: 2026-08-01, class: SEP_LAND, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 3 }, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
-        - { date: 2026-08-02, class: GYROPLANE, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 3 }, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
+        - { date: 2026-08-01, class: SEP_LAND, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 3 }, nightPeriodTakeoffs: 3, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
+        - { date: 2026-08-02, class: GYROPLANE, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 3 }, nightPeriodTakeoffs: 3, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
     outcome: not_applicable
     expect:
       subject: { kind: passengers, id: l-sport, class: SEP_LAND }
@@ -139,8 +139,8 @@ examples:
       privileges:
         - { id: p-night, licenceId: l-sport-night, kind: SPORT_NIGHT, issued: 2026-01-10 }
       flights:
-        - { date: 2026-08-01, class: SEP_LAND, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 3 }, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
-        - { date: 2026-08-02, class: GYROPLANE, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 3 }, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
+        - { date: 2026-08-01, class: SEP_LAND, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 3 }, nightPeriodTakeoffs: 3, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
+        - { date: 2026-08-02, class: GYROPLANE, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 3 }, nightPeriodTakeoffs: 3, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
     outcome: current
     expect:
       subject: { kind: passengers, id: l-sport-night, class: GYROPLANE }
@@ -174,8 +174,8 @@ examples:
       privileges:
         - { id: p-night, licenceId: l-sport-night, kind: SPORT_NIGHT, issued: 2026-01-10 }
       flights:
-        - { date: 2026-08-01, class: SEP_LAND, typeDesignator: PC6, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 3 }, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
-        - { date: 2026-08-02, class: GYROPLANE, typeDesignator: MT03, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 3 }, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
+        - { date: 2026-08-01, class: SEP_LAND, typeDesignator: PC6, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 3 }, nightPeriodTakeoffs: 3, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
+        - { date: 2026-08-02, class: GYROPLANE, typeDesignator: MT03, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 3 }, nightPeriodTakeoffs: 3, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
     outcome: not_applicable
     expect:
       subject: { kind: passengers, id: l-sport, class: SEP_LAND }
@@ -194,8 +194,8 @@ examples:
       privileges:
         - { id: p-night, licenceId: l-sport-night, kind: SPORT_NIGHT, issued: 2026-01-10 }
       flights:
-        - { date: 2026-08-01, class: SEP_LAND, typeDesignator: PC6, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 3 }, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
-        - { date: 2026-08-02, class: GYROPLANE, typeDesignator: MT03, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 3 }, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
+        - { date: 2026-08-01, class: SEP_LAND, typeDesignator: PC6, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 3 }, nightPeriodTakeoffs: 3, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
+        - { date: 2026-08-02, class: GYROPLANE, typeDesignator: MT03, minutes: { total: 60, pic: 60, night: 60 }, takeoffs: { night: 3 }, nightPeriodTakeoffs: 3, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
     outcome: current
     expect:
       subject: { kind: passengers, id: l-sport-night, class: GYROPLANE }
@@ -226,7 +226,7 @@ examples:
       ratings:
         - {id: r-1, licenceId: l-faa, class: SEP_LAND}
       flights:
-        - {date: 2025-09-10, class: SEP_LAND, minutes: {total: 90, pic: 90, night: 60}, takeoffs: {night: 3}, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
+        - {date: 2025-09-10, class: SEP_LAND, minutes: {total: 90, pic: 90, night: 60}, takeoffs: {night: 3}, nightPeriodTakeoffs: 3, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
     outcome: not_applicable
     expect: { message: pax.night_no_privilege }
   - name: flight-review-current
@@ -237,7 +237,7 @@ examples:
       licences:
         - {id: l-faa, authority: FAA, type: SPORT}
       events:
-        - {date: 2025-09-01, kind: flight_review}
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
     outcome: current
     expect: { message: flight_review.current }
   - name: flight-review-none
@@ -252,15 +252,17 @@ examples:
   - name: composite-review-current
     composite: true
     shows: [medical-or-drivers-license]
-    says: A sport pilot with a current flight review may exercise the certificate; it names no medical requirement, because a U.S. driver's license may take the place of a medical certificate.
+    says: A sport pilot with a current flight review and a valid U.S. driver's license may exercise the certificate in an airplane; the driver's license takes the place of a medical certificate by day.
     asOf: 2026-08-16
     record:
       licences:
         - {id: l-faa, authority: FAA, type: SPORT}
       ratings:
         - {id: r-1, licenceId: l-faa, class: SEP_LAND}
+      credentials:
+        - {id: c-dl, type: US_DRIVERS_LICENSE, expires: 2029-04-30}
       events:
-        - {date: 2025-09-01, kind: flight_review}
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
     outcome: current
     expect: { subject: { kind: licence, id: l-faa } }
   - name: composite-review-none
@@ -274,3 +276,153 @@ examples:
         - {id: r-1, licenceId: l-faa, class: SEP_LAND}
     outcome: expired
     expect: { subject: { kind: licence, id: l-faa }, decidedBy: { evaluation: flight_review } }
+  - name: medical-or-drivers-license-drivers-license
+    composite: true
+    shows: [medical-or-drivers-license]
+    says: A valid U.S. driver's license lets a sport pilot use the weight-shift-control rating by day without a medical certificate.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: SPORT}
+      ratings:
+        - {id: r-wsc, licenceId: l-faa, class: WEIGHT_SHIFT_CONTROL_LAND}
+      credentials:
+        - {id: c-dl, type: US_DRIVERS_LICENSE, expires: 2029-04-30}
+      events:
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
+    outcome: current
+    expect: { subject: { kind: licence, id: l-faa } }
+  - name: medical-or-drivers-license-medical
+    composite: true
+    shows: [medical-or-drivers-license]
+    says: A third-class medical certificate recorded by its examination date alone, at 36, is valid for private privileges for 60 calendar months and takes the place of the driver's license.
+    asOf: 2026-08-16
+    record:
+      holder: {dateOfBirth: 1990-01-01}
+      licences:
+        - {id: l-faa, authority: FAA, type: SPORT}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: SEP_LAND}
+      credentials:
+        - {id: c-med, type: FAA_CLASS3_MEDICAL, issued: 2025-03-01}
+      events:
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
+    outcome: current
+    expect: { subject: { kind: licence, id: l-faa } }
+  - name: medical-or-drivers-license-none-recorded
+    composite: true
+    shows: [medical-or-drivers-license]
+    says: With neither a driver's license nor a medical certificate recorded, whether the sport pilot may fly a powered parachute is unknown until one is recorded.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: SPORT}
+      ratings:
+        - {id: r-pp, licenceId: l-faa, class: POWERED_PARACHUTE_LAND}
+      events:
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
+    outcome: unknown
+    expect: { subject: { kind: licence, id: l-faa }, decidedBy: { evaluation: medical_or_drivers_license } }
+  - name: medical-or-drivers-license-expiry-not-recorded
+    composite: true
+    shows: [medical-or-drivers-license]
+    says: A driver's license recorded without its expiry date cannot be shown valid; the result is unknown until the date is recorded.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: SPORT}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: SEP_LAND}
+      credentials:
+        - {id: c-dl, type: US_DRIVERS_LICENSE}
+      events:
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
+    outcome: unknown
+    expect: { subject: { kind: licence, id: l-faa }, decidedBy: { evaluation: medical_or_drivers_license, credential: faa.document.drivers-license } }
+  - name: medical-or-drivers-license-expired
+    composite: true
+    shows: [medical-or-drivers-license]
+    says: A driver's license that expired in July 2026 no longer allows sport pilot privileges in a gyroplane.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: SPORT}
+      ratings:
+        - {id: r-gyro, licenceId: l-faa, class: GYROPLANE}
+      credentials:
+        - {id: c-dl, type: US_DRIVERS_LICENSE, expires: 2026-07-31}
+      events:
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
+    outcome: expired
+    expect: { subject: { kind: licence, id: l-faa }, decidedBy: { evaluation: medical_or_drivers_license, credential: faa.document.drivers-license } }
+  - name: composite-glider-needs-neither
+    composite: true
+    shows: [medical-or-drivers-license]
+    says: A sport pilot rated only for gliders needs neither a driver's license nor a medical certificate; with a current flight review the certificate may be exercised.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: SPORT}
+      ratings:
+        - {id: r-glider, licenceId: l-faa, class: GLIDER}
+      events:
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
+    outcome: current
+    expect: { subject: { kind: licence, id: l-faa } }
+  - name: composite-airplane-without-drivers-license
+    composite: true
+    shows: [medical-or-drivers-license]
+    says: A sport pilot rated for airplanes with a current flight review but neither a driver's license nor a medical certificate on record cannot be shown to meet 61.23(c); the certificate reads unknown.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: SPORT}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: SEP_LAND}
+      events:
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
+    outcome: unknown
+    expect: { subject: { kind: licence, id: l-faa }, decidedBy: { evaluation: medical_or_drivers_license } }
+  - name: passengers-day-powered-parachute-not-weight-shift
+    evaluation: passengers_day
+    shows: [sport-classes]
+    says: Powered parachutes and weight-shift-control aircraft are separate categories; takeoffs and landings in a trike do not let the pilot carry a passenger in a powered parachute.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: SPORT}
+      ratings:
+        - {id: r-pp, licenceId: l-faa, class: POWERED_PARACHUTE_LAND}
+        - {id: r-wsc, licenceId: l-faa, class: WEIGHT_SHIFT_CONTROL_LAND}
+      flights:
+        - {date: 2026-07-01, class: WEIGHT_SHIFT_CONTROL_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    outcome: lapsed
+    expect: { subject: { kind: passengers, id: l-faa, class: POWERED_PARACHUTE_LAND }, message: pax.not_current }
+  - name: passengers-day-weight-shift-current
+    evaluation: passengers_day
+    shows: [sport-classes]
+    says: Three takeoffs and landings as sole manipulator in a weight-shift-control aircraft (land) allow a passenger in that class.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: SPORT}
+      ratings:
+        - {id: r-wsc, licenceId: l-faa, class: WEIGHT_SHIFT_CONTROL_LAND}
+      flights:
+        - {date: 2026-07-01, class: WEIGHT_SHIFT_CONTROL_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    outcome: current
+    expect: { subject: { kind: passengers, id: l-faa, class: WEIGHT_SHIFT_CONTROL_LAND }, message: pax.day_current }
+  - name: class-not-recorded-other
+    evaluation: class_not_recorded
+    shows: [sport-classes]
+    says: A sport pilot rating recorded in the class OTHER does not show whether it is a powered parachute, a weight-shift-control aircraft or something else, so it reads unknown until its class is recorded.
+    asOf: 2026-08-16
+    record:
+      licences:
+        - {id: l-faa, authority: FAA, type: SPORT}
+      ratings:
+        - {id: r-other, licenceId: l-faa, class: OTHER}
+      flights:
+        - {date: 2026-07-01, class: OTHER, minutes: {total: 60, pic: 60}, takeoffs: {day: 3}, landings: {day: 3}, soleManipulator: true}
+    outcome: unknown
+    expect: { subject: { kind: rating, id: r-other }, message: rating.class_not_recorded }

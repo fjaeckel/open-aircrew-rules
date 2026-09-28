@@ -120,11 +120,11 @@ The subject is the first FAA licence in record order (engine `flight_review` sub
 | Interpretation | Verdict | Paragraph(s) | Reasoning | Action |
 | --- | --- | --- | --- | --- |
 | once-per-pilot | supported | 61.56(c) | The prohibition is addressed to the person ("no person may act as pilot in command ... unless ... that person has"), whatever certificate is used, so one result per pilot fits. The order dependency it creates is handled in `student-exemption`. | none |
-| who-and-endorsement-not-checked | needs-decision | 61.56(c)(1), (c)(2), (d); 61.1(b) | Not checking the giver and the endorsement is a stated limitation. But a proficiency check logged for another authority (an EASA licence proficiency check sets the same `proficiencyCheck` flag) also counts, while 61.1 defines an examiner as a person authorized by the Administrator for a certificate or rating issued under part 61. Options above. | none |
+| who-and-endorsement-not-checked | needs-decision | 61.56(c)(1), (c)(2), (d); 61.1(b) | Not checking the giver and the endorsement is a stated limitation. But a proficiency check logged for another authority (an EASA licence proficiency check sets the same `proficiencyCheck` flag) also counts, while 61.1 defines an examiner as a person authorized by the Administrator for a certificate or rating issued under part 61. Options above. | decided 2026-09-28: option 2, applied (`by_authority: [FAA]` on the review, check and practical-test rows; also fix F2 for the review itself; unknown when no authority is recorded; examples `flight-review-easa-check-not-counted`, `flight-review-authority-not-recorded`) |
 | ipc-is-no-substitute | supported | 61.56(d)(1); 61.57(d)(3)(iv) | An IPC may be given by an authorized instructor, and a recorded IPC does not show who gave it; (d)(1) requires an examiner, check airman or Armed Force. Excluding it can only under-report (an IPC given by an examiner is not credited). | none |
 | glider-flights-part-of-review | supported | 61.56(a), 61.56(b) | (b) lets the three instructional glider flights replace the 1 hour of flight training "required in paragraph (a)", i.e. within a review that still needs its ground training and endorsement. | none |
-| student-exemption | contradicted | 61.56(g), 61.56(c) | Assuming a current solo endorsement is harmless for the student composite, which fails on the solo endorsement anyway. But with a student certificate first in the record the exemption also covered a private or higher certificate (see Summary). | Stage `student` now requires that no other FAA pilot certificate is held; reading reworded; example `flight-review-student-certificate-listed-first` added to `examples/faa.licence.student.yaml`. |
-| simulator-counts | needs-decision | 61.56(i)(1), (i)(2), (i)(3) | (i) allows a simulator or FTD only within an approved part 142 course, in a device representing an aircraft the pilot is rated for, and without landing approval the 61.57 takeoffs and landings are also required. Taking these as met over-reports a review logged in a non-142 device, while the passenger evaluations exclude devices for the same unprovable condition. Options above. | none |
+| student-exemption | contradicted | 61.56(g), 61.56(c) | Assuming a current solo endorsement is harmless for the student composite, which fails on the solo endorsement anyway. But with a student certificate first in the record the exemption also covered a private or higher certificate (see Summary). | Stage `student` now requires that no other FAA pilot certificate is held; reading reworded; example `flight-review-student-certificate-listed-first` added to `examples/faa.licence.student.yaml`.; fix F6 applied 2026-09-28: only FAA certificates end the exemption (`holds.authorities: [FAA]`); example `flight-review-student-with-foreign-licence` |
+| simulator-counts | needs-decision | 61.56(i)(1), (i)(2), (i)(3) | (i) allows a simulator or FTD only within an approved part 142 course, in a device representing an aircraft the pilot is rated for, and without landing approval the 61.57 takeoffs and landings are also required. Taking these as met over-reports a review logged in a non-142 device, while the passenger evaluations exclude devices for the same unprovable condition. Options above. | decided 2026-09-28: option 2, applied (device sessions left out for the `flight_review` rows only; checks and program phases keep theirs; examples `flight-review-in-device-not-counted`, `flight-review-check-in-simulator-counts`) |
 | instructor-relief-not-modelled | supported | 61.56(f) | (f) removes the hour of ground training only; the review and its date are unchanged. | none |
 
 ## faa.shared.medical-duration-commercial
@@ -153,7 +153,7 @@ class and type "if a class or type rating is required". The 90 days count both e
 
 | Interpretation | Verdict | Paragraph(s) | Reasoning | Action |
 | --- | --- | --- | --- | --- |
-| class-or-type | needs-decision | 61.57(a)(1)(ii); 61.5(b)(2); 1.1 "Class" | Class versus type is right. But the record splits one FAA class in two: 61.5(b)(2) knows single-engine land and sea, while the record has SEP and SET; takeoffs in a single-engine turbine logged SET land do not count for an SEP land rating (verified with the evaluator). Options above. | none |
+| class-or-type | needs-decision | 61.57(a)(1)(ii); 61.5(b)(2); 1.1 "Class" | Class versus type is right. But the record splits one FAA class in two: 61.5(b)(2) knows single-engine land and sea, while the record has SEP and SET; takeoffs in a single-engine turbine logged SET land do not count for an SEP land rating (verified with the evaluator). Options above. | decided 2026-09-28: option 2, applied (`relevant_class: { class_group: faa }`, one result per FAA class, land and sea apart (fix F3); also in `faa.shared.passengers-tailwheel`; examples `passengers-day-turbine-single-counts-for-sep`, `passengers-day-sea-not-for-land`) |
 | sole-manipulator-recorded | supported | 61.57(a)(1)(i) | A missing field gives unknown input, never a silent pass. | none |
 | no-simulator-credit | supported | 61.57(a)(3) | Device credit needs an approved-for-landings device used in a part 142 course; not counting devices only under-reports. | none |
 | exceptions-not-modelled | supported | 61.57(a)(1), 61.57(e) | The part 121, 125 and 135 exceptions depend on employment; aircraft certificated for more than one pilot need the recency without passengers too, which the passenger evaluation does not show separately, as stated. | none |
@@ -182,8 +182,8 @@ end of evening civil twilight, which starts earlier.
 
 | Interpretation | Verdict | Paragraph(s) | Reasoning | Action |
 | --- | --- | --- | --- | --- |
-| logged-night-takeoffs | needs-decision | 61.57(b)(1); 1.1 "Night"; 61.51(b)(3)(i) | The reading describes the difference correctly, but the choice over-counts: a takeoff logged at night 40 minutes after sunset counts although it is outside the 61.57(b) period. Options above. | none |
-| class-or-type | needs-decision | 61.57(b)(1)(ii); 61.5(b)(2) | Same as by day, including the SEP/SET split. | none |
+| logged-night-takeoffs | needs-decision | 61.57(b)(1); 1.1 "Night"; 61.51(b)(3)(i) | The reading describes the difference correctly, but the choice over-counts: a takeoff logged at night 40 minutes after sunset counts although it is outside the 61.57(b) period. Options above. | decided 2026-09-28: option 3, applied (count `night_period_takeoffs`; a night flight without `nightPeriodTakeoffs` is unknown input; examples `passengers-night-takeoffs-before-period`, `passengers-night-period-takeoffs-not-recorded`) |
+| class-or-type | needs-decision | 61.57(b)(1)(ii); 61.5(b)(2) | Same as by day, including the SEP/SET split. | decided 2026-09-28: option 2, applied (as by day; example `passengers-night-turbine-single-counts-for-sep`) |
 | no-simulator-credit | supported | 61.57(b)(2) | A full flight simulator counts only in a part 142 course with the visual system set to the period. | none |
 | night-limitation-not-recorded | supported | 61.110(b)(1), 61.110(c); 61.101(e)(6); 61.315(c)(5), 61.329 | The "Night flying prohibited" limitation is not in the record; recreational pilots may not fly between sunset and sunrise; sport pilots only with the 61.329 endorsement. | none |
 
@@ -198,27 +198,27 @@ end of evening civil twilight, which starts earlier.
 
 | Interpretation | Verdict | Paragraph(s) | Reasoning | Action |
 | --- | --- | --- | --- | --- |
-| atp-privileges-medical | supported | 61.23(a)(1)(i), 61.23(a)(2)(ii) | Pilot-in-command privileges of an ATP certificate need first class. As stated, lower privileges are not distinguished: a second-class holder reads unknown, and a first-class certificate past its ATP duration (6 months from age 40) reads expired, although it may still support commercial privileges. | none |
+| atp-privileges-medical | supported | 61.23(a)(1)(i), 61.23(a)(2)(ii) | Pilot-in-command privileges of an ATP certificate need first class. As stated, lower privileges are not distinguished: a second-class holder reads unknown, and a first-class certificate past its ATP duration (6 months from age 40) reads expired, although it may still support commercial privileges. | fix F5 applied 2026-09-28: medical levels; private privileges decide, commercial and ATP privileges are limitations; reading rewritten |
 
 ## faa.licence.atp-rotorcraft
 
 | Interpretation | Verdict | Paragraph(s) | Reasoning | Action |
 | --- | --- | --- | --- | --- |
 | rating-items | supported | 61.56(c); 61.157(a)(1) | The flight review is per person. 61.157(a)(1) gives the ATP practical test for the helicopter class only, so a gyroplane rating on an ATP certificate carries lower privileges, as stated. | none |
-| atp-privileges-medical | supported | 61.23(a)(1)(i) | As for airplanes. A gyroplane rating is held to the first-class requirement too, which the reading states; a second-class holder reads unknown for it. | none |
+| atp-privileges-medical | supported | 61.23(a)(1)(i) | As for airplanes. A gyroplane rating is held to the first-class requirement too, which the reading states; a second-class holder reads unknown for it. | fix F5 applied 2026-09-28: medical levels; private privileges decide, commercial and ATP privileges are limitations; reading rewritten |
 
 ## faa.licence.commercial-airplane
 
 | Interpretation | Verdict | Paragraph(s) | Reasoning | Action |
 | --- | --- | --- | --- | --- |
-| commercial-privileges-medical | supported | 61.23(a)(2)(ii), 61.23(a)(3)(i) | Commercial privileges other than balloon or glider need second class. Not stated but following from it: a first- or second-class certificate past its 12 commercial months reads expired, although it still supports private privileges. | none |
+| commercial-privileges-medical | supported | 61.23(a)(2)(ii), 61.23(a)(3)(i) | Commercial privileges other than balloon or glider need second class. Not stated but following from it: a first- or second-class certificate past its 12 commercial months reads expired, although it still supports private privileges. | fix F5 applied 2026-09-28: medical levels; private privileges decide, commercial and ATP privileges are limitations; reading rewritten |
 
 ## faa.licence.commercial-rotorcraft
 
 | Interpretation | Verdict | Paragraph(s) | Reasoning | Action |
 | --- | --- | --- | --- | --- |
 | rating-items | supported | 61.56(c) | As for the other rotorcraft files. | none |
-| commercial-privileges-medical | supported | 61.23(a)(2)(ii), 61.23(a)(3)(i) | As for airplanes. | none |
+| commercial-privileges-medical | supported | 61.23(a)(2)(ii), 61.23(a)(3)(i) | As for airplanes. | fix F5 applied 2026-09-28: medical levels; private privileges decide, commercial and ATP privileges are limitations; reading rewritten |
 
 ## faa.licence.glider
 
@@ -233,7 +233,7 @@ end of evening civil twilight, which starts earlier.
 | Interpretation | Verdict | Paragraph(s) | Reasoning | Action |
 | --- | --- | --- | --- | --- |
 | rating-items | supported | 61.56(c) | As for the rotorcraft files. | none |
-| medical-grade-not-recorded | needs-decision | 61.23(a)(1)(i), (a)(2)(ii), (a)(3)(i) | The reading's consequences are stated correctly, but its premise is only partly true: the rating's licence kind shows a private, commercial or ATP certificate, and a private certificate carries private privileges only. Options above. | none |
+| medical-grade-not-recorded | needs-decision | 61.23(a)(1)(i), (a)(2)(ii), (a)(3)(i) | The reading's consequences are stated correctly, but its premise is only partly true: the rating's licence kind shows a private, commercial or ATP certificate, and a private certificate carries private privileges only. Options above. | decided 2026-09-28: option 2, applied (file narrowed to private and glider certificates; new `faa.licence.powered-lift-airship-commercial` and `-atp`; evaluation `certificate_grade` reports unknown for a glider-only certificate) |
 
 ## faa.licence.private-airplane
 
@@ -274,11 +274,11 @@ pilot use a driver's license, (b)(2) needs neither in a glider or balloon, and
 | Interpretation | Verdict | Paragraph(s) | Reasoning | Action |
 | --- | --- | --- | --- | --- |
 | night-regime-change | supported | 61.329, 61.315(c)(5) | Dates and the SPORT_NIGHT condition match the amendment (see the previous review, `faa.privilege.sport-night`). | none |
-| sport-classes | needs-decision | 61.315(a); 61.5(b)(1)(vi), (vii), (b)(5), (b)(6); 61.57(a)(1)(ii) | Recording powered parachutes and weight-shift-control aircraft as OTHER pools two categories, so recency in one counts for the other. Options above. | none |
+| sport-classes | needs-decision | 61.315(a); 61.5(b)(1)(vi), (vii), (b)(5), (b)(6); 61.57(a)(1)(ii) | Recording powered parachutes and weight-shift-control aircraft as OTHER pools two categories, so recency in one counts for the other. Options above. | decided 2026-09-28: option 2, applied (classes POWERED_PARACHUTE_LAND/SEA and WEIGHT_SHIFT_CONTROL_LAND/SEA selected; a rating recorded as OTHER reads unknown, evaluation `class_not_recorded`) |
 | one-passenger | supported | 61.315(c)(4) | A flight limit, not recency. | none |
 | no-glider-night | supported | 61.57(b)(1) | Same gap as `passengers-glider` / `night-not-evaluated`; stated. | none |
 | tailwheel-airplanes-only | supported | 61.57(a)(1)(ii) | As above. | none |
-| medical-or-drivers-license | needs-decision | 61.23(c)(1)(ii), 61.23(b)(2), 61.23(c)(1)(vi), 61.303 | The reading is accurate (no driver's-license credential file exists, although the record type US_DRIVERS_LICENSE does), but the result is a composite that never checks the medical qualification of a powered sport pilot. Options above. | none |
+| medical-or-drivers-license | needs-decision | 61.23(c)(1)(ii), 61.23(b)(2), 61.23(c)(1)(vi), 61.303 | The reading is accurate (no driver's-license credential file exists, although the record type US_DRIVERS_LICENSE does), but the result is a composite that never checks the medical qualification of a powered sport pilot. Options above. | decided 2026-09-28: option 3, applied (credential `faa.document.drivers-license`; evaluation `medical_or_drivers_license` for each rating other than glider or balloon; 61.23(c)(2) in interpretation `drivers-license-conditions`) |
 
 ## faa.licence.student
 
@@ -305,3 +305,8 @@ pilot use a driver's license, (b)(2) needs neither in a glider or balloon, and
    credential as a whole; a first- or second-class certificate past its commercial or ATP
    duration reads expired for the certificate, although it still supports lower
    privileges. The readings name the lower-class case (unknown) but not this one.
+
+Status after the owner decisions of 2026-09-28 (docs/decisions-2026-09-28.md): observation 1
+is closed by the FAA class groups (fix F3), observation 3 by `holds.authorities` (fix F6)
+and observation 4 by the medical levels (fix F5). Observation 2 (self-launching gliders
+logged as TMG) is not addressed by an accepted recommendation and stays open (F8).

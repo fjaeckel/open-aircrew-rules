@@ -62,7 +62,7 @@ examples:
       ratings:
         - {id: r-1, licenceId: l-faa, class: GYROPLANE}
       flights:
-        - {date: 2026-07-10, class: GYROPLANE, minutes: {total: 90, pic: 90, night: 60}, takeoffs: {night: 3}, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
+        - {date: 2026-07-10, class: GYROPLANE, minutes: {total: 90, pic: 90, night: 60}, takeoffs: {night: 3}, nightPeriodTakeoffs: 3, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
     outcome: current
     expect: { message: pax.night_current }
   - name: passengers-night-day-only
@@ -88,7 +88,7 @@ examples:
       ratings:
         - {id: r-1, licenceId: l-faa, class: HELICOPTER, typeDesignator: R44}
       flights:
-        - {date: 2026-07-10, class: HELICOPTER, typeDesignator: R44, minutes: {total: 90, pic: 90, night: 60}, takeoffs: {night: 3}, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
+        - {date: 2026-07-10, class: HELICOPTER, typeDesignator: R44, minutes: {total: 90, pic: 90, night: 60}, takeoffs: {night: 3}, nightPeriodTakeoffs: 3, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
     outcome: current
     expect: { message: pax.night_current }
   - name: passengers-night-type-day-only
@@ -112,7 +112,7 @@ examples:
       licences:
         - {id: l-faa, authority: FAA, type: PRIVATE}
       events:
-        - {date: 2025-09-01, kind: flight_review}
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
     outcome: current
     expect: { message: flight_review.current }
   - name: flight-review-none
@@ -138,7 +138,7 @@ examples:
       credentials:
         - {id: c-med, type: FAA_CLASS3_MEDICAL, issued: 2025-03-01}
       events:
-        - {date: 2025-09-01, kind: flight_review}
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
     outcome: current
     expect: { subject: { kind: rating, id: r-heli } }
   - name: composite-helicopter-no-medical
@@ -151,7 +151,7 @@ examples:
       ratings:
         - {id: r-heli, licenceId: l-faa, class: HELICOPTER}
       events:
-        - {date: 2025-09-01, kind: flight_review}
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
     outcome: unknown
     expect: { subject: { kind: rating, id: r-heli }, decidedBy: { evaluation: medical } }
   - name: passengers-day-helicopter-on-glider-certificate

@@ -242,3 +242,31 @@ examples:
         - { id: r-set, licenceId: l-ppl, class: SET_LAND, expires: 2027-12-31 }
     outcome: current
     expect: { message: rating.window_not_open }
+  - name: revalidation-ir-only-check-not-counted
+    evaluation: revalidation
+    shows: [check-in-aeroplane]
+    says: A proficiency check in the class recorded only for the IR is not a class rating check and does not revalidate the SET rating.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-set, licenceId: l-ppl, class: SET_LAND, expires: 2026-10-31 }
+      events:
+        - { date: 2026-08-20, kind: proficiency_check, class: SET_LAND, rating: IR }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-set, class: SET_LAND }, message: rating.revalidation_not_met_prof_check }
+  - name: revalidation-combined-check-counted
+    evaluation: revalidation
+    shows: [check-in-aeroplane]
+    says: A combined check recorded for the IR and for the SET land class counts as the class rating check.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-set, licenceId: l-ppl, class: SET_LAND, expires: 2026-10-31 }
+      events:
+        - { date: 2026-08-20, kind: proficiency_check, class: SET_LAND, rating: IR, ratings: [SET_LAND] }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-set, class: SET_LAND }, message: rating.revalidation_expiring_met }

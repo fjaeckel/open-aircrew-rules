@@ -39,6 +39,40 @@ examples:
         - {date: 2026-08-01, class: TMG, minutes: {total: 60, pic: 60}, takeoffs: {day: 3}, landings: {day: 3}, launches: 3}
     outcome: current
     expect: { message: rating.recency_current }
+  - name: recency-training-flight-counts-to-month-end
+    evaluation: recency
+    shows: [training-flights-month-end]
+    says: A training flight on 5 September 2024 counts through 30 September 2026, 24 months from the end of its month, so on 15 September 2026 both training flights count.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-spl, authority: EASA, type: SPL}
+      ratings:
+        - {id: r-gld, licenceId: l-spl, class: GLIDER}
+      flights:
+        - {date: 2024-09-05, class: GLIDER, launchMethod: winch, minutes: {total: 20, dual: 20}, launches: 1, landings: {day: 1}}
+        - {date: 2025-05-10, class: GLIDER, launchMethod: winch, minutes: {total: 10, dual: 10}, launches: 1, landings: {day: 1}}
+        - {date: 2026-06-01, class: GLIDER, launchMethod: winch, minutes: {total: 90, spic: 90}, launches: 6, landings: {day: 6}}
+        - {date: 2026-07-01, class: GLIDER, launchMethod: aerotow, minutes: {total: 240, pic: 240}, launches: 8, landings: {day: 8}}
+    outcome: current
+    expect: { message: rating.recency_current }
+  - name: recency-training-flight-month-over
+    evaluation: recency
+    shows: [training-flights-month-end]
+    says: A training flight on 20 August 2024 counted only through 31 August 2026; on 15 September 2026 one training flight is missing.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-spl, authority: EASA, type: SPL}
+      ratings:
+        - {id: r-gld, licenceId: l-spl, class: GLIDER}
+      flights:
+        - {date: 2024-08-20, class: GLIDER, launchMethod: winch, minutes: {total: 20, dual: 20}, launches: 1, landings: {day: 1}}
+        - {date: 2025-05-10, class: GLIDER, launchMethod: winch, minutes: {total: 10, dual: 10}, launches: 1, landings: {day: 1}}
+        - {date: 2026-06-01, class: GLIDER, launchMethod: winch, minutes: {total: 90, spic: 90}, launches: 6, landings: {day: 6}}
+        - {date: 2026-07-01, class: GLIDER, launchMethod: aerotow, minutes: {total: 240, pic: 240}, launches: 8, landings: {day: 8}}
+    outcome: lapsed
+    expect: { message: rating.recency_not_met, requirements: {training_flights: {current: 1, met: false}} }
   - name: recency-glider-rating-on-lapl-s-only
     evaluation: recency
     shows: [sailplane-privileges-sfcl-licences]
@@ -264,6 +298,70 @@ examples:
         - {date: 2020-06-01, class: SEP_LAND, minutes: {total: 4200, pic: 4200}, takeoffs: {day: 100}, landings: {day: 100}}
     outcome: current
     expect: { message: training.all_met }
+  - name: training-course-credit-completes
+    evaluation: training_course
+    shows: [other-category-credit-shown-only]
+    says: 'Twelve hours of instruction and 35 launches are not enough alone; a PPL(A) holder with 30 hours as PIC in aeroplanes is credited 3 hours (10 %) toward the 15 hours and 10 launches (the cap) toward the 45, which completes the course.'
+    asOf: 2026-09-15
+    record:
+      credentials:
+        - {id: c-med, type: EASA_LAPL_MEDICAL, expires: 2027-06-30}
+      licences:
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      flights:
+        - {date: 2026-04-01, class: GLIDER, launchMethod: winch, minutes: {total: 600, dual: 600}, launches: 30, landings: {day: 30}}
+        - {date: 2026-05-01, class: GLIDER, launchMethod: winch, minutes: {total: 60, spic: 60}, launches: 4, landings: {day: 4}}
+        - {date: 2026-06-01, class: GLIDER, launchMethod: aerotow, minutes: {total: 60, spic: 60, crossCountry: 60}, distanceKm: 55, launches: 1, landings: {day: 1}}
+        - {date: 2020-06-01, class: SEP_LAND, minutes: {total: 1800, pic: 1800}, takeoffs: {day: 60}, landings: {day: 60}}
+    outcome: current
+    expect: { message: training.all_met, requirements: {flight_instruction: {current: 900, met: true}, launches: {current: 45, met: true}} }
+  - name: training-course-credit-needs-licence
+    evaluation: training_course
+    shows: [other-category-credit-shown-only]
+    says: The same flying without a licence for another category earns no credit, so the 15 hours and the 45 launches are not met.
+    asOf: 2026-09-15
+    record:
+      credentials:
+        - {id: c-med, type: EASA_LAPL_MEDICAL, expires: 2027-06-30}
+      flights:
+        - {date: 2026-04-01, class: GLIDER, launchMethod: winch, minutes: {total: 600, dual: 600}, launches: 30, landings: {day: 30}}
+        - {date: 2026-05-01, class: GLIDER, launchMethod: winch, minutes: {total: 60, spic: 60}, launches: 4, landings: {day: 4}}
+        - {date: 2026-06-01, class: GLIDER, launchMethod: aerotow, minutes: {total: 60, spic: 60, crossCountry: 60}, distanceKm: 55, launches: 1, landings: {day: 1}}
+        - {date: 2020-06-01, class: SEP_LAND, minutes: {total: 1800, pic: 1800}, takeoffs: {day: 60}, landings: {day: 60}}
+    outcome: lapsed
+    expect: { message: training.in_progress, requirements: {flight_instruction: {current: 720, met: false}, launches: {current: 35, met: false}} }
+  - name: training-course-tmg-privileges-sought
+    evaluation: training_course
+    shows: [training-course-for-students]
+    says: A course seeking TMG privileges only is complete with 15 hours of instruction in TMGs, 10 of them dual, and a 160 km solo cross-country flight in a TMG; the sailplane part of (iv) is not required.
+    asOf: 2026-09-15
+    record:
+      credentials:
+        - {id: c-med, type: EASA_LAPL_MEDICAL, expires: 2027-06-30}
+      trainings:
+        - {programme: SPL, seeks: [TMG]}
+      flights:
+        - {date: 2026-04-01, class: TMG, minutes: {total: 600, dual: 600}, takeoffs: {day: 30}, landings: {day: 30}, launches: 30}
+        - {date: 2026-05-01, class: TMG, minutes: {total: 120, spic: 120}, takeoffs: {day: 14}, landings: {day: 14}, launches: 14}
+        - {date: 2026-06-01, class: TMG, minutes: {total: 180, spic: 180, crossCountry: 180}, distanceKm: 160, takeoffs: {day: 2}, landings: {day: 2}, launches: 1}
+    outcome: current
+    expect: { message: training.all_met }
+  - name: training-course-tmg-cross-country-short
+    evaluation: training_course
+    shows: [training-course-for-students]
+    says: For TMG privileges the solo cross-country flight must be at least 150 km in a TMG; 120 km leaves the course in progress.
+    asOf: 2026-09-15
+    record:
+      credentials:
+        - {id: c-med, type: EASA_LAPL_MEDICAL, expires: 2027-06-30}
+      trainings:
+        - {programme: SPL, seeks: [TMG]}
+      flights:
+        - {date: 2026-04-01, class: TMG, minutes: {total: 600, dual: 600}, takeoffs: {day: 30}, landings: {day: 30}, launches: 30}
+        - {date: 2026-05-01, class: TMG, minutes: {total: 120, spic: 120}, takeoffs: {day: 14}, landings: {day: 14}, launches: 14}
+        - {date: 2026-06-01, class: TMG, minutes: {total: 180, spic: 180, crossCountry: 180}, distanceKm: 120, takeoffs: {day: 2}, landings: {day: 2}, launches: 1}
+    outcome: lapsed
+    expect: { message: training.in_progress, requirements: {tmg_cross_country: {current: 0, met: false}} }
   - name: training-course-in-progress
     evaluation: training_course
     says: A student with 5 hours dual has open items; a 40 km solo cross-country flight is too short, TMG instruction counts toward the 15 hours but not toward the 7 hours in sailplanes, and 10 hours as PIC in aeroplanes earn a 1-hour credit.

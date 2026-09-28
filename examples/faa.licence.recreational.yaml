@@ -147,7 +147,7 @@ examples:
       ratings:
         - { id: r-sep, licenceId: l-rec, class: SEP_LAND }
       flights:
-        - { date: 2026-08-01, class: SEP_LAND, minutes: { total: 60, dual: 60, night: 60 }, takeoffs: { night: 3 }, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
+        - { date: 2026-08-01, class: SEP_LAND, minutes: { total: 60, dual: 60, night: 60 }, takeoffs: { night: 3 }, nightPeriodTakeoffs: 3, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
     outcome: not_applicable
     expect:
       subject: { kind: passengers, id: l-rec, class: SEP_LAND }
@@ -162,7 +162,7 @@ examples:
       ratings:
         - { id: r-sep, licenceId: l-rec, class: SEP_LAND, typeDesignator: PC6 }
       flights:
-        - { date: 2026-08-01, class: SEP_LAND, typeDesignator: PC6, minutes: { total: 60, dual: 60, night: 60 }, takeoffs: { night: 3 }, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
+        - { date: 2026-08-01, class: SEP_LAND, typeDesignator: PC6, minutes: { total: 60, dual: 60, night: 60 }, takeoffs: { night: 3 }, nightPeriodTakeoffs: 3, landings: { night: 3 }, fullStopNightLandings: 3, soleManipulator: true }
     outcome: not_applicable
     expect:
       subject: { kind: passengers, id: l-rec, class: SEP_LAND }
@@ -175,7 +175,7 @@ examples:
       licences:
         - {id: l-faa, authority: FAA, type: RECREATIONAL}
       events:
-        - {date: 2025-09-01, kind: flight_review}
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
     outcome: current
     expect: { message: flight_review.current }
   - name: flight-review-none
@@ -200,7 +200,7 @@ examples:
       credentials:
         - {id: c-med, type: FAA_CLASS3_MEDICAL, issued: 2025-03-01}
       events:
-        - {date: 2025-09-01, kind: flight_review}
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
       flights:
         - {date: 2026-07-01, class: SEP_LAND, minutes: {total: 60, pic: 60}}
     outcome: current
@@ -218,7 +218,7 @@ examples:
       credentials:
         - {id: c-med, type: FAA_CLASS3_MEDICAL, issued: 2025-03-01}
       events:
-        - {date: 2025-09-01, kind: flight_review}
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
       flights:
         - {date: 2025-12-01, class: SEP_LAND, minutes: {total: 60, pic: 60}}
     outcome: lapsed

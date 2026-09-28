@@ -376,9 +376,13 @@ examples:
 
   - name: composite-may-fly
     composite: true
-    says: With the § 45(2) experience met on an ultralight licence, three-axis ultralights may be flown; missing passenger recency only limits the passenger privilege.
+    shows: [medical-above-120-kg-not-evaluated]
+    says: With the § 45(2) experience met on an ultralight licence and a valid LAPL medical, three-axis ultralights may be flown; missing passenger recency only limits the passenger privilege.
     asOf: 2026-09-15
     record:
+      holder: { dateOfBirth: 1980-01-01 }
+      credentials:
+        - { id: c-med, type: EASA_LAPL_MEDICAL, issued: 2025-06-01, expires: 2027-06-01 }
       licences:
         - { id: l-ul, authority: DULV, type: UL }
       ratings:
@@ -402,3 +406,120 @@ examples:
         - { date: 2026-01-10, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 120, pic: 120 }, takeoffs: { day: 2 }, landings: { day: 2 } }
     outcome: lapsed
     expect: { subject: { kind: rating, id: r-3ax }, decidedBy: { evaluation: recency } }
+
+  - name: composite-medical-not-recorded
+    composite: true
+    shows: [medical-above-120-kg-not-evaluated, ll-entries-not-distinguished]
+    says: The § 45(2) experience is met, but no medical certificate is recorded; three-axis ultralights are practically always above 120 kg empty mass, where the licence is valid only with a medical, so whether the privileges may be exercised is unknown.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-3ax, licenceId: l-ul, class: ULTRALIGHT, ulKind: THREE_AXIS }
+      flights:
+        - { date: 2026-01-10, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 660, pic: 660 }, takeoffs: { day: 11 }, landings: { day: 11 } }
+        - { date: 2026-02-10, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 60, dual: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: unknown
+    expect: { subject: { kind: rating, id: r-3ax }, decidedBy: { evaluation: medical } }
+
+  - name: composite-medical-expired
+    composite: true
+    shows: [medical-above-120-kg-not-evaluated]
+    says: The § 45(2) experience is met, but the only medical certificate, a class 2, expired; the licence is not valid above 120 kg empty mass and the three-axis privileges may not be exercised.
+    asOf: 2026-09-15
+    record:
+      holder: { dateOfBirth: 1980-01-01 }
+      credentials:
+        - { id: c-med, type: EASA_CLASS2_MEDICAL, issued: 2021-06-01, expires: 2026-06-01 }
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-3ax, licenceId: l-ul, class: ULTRALIGHT, ulKind: THREE_AXIS }
+      flights:
+        - { date: 2026-01-10, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 660, pic: 660 }, takeoffs: { day: 11 }, landings: { day: 11 } }
+        - { date: 2026-02-10, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 60, dual: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: expired
+    expect: { subject: { kind: rating, id: r-3ax }, decidedBy: { evaluation: medical, credential: easa.medical.class-2 } }
+
+  - name: training-flight-instructor-aboard
+    evaluation: recency
+    shows: [training-flight-as-dual]
+    says: 'The training flight of 70 minutes is logged as PIC time and flagged as flown with an instructor aboard (§ 45b no. 3); it counts. With the other flights the twelve hours, six hours PIC, twelve take-offs and twelve landings are met.'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-3ax, licenceId: l-ul, class: ULTRALIGHT, ulKind: THREE_AXIS }
+      flights:
+        - { date: 2026-01-10, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 650, pic: 650 }, takeoffs: { day: 11 }, landings: { day: 11 } }
+        - { date: 2026-02-10, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 70, pic: 70 }, takeoffs: { day: 1 }, landings: { day: 1 }, flags: { instructorOnBoard: true } }
+    outcome: current
+    expect:
+      subject: { kind: rating, id: r-3ax }
+      message: rating.recency_current
+      requirements:
+        training_flight: { current: 70, met: true }
+
+  - name: training-flight-pic-without-flag
+    evaluation: recency
+    shows: [training-flight-as-dual]
+    says: 'Every flight is logged as PIC time and none is flagged as flown with an instructor aboard, so no training flight can be recognised; the other requirements are met, but the privileges lapse.'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-3ax, licenceId: l-ul, class: ULTRALIGHT, ulKind: THREE_AXIS }
+      flights:
+        - { date: 2026-01-10, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 650, pic: 650 }, takeoffs: { day: 11 }, landings: { day: 11 } }
+        - { date: 2026-02-10, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 70, pic: 70 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: lapsed
+    expect:
+      subject: { kind: rating, id: r-3ax }
+      message: rating.recency_not_met
+      requirements:
+        total_time: { current: 720, met: true }
+        training_flight: { current: 0, met: false, remedyKey: remedy.training_flight }
+
+  - name: pax-authorisation-other-kind
+    evaluation: passengers
+    shows: [authorisation-recorded]
+    says: 'Passenger recency on three-axis ultralights is met, but the only authorisation is entered for weight-shift ultralights; it does not cover three-axis ultralights, so the status is unknown and asks for the three-axis authorisation.'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL, issued: 2020-05-01 }
+      ratings:
+        - { id: r-3ax, licenceId: l-ul, class: ULTRALIGHT, ulKind: THREE_AXIS }
+        - { id: r-ws, licenceId: l-ul, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+      privileges:
+        - { id: p-pax, licenceId: l-ul, kind: UL_PASSENGER_AUTH, detail: WEIGHT_SHIFT }
+      flights:
+        - { date: 2026-08-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 60, pic: 60 }, takeoffs: { day: 3 }, landings: { day: 3 } }
+    outcome: unknown
+    expect:
+      subject: { kind: passengers, id: l-ul, ulKind: THREE_AXIS }
+      message: pax.ul_authorisation_missing
+      requirements:
+        day: { current: 3, met: true }
+
+  - name: pax-authorisation-kind-not-recorded
+    evaluation: passengers
+    shows: [authorisation-recorded]
+    says: 'Passenger recency is met and a passenger authorisation is recorded, but without the kind it is entered for; whether it covers three-axis ultralights is unknown and the result asks for the kind.'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL, issued: 2020-05-01 }
+      ratings:
+        - { id: r-3ax, licenceId: l-ul, class: ULTRALIGHT, ulKind: THREE_AXIS }
+      privileges:
+        - { id: p-pax, licenceId: l-ul, kind: UL_PASSENGER_AUTH }
+      flights:
+        - { date: 2026-08-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 60, pic: 60 }, takeoffs: { day: 3 }, landings: { day: 3 } }
+    outcome: unknown
+    expect:
+      subject: { kind: passengers, id: l-ul, ulKind: THREE_AXIS }
+      message: pax.ul_authorisation_kind_missing

@@ -150,10 +150,10 @@ examples:
         - {date: 2026-08-20, class: SEP_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 2}, landings: {day: 2}, pilotFlying: true}
     outcome: expired
     expect: { message: pax.not_current }
-  - name: passengers-night-ir-no-expiry-waives
+  - name: passengers-night-ir-no-expiry-unknown
     evaluation: passengers_night
     shows: [ir-held]
-    says: An IR recorded without an expiry date is taken as held and waives the night requirement.
+    says: An IR of the aeroplane category recorded without an expiry date no longer waives the night requirement; with no night take-off or landing the result is unknown until its expiry date is recorded.
     asOf: 2026-09-15
     record:
       licences:
@@ -163,8 +163,39 @@ examples:
         - {id: r-ir, licenceId: l-ppl, class: IR}
       flights:
         - {date: 2026-08-20, class: SEP_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 1}, landings: {day: 1}, pilotFlying: true}
+    outcome: unknown
+    expect: { message: pax.night_ir_no_expiry }
+  - name: passengers-night-ir-valid-waives
+    evaluation: passengers_night
+    shows: [ir-held]
+    says: A valid IR of the aeroplane category, recorded with its expiry date, waives the night take-off and landing.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      ratings:
+        - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-06-30}
+        - {id: r-ir, licenceId: l-ppl, class: IR, expires: 2027-03-31}
+      flights:
+        - {date: 2026-08-20, class: SEP_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 1}, landings: {day: 1}, pilotFlying: true}
     outcome: current
     expect: { message: pax.night_waived_ir }
+  - name: passengers-night-ir-other-category
+    evaluation: passengers_night
+    shows: [ir-held]
+    says: A valid IR on a PPL(H), an IR of the helicopter category, does not waive the night requirement for aeroplane passengers.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+        - {id: l-pplh, authority: EASA, type: PPL(H)}
+      ratings:
+        - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-06-30}
+        - {id: r-irh, licenceId: l-pplh, class: IR, expires: 2027-03-31}
+      flights:
+        - {date: 2026-08-20, class: SEP_LAND, minutes: {total: 60, pic: 60}, takeoffs: {day: 1}, landings: {day: 1}, pilotFlying: true}
+    outcome: expired
+    expect: { subject: { kind: passengers, id: l-ppl, class: SEP_LAND }, message: pax.night_not_current }
   - name: passengers-night-ffs-night
     evaluation: passengers_night
     says: A night take-off and landing as pilot flying in an FFS representing the class allow night passengers.
@@ -180,6 +211,7 @@ examples:
     expect: { message: pax.night_current }
   - name: passengers-night-ir-expired
     evaluation: passengers_night
+    shows: [ir-held]
     says: An IR that expired the day before does not waive the night requirement.
     asOf: 2026-09-15
     record:
@@ -236,7 +268,7 @@ examples:
       ratings:
         - { id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-06-30 }
       variants:
-        - { id: v-electric, ratingId: r-sep, name: ELECTRIC, issued: 2023-05-01 }
+        - { id: v-electric, ratingId: r-sep, name: ELECTRIC, differentEngineType: true, issued: 2023-05-01 }
       events:
         - { date: 2026-02-01, kind: differences_training, class: SEP_LAND, variant: ELECTRIC }
         - { date: 2026-02-02, kind: differences_training, class: SEP_LAND, variant: PISTON }
@@ -257,7 +289,7 @@ examples:
       ratings:
         - { id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-06-30 }
       variants:
-        - { id: v-electric, ratingId: r-sep, name: ELECTRIC, issued: 2023-05-01 }
+        - { id: v-electric, ratingId: r-sep, name: ELECTRIC, differentEngineType: true, issued: 2023-05-01 }
       flights:
         - { date: 2026-03-10, class: SEP_LAND, variant: ELECTRIC, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
         - { date: 2026-04-10, class: SEP_LAND, variant: PISTON, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
@@ -278,7 +310,7 @@ examples:
       ratings:
         - { id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-06-30 }
       variants:
-        - { id: v-electric, ratingId: r-sep, name: ELECTRIC, issued: 2023-05-01 }
+        - { id: v-electric, ratingId: r-sep, name: ELECTRIC, differentEngineType: true, issued: 2023-05-01 }
       flights:
         - { date: 2024-08-01, class: SEP_LAND, variant: ELECTRIC, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
         - { date: 2026-04-10, class: SEP_LAND, variant: PISTON, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
@@ -298,7 +330,7 @@ examples:
       ratings:
         - { id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-06-30 }
       variants:
-        - { id: v-electric, ratingId: r-sep, name: ELECTRIC, issued: 2023-05-01 }
+        - { id: v-electric, ratingId: r-sep, name: ELECTRIC, differentEngineType: true, issued: 2023-05-01 }
       events:
         - { date: 2026-08-01, kind: proficiency_check, class: SEP_LAND, variant: ELECTRIC }
       flights:
@@ -317,7 +349,7 @@ examples:
       ratings:
         - { id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-06-30 }
       variants:
-        - { id: v-electric, ratingId: r-sep, name: ELECTRIC, issued: 2023-05-01 }
+        - { id: v-electric, ratingId: r-sep, name: ELECTRIC, differentEngineType: true, issued: 2023-05-01 }
       events:
         - { date: 2026-05-01, kind: refresher_training, class: SEP_LAND, variant: ELECTRIC }
       flights: []
@@ -335,7 +367,7 @@ examples:
       ratings:
         - { id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-06-30 }
       variants:
-        - { id: v-electric, ratingId: r-sep, name: ELECTRIC, issued: 2023-05-01 }
+        - { id: v-electric, ratingId: r-sep, name: ELECTRIC, differentEngineType: true, issued: 2023-05-01 }
       flights:
         - { date: 2026-05-01, class: SEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
     outcome: unknown
@@ -354,7 +386,7 @@ examples:
       ratings:
         - { id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-06-30 }
       variants:
-        - { id: v-electric, ratingId: r-sep, name: ELECTRIC, issued: 2023-05-01 }
+        - { id: v-electric, ratingId: r-sep, name: ELECTRIC, differentEngineType: true, issued: 2023-05-01 }
       flights:
         - { date: 2024-09-14, class: SEP_LAND, variant: ELECTRIC, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
         - { date: 2024-09-15, class: SEP_LAND, variant: ELECTRIC, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
@@ -383,8 +415,178 @@ examples:
         - { id: v-tmg, ratingId: r-tmg, name: RETRACTABLE }
         - { id: v-faa, ratingId: r-faa, name: ELECTRIC }
         - { id: v-gyro, ratingId: r-gyro, name: ENCLOSED_COCKPIT }
-        - { id: v-electric, ratingId: r-sep, name: ELECTRIC }
+        - { id: v-electric, ratingId: r-sep, name: ELECTRIC, differentEngineType: true }
       flights:
         - { date: 2026-03-10, class: SEP_LAND, variant: ELECTRIC, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
     outcome: current
     expect: { message: type.current }
+  - name: variants-engine-type-not-recorded
+    evaluation: variants
+    shows: [same-engine-sep-variants-evaluated]
+    says: An SEP variant recorded without saying whether it differs by engine type is reported unknown, not lapsed, although it was not flown in 2 years.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-06-30 }
+      variants:
+        - { id: v-retract, ratingId: r-sep, name: RETRACTABLE_GEAR }
+      flights:
+        - { date: 2024-01-10, class: SEP_LAND, variant: RETRACTABLE_GEAR, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: unknown
+    expect: { subject: { kind: type, id: v-retract }, message: selection.input_missing, params: { input: differentEngineType } }
+  - name: variants-engine-type-evaluated
+    evaluation: variants
+    shows: [same-engine-sep-variants-evaluated]
+    says: Of two SEP variants, the one with a different engine type (electric) is evaluated and lapsed after 2 years without a flight; the same-engine variant recorded with differentEngineType false has no 2-year rule.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2027-06-30 }
+      variants:
+        - { id: v-electric, ratingId: r-sep, name: ELECTRIC, differentEngineType: true }
+        - { id: v-retract, ratingId: r-sep, name: RETRACTABLE_GEAR, differentEngineType: false }
+      flights:
+        - { date: 2024-01-10, class: SEP_LAND, variant: ELECTRIC, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+    outcome: lapsed
+    expect: { subject: { kind: type, id: v-electric }, message: type.not_flown }
+  - name: revalidation-ffs-check
+    evaluation: revalidation
+    shows: [examiner-not-checked]
+    says: A class rating proficiency check flown in an FFS of the class within the 3 months before expiry revalidates the rating (Appendix 9, Section A, point 1c).
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      ratings:
+        - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2026-10-31}
+      flights:
+        - {date: 2026-08-01, class: SEP_LAND, isSimulator: true, fstdType: FFS, minutes: {total: 60}, flags: {proficiencyCheck: true, examinerOnBoard: true}}
+    outcome: expiring
+    expect: { message: rating.revalidation_expiring_met }
+  - name: revalidation-fnpt-check-not-counted
+    evaluation: revalidation
+    shows: [examiner-not-checked]
+    says: A check flown in an FNPT is not a class rating check the text allows in a device; with no experience the revalidation is not met.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      ratings:
+        - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2026-10-31}
+      flights:
+        - {date: 2026-08-01, class: SEP_LAND, isSimulator: true, fstdType: FNPT_II, minutes: {total: 60}, flags: {proficiencyCheck: true, examinerOnBoard: true}}
+    outcome: expiring
+    expect: { message: rating.revalidation_not_met }
+  - name: revalidation-ir-only-check-not-counted
+    evaluation: revalidation
+    shows: [examiner-not-checked]
+    says: A proficiency check in an SEP land aeroplane recorded only for the IR is not a class rating check and does not revalidate the class rating.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      ratings:
+        - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2026-10-31}
+      events:
+        - {date: 2026-08-01, kind: proficiency_check, class: SEP_LAND, rating: IR}
+    outcome: expiring
+    expect: { message: rating.revalidation_not_met }
+  - name: revalidation-combined-ir-and-class-check
+    evaluation: revalidation
+    shows: [examiner-not-checked]
+    says: A combined check recorded for the IR and for the SEP land class counts as the class rating check.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      ratings:
+        - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2026-10-31}
+      events:
+        - {date: 2026-08-01, kind: proficiency_check, class: SEP_LAND, rating: IR, ratings: [SEP_LAND]}
+    outcome: expiring
+    expect: { message: rating.revalidation_expiring_met }
+  - name: revalidation-exemption-within-validity-period
+    evaluation: revalidation
+    shows: [exemption-period]
+    says: A proficiency check passed 20 months before expiry, within the 24-month validity period, exempts from the refresher training.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      ratings:
+        - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2026-10-31}
+      events:
+        - {date: 2025-03-01, kind: proficiency_check, class: MEP_LAND}
+      flights:
+        - {date: 2026-03-10, class: SEP_LAND, minutes: {total: 720, pic: 720}, takeoffs: {day: 12}, landings: {day: 12}}
+    outcome: expiring
+    expect: { message: rating.revalidation_expiring_met }
+  - name: revalidation-exemption-from-earlier-period
+    evaluation: revalidation
+    shows: [exemption-period]
+    says: A proficiency check passed 30 months before expiry lies in the previous validity period and does not exempt from the refresher training.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      ratings:
+        - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2026-10-31}
+      events:
+        - {date: 2024-05-01, kind: proficiency_check, class: MEP_LAND}
+      flights:
+        - {date: 2026-03-10, class: SEP_LAND, minutes: {total: 720, pic: 720}, takeoffs: {day: 12}, landings: {day: 12}}
+    outcome: expiring
+    expect: { message: rating.revalidation_not_met }
+  - name: revalidation-land-and-sea-combined
+    evaluation: revalidation
+    shows: [land-sea-pooling-not-applied]
+    says: With SEP land and SEP sea on the same licence, 6 hours in each class (at least 1 hour as PIC and 6 take-offs and landings in each, a 1-hour refresher in the sea class) meet point (1)(ii) for the land rating, although neither class alone has 12 hours.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      ratings:
+        - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2026-10-31}
+        - {id: r-sea, licenceId: l-ppl, class: SEP_SEA, expires: 2026-10-31}
+      flights:
+        - {date: 2026-03-10, class: SEP_LAND, minutes: {total: 360, pic: 360}, takeoffs: {day: 6}, landings: {day: 6}}
+        - {date: 2026-06-10, class: SEP_SEA, minutes: {total: 360, pic: 120, dual: 240}, takeoffs: {day: 6}, landings: {day: 6}}
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-sep }, message: rating.revalidation_expiring_met }
+  - name: revalidation-land-and-sea-per-class-minimum
+    evaluation: revalidation
+    shows: [land-sea-pooling-not-applied]
+    says: The combined route needs 6 take-offs and 6 landings in each class; with only 4 in the sea class it is not met, although the totals reach 12.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+      ratings:
+        - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2026-10-31}
+        - {id: r-sea, licenceId: l-ppl, class: SEP_SEA, expires: 2026-10-31}
+      flights:
+        - {date: 2026-03-10, class: SEP_LAND, minutes: {total: 360, pic: 360}, takeoffs: {day: 8}, landings: {day: 8}}
+        - {date: 2026-06-10, class: SEP_SEA, minutes: {total: 360, pic: 120, dual: 240}, takeoffs: {day: 4}, landings: {day: 4}}
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-sep }, message: rating.revalidation_not_met }
+  - name: revalidation-land-and-sea-other-licences
+    evaluation: revalidation
+    shows: [land-sea-pooling-not-applied]
+    says: The combined route applies only while both ratings are on the same licence; with the sea rating on another licence the land rating is not revalidated.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-ppl, authority: EASA, type: PPL(A)}
+        - {id: l-cpl, authority: EASA, type: CPL(A)}
+      ratings:
+        - {id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2026-10-31}
+        - {id: r-sea, licenceId: l-cpl, class: SEP_SEA, expires: 2026-10-31}
+      flights:
+        - {date: 2026-03-10, class: SEP_LAND, minutes: {total: 360, pic: 360}, takeoffs: {day: 6}, landings: {day: 6}}
+        - {date: 2026-06-10, class: SEP_SEA, minutes: {total: 360, pic: 120, dual: 240}, takeoffs: {day: 6}, landings: {day: 6}}
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-sep }, message: rating.revalidation_not_met }

@@ -2,7 +2,8 @@ credential: easa.privilege.spl-tmg
 examples:
   - name: passenger-prerequisite-hours-met
     evaluation: passenger_prerequisite
-    says: Ten hours as PIC on sailplanes and TMGs since the SPL was issued, starting on the issue day, meet the prerequisite; dual time does not count. Both the GLIDER and the TMG class are evaluated.
+    shows: [competence-flight-not-recorded]
+    says: Ten hours as PIC on sailplanes and TMGs since the SPL was issued, starting on the issue day, and a recorded training flight on carrying passengers meet the prerequisite; dual time does not count. Both the GLIDER and the TMG class are evaluated.
     asOf: 2026-09-15
     record:
       licences:
@@ -14,8 +15,24 @@ examples:
         - {date: 2025-04-01, class: GLIDER, launchMethod: winch, minutes: {total: 300, pic: 300}, launches: 5, landings: {day: 5}}
         - {date: 2025-06-01, class: TMG, minutes: {total: 300, pic: 300}, takeoffs: {day: 4}, landings: {day: 4}, launches: 4}
         - {date: 2025-07-01, class: GLIDER, launchMethod: winch, minutes: {total: 120, dual: 120}, launches: 10, landings: {day: 10}}
+      events:
+        - {date: 2025-07-02, kind: passenger_training_flight, class: GLIDER}
     outcome: current
     expect: { message: pax.prerequisite_met }
+  - name: passenger-prerequisite-training-flight-not-recorded
+    evaluation: passenger_prerequisite
+    shows: [competence-flight-not-recorded]
+    says: Ten hours as PIC since the SPL was issued, but no training flight on carrying passengers recorded; the result is unknown until it is recorded.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - {id: l-spl, authority: EASA, type: SPL, issued: 2025-04-01}
+      ratings:
+        - {id: r-tmg, licenceId: l-spl, class: TMG}
+      flights:
+        - {date: 2025-04-01, class: TMG, minutes: {total: 600, pic: 600}, takeoffs: {day: 5}, landings: {day: 5}}
+    outcome: unknown
+    expect: { message: pax.prerequisite_training_flight_not_recorded }
   - name: recency-part-fcl-tmg-exempt
     evaluation: recency
     shows: [part-fcl-exemption]

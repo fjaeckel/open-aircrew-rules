@@ -97,7 +97,7 @@ examples:
       ratings:
         - {id: r-1, licenceId: l-faa, class: MEP_LAND}
       flights:
-        - {date: 2026-07-10, class: MEP_LAND, minutes: {total: 90, pic: 90, night: 60}, takeoffs: {night: 3}, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
+        - {date: 2026-07-10, class: MEP_LAND, minutes: {total: 90, pic: 90, night: 60}, takeoffs: {night: 3}, nightPeriodTakeoffs: 3, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
     outcome: current
     expect: { message: pax.night_current }
   - name: passengers-night-day-only
@@ -123,7 +123,7 @@ examples:
       ratings:
         - {id: r-1, licenceId: l-faa, class: MEP_LAND, typeDesignator: B350}
       flights:
-        - {date: 2026-07-10, class: MEP_LAND, typeDesignator: B350, minutes: {total: 90, pic: 90, night: 60}, takeoffs: {night: 3}, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
+        - {date: 2026-07-10, class: MEP_LAND, typeDesignator: B350, minutes: {total: 90, pic: 90, night: 60}, takeoffs: {night: 3}, nightPeriodTakeoffs: 3, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
     outcome: current
     expect: { message: pax.night_current }
   - name: passengers-night-type-day-only
@@ -147,7 +147,7 @@ examples:
       licences:
         - {id: l-faa, authority: FAA, type: ATP}
       events:
-        - {date: 2025-09-01, kind: flight_review}
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
     outcome: current
     expect: { message: flight_review.current }
   - name: flight-review-none
@@ -172,13 +172,13 @@ examples:
       credentials:
         - {id: c-med, type: FAA_CLASS1_MEDICAL, issued: 2026-05-01}
       events:
-        - {date: 2025-09-01, kind: flight_review}
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
     outcome: current
     expect: { subject: { kind: licence, id: l-faa } }
   - name: composite-second-class-only
     composite: true
     shows: [atp-privileges-medical]
-    says: A second-class medical certificate does not support the pilot-in-command privileges of an airline transport pilot certificate; with no first-class certificate recorded the composite is unknown.
+    says: A second-class medical certificate does not support the pilot-in-command privileges of an airline transport pilot certificate, but it supports private privileges (and commercial ones); the certificate may be exercised, and the airline transport privileges are reported as a limitation.
     asOf: 2026-08-16
     record:
       holder: {dateOfBirth: 1990-01-01}
@@ -189,6 +189,23 @@ examples:
       credentials:
         - {id: c-med, type: FAA_CLASS2_MEDICAL, issued: 2026-05-01}
       events:
-        - {date: 2025-09-01, kind: flight_review}
-    outcome: unknown
-    expect: { subject: { kind: licence, id: l-faa }, decidedBy: { evaluation: medical } }
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
+    outcome: current
+    expect: { subject: { kind: licence, id: l-faa } }
+  - name: composite-third-class-past-private-duration
+    composite: true
+    shows: [atp-privileges-medical]
+    says: A pilot aged 54 whose only medical is a third-class certificate examined in June 2024 had it for private privileges through June 2026; on 16 August no privileges of the airline transport pilot certificate may be used.
+    asOf: 2026-08-16
+    record:
+      holder: {dateOfBirth: 1970-01-01}
+      licences:
+        - {id: l-faa, authority: FAA, type: ATP}
+      ratings:
+        - {id: r-1, licenceId: l-faa, class: MEP_LAND}
+      credentials:
+        - {id: c-med, type: FAA_CLASS3_MEDICAL, issued: 2024-06-10}
+      events:
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
+    outcome: expired
+    expect: { subject: { kind: licence, id: l-faa }, decidedBy: { evaluation: medical, credential: faa.medical.third-class } }

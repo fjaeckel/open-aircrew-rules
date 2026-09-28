@@ -92,12 +92,12 @@ examples:
       ratings:
         - { id: r-sea, licenceId: l-ppl, class: SEP_SEA, expires: 2027-06-30 }
       variants:
-        - { id: v-float, ratingId: r-sea, name: AMPHIBIAN }
+        - { id: v-electric, ratingId: r-sea, name: ELECTRIC, differentEngineType: true }
       flights:
-        - { date: 2026-03-10, class: SEP_SEA, variant: AMPHIBIAN, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
-        - { date: 2026-04-10, class: SEP_SEA, variant: FLOAT, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-03-10, class: SEP_SEA, variant: ELECTRIC, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2026-04-10, class: SEP_SEA, variant: PISTON, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
     outcome: current
-    expect: { subject: { kind: type, id: v-float }, message: type.current, validUntil: 2028-03-10 }
+    expect: { subject: { kind: type, id: v-electric }, message: type.current, validUntil: 2028-03-10 }
   - name: variants-not-flown
     evaluation: variants
     says: The SEP sea variant was last flown more than 2 years ago; before flying it again the pilot needs differences training, a proficiency check or refresher training in it.
@@ -108,8 +108,39 @@ examples:
       ratings:
         - { id: r-sea, licenceId: l-ppl, class: SEP_SEA, expires: 2027-06-30 }
       variants:
-        - { id: v-float, ratingId: r-sea, name: AMPHIBIAN }
+        - { id: v-electric, ratingId: r-sea, name: ELECTRIC, differentEngineType: true }
       flights:
-        - { date: 2024-08-01, class: SEP_SEA, variant: AMPHIBIAN, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
+        - { date: 2024-08-01, class: SEP_SEA, variant: ELECTRIC, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 } }
     outcome: lapsed
-    expect: { subject: { kind: type, id: v-float }, message: type.not_flown, requirements: { variant_flown: { current: 0, met: false } } }
+    expect: { subject: { kind: type, id: v-electric }, message: type.not_flown, requirements: { variant_flown: { current: 0, met: false } } }
+  - name: revalidation-land-and-sea-combined
+    evaluation: revalidation
+    shows: [no-land-sea-pooling]
+    says: With SEP land and SEP sea on the same licence, 6 hours in each class (at least 1 hour as PIC and 6 take-offs and landings in each, a 1-hour refresher) meet point (1)(ii) for the sea rating too.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-sep, licenceId: l-ppl, class: SEP_LAND, expires: 2026-10-31 }
+        - { id: r-sea, licenceId: l-ppl, class: SEP_SEA, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-03-10, class: SEP_LAND, minutes: { total: 360, pic: 300, dual: 60 }, takeoffs: { day: 6 }, landings: { day: 6 } }
+        - { date: 2026-06-10, class: SEP_SEA, minutes: { total: 360, pic: 360 }, takeoffs: { day: 6 }, landings: { day: 6 } }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-sea }, message: rating.revalidation_expiring_met }
+  - name: revalidation-sea-only-without-land-rating
+    evaluation: revalidation
+    shows: [no-land-sea-pooling]
+    says: Without an SEP land rating the land flights do not count, and 6 hours in the sea class are not enough.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-sea, licenceId: l-ppl, class: SEP_SEA, expires: 2026-10-31 }
+      flights:
+        - { date: 2026-03-10, class: SEP_LAND, minutes: { total: 360, pic: 300, dual: 60 }, takeoffs: { day: 6 }, landings: { day: 6 } }
+        - { date: 2026-06-10, class: SEP_SEA, minutes: { total: 360, pic: 360 }, takeoffs: { day: 6 }, landings: { day: 6 } }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-sea }, message: rating.revalidation_not_met }

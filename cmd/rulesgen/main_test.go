@@ -89,7 +89,7 @@ func TestDependenciesFile(t *testing.T) {
 		`easa_rating_sep_land_revalidation["easa.rating.sep-land#35;revalidation"]`,
 		"| `easa.rating.sep-sea` | ",
 		"`revalidation`: `easa.rating.sep-land#revalidation`",
-		"| `faa.shared.passengers-day` | 17 |",
+		"| `faa.shared.passengers-day` | 21 |",
 	} {
 		if !strings.Contains(s, want) {
 			t.Errorf("missing %q", want)

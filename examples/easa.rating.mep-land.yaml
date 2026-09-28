@@ -406,9 +406,9 @@ examples:
         - { id: r-mep, licenceId: l-ppl, class: MEP_LAND, expires: 2027-12-31 }
     outcome: current
     expect: { message: rating.window_not_open }
-  - name: composite-cpl-medical-lower-class
+  - name: composite-cpl-class-2-medical
     composite: true
-    says: 'The MEP land rating is revalidated (expiring with the requirements met), but it is held on a CPL(A) whose holder has only a class 2 medical: the licence requirement decides that the rating may not be exercised.'
+    says: 'The MEP land rating is revalidated (expiring with the requirements met) and held on a CPL(A) whose holder has only a class 2 medical: the CPL(A) is usable within its private privileges (class-1-only), so the rating may be exercised; only the commercial privileges are limited.'
     asOf: 2026-09-15
     record:
       holder: { dateOfBirth: 1976-01-01 }
@@ -418,6 +418,23 @@ examples:
         - { id: r-mep, licenceId: l-cpl, class: MEP_LAND, expires: 2026-10-31 }
       credentials:
         - { id: c-med, type: EASA_CLASS2_MEDICAL, issued: 2026-06-01 }
+        - { id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2023-04-15 }
+      flights:
+        - { date: 2026-09-01, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-mep }, decidedBy: { evaluation: revalidation } }
+  - name: composite-cpl-class-2-medical-expired
+    composite: true
+    says: 'The MEP land rating is revalidated, but it is held on a CPL(A) whose only medical, a class 2 certificate, has expired: the licence requirement decides that the rating may not be exercised.'
+    asOf: 2026-09-15
+    record:
+      holder: { dateOfBirth: 1976-01-01 }
+      licences:
+        - { id: l-cpl, authority: EASA, type: CPL(A) }
+      ratings:
+        - { id: r-mep, licenceId: l-cpl, class: MEP_LAND, expires: 2026-10-31 }
+      credentials:
+        - { id: c-med, type: EASA_CLASS2_MEDICAL, issued: 2024-06-01 }
         - { id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2023-04-15 }
       flights:
         - { date: 2026-09-01, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30, flags: { proficiencyCheck: true, examinerOnBoard: true } }
@@ -438,5 +455,19 @@ examples:
         - { id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2023-04-15 }
       flights:
         - { date: 2026-09-01, class: MEP_LAND, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30, flags: { proficiencyCheck: true, examinerOnBoard: true } }
+    outcome: expiring
+    expect: { subject: { kind: rating, id: r-mep } }
+  - name: revalidation-ir-only-check-not-counted
+    evaluation: revalidation
+    shows: [check-in-any-fstd]
+    says: A check flight recorded only for the IR (checkRating IR) is not a class rating check; although it is also the examiner route sector, the proficiency check is missing.
+    asOf: 2026-09-30
+    record:
+      licences:
+        - { id: l-ppl, authority: EASA, type: PPL(A) }
+      ratings:
+        - { id: r-mep, licenceId: l-ppl, class: MEP_LAND, expires: 2026-12-31 }
+      flights:
+        - { date: 2026-09-30, class: MEP_LAND, checkRating: IR, minutes: { total: 60, pic: 60 }, takeoffs: { day: 1 }, landings: { day: 1 }, cruiseMinutes: 30, flags: { proficiencyCheck: true, examinerOnBoard: true } }
     outcome: expiring
     expect: { subject: { kind: rating, id: r-mep } }

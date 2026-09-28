@@ -1,36 +1,47 @@
 # Association documents: rules an association sets under a statutory delegation (DESIGN.md
 # section 6). They are cited as assoc:<id> next to the delegating statute, by id and title
-# only; their text is never stored under sources/ and never quoted. `verified: false` means
-# the title and the content the catalogue relies on have not been checked against the
-# document; every credential citing one says so in an interpretation.
+# only; their text is never stored under sources/ and never quoted. `verified: true` means
+# the numbers the catalogue relies on were checked against the published document named in
+# the title (reviews/recommendations-de.md, "Association numbers"); `verified: false` means
+# they were not, and every credential citing one says so in an interpretation.
 associations:
   - id: dulv:ul-recency-gyroplane
     publisher: DULV
-    title: DULV recency rule for ultralight gyroplanes (title as known, not verified)
+    title: "DULV web page on the validity and extension of the gyroplane licence (Tragschrauber, Ausbildung, Gültigkeit und Verlängerung), undated, checked 2026-09-28, https://www.dulv.de/Tragschrauber/Ausbildung/G%C3%BCltigkeit%20und%20Verl%C3%A4ngerung"
     delegated_by: de:LuftPersV.45(4)
-    verified: false
+    verified: true
+  - id: daec:ul-recency-gyroplane
+    publisher: DAeC
+    title: "DAeC Luftsportgeräte-Büro web page UL-Ausbildung & Lizenzen, gyroplane section, undated, checked 2026-09-28, https://lsgb.daec.de/ul-ausbildung/lizenzen/"
+    delegated_by: de:LuftPersV.45(4)
+    verified: true
   - id: dulv:ul-recency-weight-shift
     publisher: DULV
-    title: DULV recency rule for weight-shift ultralights (title as known, not verified)
+    title: "DULV web page on the validity and extension of the trike licence (Trike, Ausbildung, Gültigkeit und Verlängerung), undated, checked 2026-09-28, https://www.dulv.de/Trike/Ausbildung/Gueltigkeit_und_Verlaengerung"
     delegated_by: de:LuftPersV.45(4)
-    verified: false
+    verified: true
   - id: daec:ul-recency-weight-shift
     publisher: DAeC
-    title: DAeC recency rule for weight-shift ultralights (title as known, not verified)
+    title: "DAeC Luftsportgeräte-Büro web page UL-Ausbildung & Lizenzen, trike section, undated, checked 2026-09-28, https://lsgb.daec.de/ul-ausbildung/lizenzen/"
     delegated_by: de:LuftPersV.45(4)
-    verified: false
+    verified: true
   - id: dulv:ul-recency-powered-paraglider
     publisher: DULV
-    title: DULV recency rule for powered paragliders (title as known, not verified)
+    title: "DULV web page on the extension and validity of the powered paraglider licence (Motorschirm, Ausbildung, Verlängerung und Gültigkeit), undated, checked 2026-09-28, https://www.dulv.de/Motorschirm/Ausbildung/Verl%C3%A4ngerung%20und%20G%C3%BCltigkeit"
     delegated_by: de:LuftPersV.45(4)
-    verified: false
+    verified: true
   - id: daec:ul-recency-powered-paraglider
     publisher: DAeC
-    title: DAeC recency rule for powered paragliders (title as known, not verified)
+    title: "DAeC Luftsportgeräte-Büro web page UL-Ausbildung & Lizenzen, powered paraglider (Motorschirm) section, undated, checked 2026-09-28, https://lsgb.daec.de/ul-ausbildung/lizenzen/"
     delegated_by: de:LuftPersV.45(4)
-    verified: false
+    verified: true
   - id: daec:ul-recency-sailplane
     publisher: DAeC
-    title: DAeC recency rule for ultralight sailplanes (title as known, not verified)
+    title: "DAeC Luftsportgeräte-Büro web page UL-Ausbildung & Lizenzen, ultralight sailplane (UL-Segelflug) section, undated, checked 2026-09-28, https://lsgb.daec.de/ul-ausbildung/lizenzen/"
     delegated_by: de:LuftPersV.45(4)
-    verified: false
+    verified: true
+  - id: dulv:ausbildungshandbuch-1-40
+    publisher: DULV
+    title: "DULV Ausbildungshandbuch (training manual), Version 1.40, recency rules for trikes (p. 46), powered paragliders (p. 68) and gyroplanes (pp. 72-73), checked 2026-09-28, https://www.dulv.de/sites/default/files/Downloads/Ausbildungshandbuch%20DULV%201.40_0.pdf"
+    delegated_by: de:LuftPersV.45(4)
+    verified: true

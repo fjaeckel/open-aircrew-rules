@@ -21,6 +21,50 @@ examples:
       requirements:
         pic_time: { current: 720, required: 720, met: true }
 
+  - name: dulv-proficiency-check
+    evaluation: recency_dulv
+    shows: [dulv-pic-only]
+    says: A proficiency check on a trike replaces the 12 hours as PIC under the DULV rule and keeps the rating current for 24 months.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-ws, licenceId: l-ul, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+      events:
+        - { date: 2025-03-01, kind: proficiency_check, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+      flights:
+        - { date: 2026-06-01, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 120, pic: 120 }, takeoffs: { day: 2 }, landings: { day: 2 } }
+    outcome: current
+    expect:
+      subject: { kind: rating, id: r-ws }
+      message: rating.recency_current
+      validUntil: 2027-03-01
+      requirements:
+        pic_time: { current: 120, met: false }
+        proficiency_check: { current: 1, met: true }
+
+  - name: dulv-check-other-kind
+    evaluation: recency_dulv
+    shows: [dulv-pic-only]
+    says: A proficiency check on a three-axis ultralight is not a check on a trike and does not replace the 12 hours as PIC.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-ws, licenceId: l-ul, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+      events:
+        - { date: 2025-03-01, kind: proficiency_check, class: ULTRALIGHT, ulKind: THREE_AXIS }
+      flights:
+        - { date: 2026-06-01, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 120, pic: 120 }, takeoffs: { day: 2 }, landings: { day: 2 } }
+    outcome: lapsed
+    expect:
+      subject: { kind: rating, id: r-ws }
+      message: rating.recency_not_met
+      requirements:
+        proficiency_check: { current: 0, met: false }
+
   - name: dulv-kind-unknown
     evaluation: recency_dulv
     shows: [kindless-flights-unknown]
@@ -79,16 +123,18 @@ examples:
   - name: daec-current-edge-in
     evaluation: recency_daec
     shows: [daec-safety-training-not-recorded]
-    says: Twelve hours and 12 landings on trikes in 24 months under the DAeC rule; dual time counts toward the hours. The first flight is on the first day of the window; the safety training is shown as an untracked row.
+    says: Twelve hours, 12 take-offs and 12 landings on trikes in 24 months under the DAeC rule, and a safety training on a trike; dual time counts toward the hours. The first flight is on the first day of the window.
     asOf: 2026-09-15
     record:
       licences:
         - { id: l-ul, authority: DAeC, type: UL }
       ratings:
         - { id: r-ws, licenceId: l-ul, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+      events:
+        - { date: 2026-04-01, kind: safety_training, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
       flights:
-        - { date: 2024-09-15, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 300, dual: 300 }, landings: { day: 4 } }
-        - { date: 2026-06-01, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 420, pic: 420 }, landings: { day: 8 } }
+        - { date: 2024-09-15, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 300, dual: 300 }, takeoffs: { day: 4 }, landings: { day: 4 } }
+        - { date: 2026-06-01, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 420, pic: 420 }, takeoffs: { day: 8 }, landings: { day: 8 } }
     outcome: current
     expect:
       subject: { kind: rating, id: r-ws, ulKind: WEIGHT_SHIFT }
@@ -96,8 +142,71 @@ examples:
       validUntil: 2026-09-15
       requirements:
         total_time: { current: 720, met: true }
+        takeoffs: { current: 12, met: true }
         landings: { current: 12, met: true }
-        safety_training: { tracked: false, met: false, messageKey: requirement.untracked }
+        safety_training: { current: 1, met: true }
+
+  - name: daec-safety-training-not-recorded
+    evaluation: recency_daec
+    shows: [daec-safety-training-not-recorded]
+    says: Hours, take-offs and landings are met, but no safety training is recorded; the training decides whether the pilot may fly, so the result is unknown and asks for it rather than lapsed.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DAeC, type: UL }
+      ratings:
+        - { id: r-ws, licenceId: l-ul, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+      flights:
+        - { date: 2026-06-01, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 720, pic: 720 }, takeoffs: { day: 12 }, landings: { day: 12 } }
+    outcome: unknown
+    expect:
+      subject: { kind: rating, id: r-ws }
+      message: rating.ul_safety_training_not_recorded
+      requirements:
+        total_time: { current: 720, met: true }
+        safety_training: { tracked: false, met: false }
+
+  - name: daec-takeoffs-short
+    evaluation: recency_daec
+    shows: [daec-safety-training-not-recorded]
+    says: Twelve hours and 12 landings with a safety training, but only 10 take-offs logged; the DAeC rule counts take-offs as well as landings.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DAeC, type: UL }
+      ratings:
+        - { id: r-ws, licenceId: l-ul, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+      events:
+        - { date: 2026-04-01, kind: safety_training, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+      flights:
+        - { date: 2026-06-01, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 720, pic: 720 }, takeoffs: { day: 10 }, landings: { day: 12 } }
+    outcome: lapsed
+    expect:
+      subject: { kind: rating, id: r-ws }
+      message: rating.recency_not_met
+      requirements:
+        takeoffs: { current: 10, met: false, remedyParams: { missing: 2, unit: takeoffs } }
+        landings: { current: 12, met: true }
+
+  - name: daec-proficiency-check
+    evaluation: recency_daec
+    shows: [daec-safety-training-not-recorded]
+    says: A proficiency check on a trike replaces hours, take-offs, landings and the safety training.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DAeC, type: UL }
+      ratings:
+        - { id: r-ws, licenceId: l-ul, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+      events:
+        - { date: 2025-10-01, kind: proficiency_check, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+    outcome: current
+    expect:
+      subject: { kind: rating, id: r-ws }
+      message: rating.recency_current
+      validUntil: 2027-10-01
+      requirements:
+        proficiency_check: { current: 1, met: true }
 
   - name: daec-kind-unknown
     evaluation: recency_daec
@@ -267,3 +376,39 @@ examples:
       message: pax.current_day_no_night_privilege
       requirements:
         day: { current: 3, met: true }
+
+  - name: composite-medical-expired
+    composite: true
+    shows: [medical-above-120-kg]
+    says: The DULV recency is met, but the only medical certificate, a LAPL medical, expired; most trikes are above 120 kg empty mass, where the licence is valid only with a medical, so the weight-shift privileges may not be exercised.
+    asOf: 2026-09-15
+    record:
+      holder: { dateOfBirth: 1970-01-01 }
+      credentials:
+        - { id: c-med, type: EASA_LAPL_MEDICAL, issued: 2024-01-10, expires: 2026-01-10 }
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-ws, licenceId: l-ul, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+      flights:
+        - { date: 2026-06-01, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 720, pic: 720 }, takeoffs: { day: 12 }, landings: { day: 12 } }
+    outcome: expired
+    expect: { subject: { kind: rating, id: r-ws }, decidedBy: { evaluation: medical, credential: easa.medical.lapl } }
+
+  - name: composite-current-with-medical
+    composite: true
+    shows: [medical-above-120-kg]
+    says: With the DULV recency met and a valid LAPL medical the weight-shift privileges may be exercised.
+    asOf: 2026-09-15
+    record:
+      holder: { dateOfBirth: 1970-01-01 }
+      credentials:
+        - { id: c-med, type: EASA_LAPL_MEDICAL, issued: 2025-01-10, expires: 2027-01-10 }
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      ratings:
+        - { id: r-ws, licenceId: l-ul, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT }
+      flights:
+        - { date: 2026-06-01, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 720, pic: 720 }, takeoffs: { day: 12 }, landings: { day: 12 } }
+    outcome: current
+    expect: { subject: { kind: rating, id: r-ws } }

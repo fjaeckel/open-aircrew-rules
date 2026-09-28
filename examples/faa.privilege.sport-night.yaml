@@ -14,9 +14,9 @@ examples:
       privileges:
         - {id: p-night, licenceId: l-faa, kind: SPORT_NIGHT, issued: 2026-01-10}
       credentials:
-        - {id: c-med, type: FAA_CLASS3_MEDICAL, issued: 2025-03-01}
+        - {id: c-med, type: FAA_CLASS3_MEDICAL, issued: 2025-03-01, expires: 2030-03-31}
       events:
-        - {date: 2025-09-01, kind: flight_review}
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
     outcome: current
     expect: { subject: { kind: privilege, id: p-night } }
   - name: composite-drivers-license-only
@@ -34,6 +34,6 @@ examples:
       credentials:
         - {id: c-dl, type: US_DRIVERS_LICENSE, expires: 2030-01-01}
       events:
-        - {date: 2025-09-01, kind: flight_review}
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
     outcome: unknown
     expect: { subject: { kind: privilege, id: p-night }, decidedBy: { evaluation: medical } }

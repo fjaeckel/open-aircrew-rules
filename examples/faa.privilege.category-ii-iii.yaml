@@ -92,3 +92,44 @@ examples:
         - {id: p-cat2, licenceId: l-faa, kind: CAT_II, issued: 2026-05-20}
     outcome: current
     expect: { message: privilege.valid, params: { date: 2026-11-30 } }
+  - name: composite-private-with-instrument-rating
+    composite: true
+    shows: [certificate-and-instrument-rating]
+    says: A private pilot with a current instrument rating (airplane), a flight review, a third-class medical certificate and a Category II authorization renewed in June 2026 may use the authorization.
+    asOf: 2026-08-16
+    record:
+      holder: {dateOfBirth: 1990-01-01}
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-sep, licenceId: l-faa, class: SEP_LAND}
+        - {id: r-ir, licenceId: l-faa, class: IR, category: aeroplane}
+      privileges:
+        - {id: p-cat2, licenceId: l-faa, kind: CAT_II, validFrom: 2026-06-15}
+      credentials:
+        - {id: c-med, type: FAA_CLASS3_MEDICAL, issued: 2026-03-01}
+      flights:
+        - {date: 2026-06-10, class: SEP_LAND, minutes: {total: 120, pic: 120, simulatedInstrument: 90}, approaches: 6, holds: 1, interceptAndTrack: true}
+      events:
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
+    outcome: current
+    expect: { subject: { kind: privilege, id: p-cat2 } }
+  - name: composite-private-without-instrument-rating
+    composite: true
+    shows: [certificate-and-instrument-rating]
+    says: A Category II authorization on a private pilot certificate without an instrument rating cannot be shown to meet 61.67(a)(1); the composite is unknown.
+    asOf: 2026-08-16
+    record:
+      holder: {dateOfBirth: 1990-01-01}
+      licences:
+        - {id: l-faa, authority: FAA, type: PRIVATE}
+      ratings:
+        - {id: r-sep, licenceId: l-faa, class: SEP_LAND}
+      privileges:
+        - {id: p-cat2, licenceId: l-faa, kind: CAT_II, validFrom: 2026-06-15}
+      credentials:
+        - {id: c-med, type: FAA_CLASS3_MEDICAL, issued: 2026-03-01}
+      events:
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
+    outcome: unknown
+    expect: { subject: { kind: privilege, id: p-cat2 }, decidedBy: { evaluation: instrument_rating } }

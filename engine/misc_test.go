@@ -291,6 +291,41 @@ func TestEventFilters(t *testing.T) {
 	}
 }
 
+// TestUnresolvedSubjectFilter: a $subject the subject cannot supply leaves a recorded item
+// unknown, never a silent non-match; items the filter excludes on other grounds stay out.
+func TestUnresolvedSubjectFilter(t *testing.T) {
+	c := testCatalogue(t)
+	e := &evalCtx{cat: c, v: c.Vocabulary, p: prepare(&Record{}, c.Vocabulary), subj: subjectRef{Subject: Subject{Kind: "privilege"}}}
+	for _, tc := range []struct {
+		filter string
+		fl     Flight
+		want   match
+	}{
+		{"{ ulKinds: [$subject] }", Flight{Class: "ULTRALIGHT", ULKind: "THREE_AXIS"}, matchUnknown},
+		{"{ ulKinds: [$subject] }", Flight{Class: "SEP_LAND"}, matchNo},
+		{"{ ulKinds: [$subject] }", Flight{Class: "ULTRALIGHT", ULKind: "THREE_AXIS", IsSimulator: true}, matchNo},
+		{"{ classes: [$subject] }", Flight{Class: "SEP_LAND"}, matchUnknown},
+		{"{ typeDesignators: [$subject] }", Flight{Class: "SEP_LAND", TypeDesignator: "C172"}, matchUnknown},
+		{"{ variants: [$subject] }", Flight{Class: "SEP_LAND", Variant: "diesel"}, matchUnknown},
+		{"{ launchMethods: [$subject] }", Flight{Class: "GLIDER", LaunchMethod: "winch"}, matchUnknown},
+	} {
+		var f Filter
+		if err := yaml.Unmarshal([]byte(tc.filter), &f); err != nil {
+			t.Fatal(err)
+		}
+		if got := e.matchFlight(e.resolveFilter(&f), &tc.fl).res; got != tc.want {
+			t.Errorf("%s on %+v = %v, want %v", tc.filter, tc.fl, got, tc.want)
+		}
+	}
+	var f Filter
+	if err := yaml.Unmarshal([]byte("{ ulKinds: [$subject], classes: [$subject] }"), &f); err != nil {
+		t.Fatal(err)
+	}
+	if got := e.matchEvent(e.resolveFilter(&f), &Event{Kind: "proficiency_check", Class: "ULTRALIGHT", ULKind: "THREE_AXIS"}).res; got != matchUnknown {
+		t.Errorf("event = %v, want unknown", got)
+	}
+}
+
 func TestWalkAndDiffExpect(t *testing.T) {
 	var r Rule
 	if err := yaml.Unmarshal([]byte(`

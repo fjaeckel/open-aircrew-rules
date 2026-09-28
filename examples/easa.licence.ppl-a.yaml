@@ -61,3 +61,29 @@ examples:
         - {id: c-med, type: EASA_CLASS2_MEDICAL, issued: 2026-06-01}
     outcome: unknown
     expect: { subject: { kind: licence, id: l-1 }, decidedBy: { evaluation: language } }
+  - name: composite-class-1-at-class-2-validity
+    composite: true
+    says: A class 1 certificate issued at 44 without a recorded expiry date is past its 12 class 1 months but still valid at class 2 for 24 months, so the PPL(A) may be exercised.
+    asOf: 2026-09-15
+    record:
+      holder: {dateOfBirth: 1980-05-20}
+      licences:
+        - {id: l-1, authority: EASA, type: PPL(A)}
+      credentials:
+        - {id: c-med, type: EASA_CLASS1_MEDICAL, issued: 2025-03-01}
+        - {id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2023-04-15}
+    outcome: current
+    expect: { subject: { kind: licence, id: l-1 } }
+  - name: composite-class-1-past-class-2-validity
+    composite: true
+    says: Once the class 2 period of the class 1 certificate has also ended, the PPL(A) may not be exercised; the class 1 certificate at its class 2 level decides.
+    asOf: 2027-03-02
+    record:
+      holder: {dateOfBirth: 1980-05-20}
+      licences:
+        - {id: l-1, authority: EASA, type: PPL(A)}
+      credentials:
+        - {id: c-med, type: EASA_CLASS1_MEDICAL, issued: 2025-03-01}
+        - {id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2023-04-15}
+    outcome: expired
+    expect: { subject: { kind: licence, id: l-1 }, decidedBy: { evaluation: medical_validity, credential: easa.medical.class-1@class_2 } }

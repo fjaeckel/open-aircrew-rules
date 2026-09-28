@@ -437,6 +437,9 @@ type Validity struct {
 	AgeOn string `yaml:"age_on"`
 	// RecordedWins uses the derived expiry only when no expiry is recorded.
 	RecordedWins bool `yaml:"recorded_wins"`
+	// RecordedMin reads the recorded expiry as a lower bound (another level's date): the
+	// later of the two applies; without a derived end the recorded one holds until it passes.
+	RecordedMin bool `yaml:"recorded_min"`
 	// EndOffsetDays moves the derived end (-1: the day before, §§ 187(2), 188(2) BGB).
 	EndOffsetDays int `yaml:"end_offset_days"`
 }

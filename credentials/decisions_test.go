@@ -476,7 +476,7 @@ evaluations:
     source: easa:FCL.740.A(b)(1)
     only_for: { if_missing: maybe }
     relevant_class: { class_group: nope, ref: easa:FCL.740.A(b)(1) }
-    valid_for: { age_on: birth, periods: [{ months: 1, ref: easa:FCL.740.A(b)(1) }] }
+    valid_for: { age_on: birth, recorded_expiry_wins: true, recorded_expiry_minimum: true, periods: [{ months: 1, ref: easa:FCL.740.A(b)(1) }] }
     passes_if:
       ref: easa:FCL.740.A(b)(1)
       min: 3
@@ -502,6 +502,10 @@ evaluations:
     requires_all: [easa.rating.y]
     limits: everything
     level: both
+  - id: e
+    asks: A requirement narrowed by what only_for cannot say, without a ref.
+    requires_all: [easa.rating.y]
+    only_for: { ul_kinds: [THREE_AXIS] }
 `, "credentials/easa/ratings/y.yaml": `
 credential: Y
 id: easa.rating.y
@@ -523,6 +527,7 @@ evaluations:
 		`if_missing is unknown, not "maybe"`,
 		`class_group "nope" is not in the vocabulary`,
 		"valid_for.age_on is issue or valid_from",
+		"valid_for has both recorded_expiry_wins and recorded_expiry_minimum",
 		"min belongs to a count or a sum_of",
 		"a sum_of needs an id",
 		"a sum_of adds at least one count",
@@ -536,6 +541,8 @@ evaluations:
 		`level "Bad Level" is not a lower-case name`,
 		`limits "everything" is not a limitation scope`,
 		"an entry has a level or limits, not both",
+		"only_for on a requirement names classes or not_classes, and ref",
+		"#e: only_for has no ref",
 		"authority_conventions.DE.validity_ends is same_day or day_before",
 	} {
 		if !strings.Contains(report, want) {

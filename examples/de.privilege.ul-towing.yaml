@@ -3,7 +3,7 @@ examples:
   - name: current-edge-in
     evaluation: recency
     shows: [tow-kind-not-recorded, tows-counted]
-    says: Ten tows in ultralights in the last 24 months, the first four on the window's first day; a trike banner tow and three-axis glider tows both count, a tow in an SEP aeroplane does not, and a flight not flagged as a tow flight never counts.
+    says: 'A rating entered for glider tows with ground take-up ("glider ground"): ten tow flights of that kind in ultralights in the last 24 months, the first four on the window''s first day. A trike banner tow, a glider tow in an SEP aeroplane and a flight not flagged as a tow flight do not count.'
     asOf: 2026-09-15
     record:
       licences:
@@ -11,22 +11,98 @@ examples:
       ratings:
         - { id: r-3ax, licenceId: l-ul, class: ULTRALIGHT, ulKind: THREE_AXIS }
       privileges:
-        - { id: p-tow, licenceId: l-ul, kind: UL_TOWING, detail: THREE_AXIS, expires: 2030-01-01 }
+        - { id: p-tow, licenceId: l-ul, kind: UL_TOWING, detail: glider ground, expires: 2030-01-01 }
       flights:
-        - { date: 2024-09-15, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 60, pic: 60 }, towedGliders: 4, flags: { towFlight: true } }
-        - { date: 2025-05-01, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 30, pic: 30 }, towKind: banner, flags: { towFlight: true } }
-        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 90, pic: 90 }, towedGliders: 5, flags: { towFlight: true } }
-        - { date: 2026-05-02, class: SEP_LAND, minutes: { total: 90, pic: 90 }, towedGliders: 5, flags: { towFlight: true } }
-        - { date: 2026-05-03, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 90, pic: 90 } }
+        - { date: 2024-09-15, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 60, pic: 60 }, takeoffs: { day: 4 }, landings: { day: 4 }, towKind: glider, towTakeUp: ground, flags: { towFlight: true } }
+        - { date: 2025-05-01, class: ULTRALIGHT, ulKind: WEIGHT_SHIFT, minutes: { total: 30, pic: 30 }, takeoffs: { day: 1 }, landings: { day: 1 }, towKind: banner, towTakeUp: pick_up, flags: { towFlight: true } }
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 90, pic: 90 }, takeoffs: { day: 6 }, landings: { day: 6 }, towKind: glider, towTakeUp: ground, flags: { towFlight: true } }
+        - { date: 2026-05-02, class: SEP_LAND, minutes: { total: 90, pic: 90 }, takeoffs: { day: 5 }, landings: { day: 5 }, towKind: glider, towTakeUp: ground, flags: { towFlight: true } }
+        - { date: 2026-05-03, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 90, pic: 90 }, takeoffs: { day: 3 }, landings: { day: 3 } }
     outcome: current
     expect:
-      subject: { kind: privilege, id: p-tow, detail: THREE_AXIS }
+      subject: { kind: privilege, id: p-tow }
       message: privilege.recency_current
       params: { date: "2030-01-01" }
       expiresOn: 2030-01-01
       validUntil: 2026-09-15
       requirements:
         tows: { current: 10, required: 10, met: true }
+
+  - name: other-tow-kind-not-counted
+    evaluation: recency
+    shows: [tow-kind-not-recorded]
+    says: 'The rating is entered for banner tows with pick-up; six banner pick-up tows count, the five glider tows do not, so four tow flights of the entered kind are missing.'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      privileges:
+        - { id: p-tow, licenceId: l-ul, kind: UL_TOWING, detail: banner pick_up }
+      flights:
+        - { date: 2026-04-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 120, pic: 120 }, takeoffs: { day: 6 }, landings: { day: 6 }, towKind: banner, towTakeUp: pick_up, flags: { towFlight: true } }
+        - { date: 2026-04-02, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 60, pic: 60 }, takeoffs: { day: 5 }, landings: { day: 5 }, towKind: glider, towTakeUp: ground, flags: { towFlight: true } }
+    outcome: lapsed
+    expect:
+      subject: { kind: privilege, id: p-tow }
+      message: privilege.recency_not_met
+      requirements:
+        tows: { current: 6, met: false, remedyParams: { missing: 4 } }
+
+  - name: entered-kind-not-recorded
+    evaluation: recency
+    shows: [tow-kind-not-recorded]
+    says: 'The rating records no entered kind, so no tow can be matched to it, although all ten tows were glider tows; the result is unknown and asks for the kind.'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DAeC, type: UL }
+      privileges:
+        - { id: p-tow, licenceId: l-ul, kind: UL_TOWING }
+      flights:
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 90, pic: 90 }, takeoffs: { day: 10 }, landings: { day: 10 }, towKind: glider, towTakeUp: ground, flags: { towFlight: true } }
+    outcome: unknown
+    expect:
+      subject: { kind: privilege, id: p-tow }
+      message: privilege.ul_tow_kind_unknown
+      requirements:
+        tows: { tracked: false, met: false }
+
+  - name: tow-flight-kind-not-recorded
+    evaluation: recency
+    shows: [tow-kind-not-recorded]
+    says: 'The rating is entered for glider tows with ground take-up, but the tow flights record neither what was towed nor how; they cannot be counted and the result is unknown.'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      privileges:
+        - { id: p-tow, licenceId: l-ul, kind: UL_TOWING, detail: glider ground }
+      flights:
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 90, pic: 90 }, takeoffs: { day: 10 }, landings: { day: 10 }, towedGliders: 10, flags: { towFlight: true } }
+    outcome: unknown
+    expect:
+      subject: { kind: privilege, id: p-tow }
+      message: privilege.ul_tow_kind_unknown
+
+  - name: double-tow-counted-once
+    evaluation: recency
+    shows: [tows-counted]
+    says: 'Nine tow flights, one of them a double tow of two gliders: the text counts tow flights, so the double tow counts once and one tow flight is missing, although ten gliders were towed.'
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-ul, authority: DULV, type: UL }
+      privileges:
+        - { id: p-tow, licenceId: l-ul, kind: UL_TOWING, detail: glider ground }
+      flights:
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 90, pic: 90 }, takeoffs: { day: 8 }, landings: { day: 8 }, towedGliders: 8, towKind: glider, towTakeUp: ground, flags: { towFlight: true } }
+        - { date: 2026-05-02, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 15, pic: 15 }, takeoffs: { day: 1 }, landings: { day: 1 }, towedGliders: 2, towKind: glider, towTakeUp: ground, flags: { towFlight: true } }
+    outcome: lapsed
+    expect:
+      subject: { kind: privilege, id: p-tow }
+      message: privilege.recency_not_met
+      requirements:
+        tows: { current: 9, met: false, remedyParams: { missing: 1 } }
 
   - name: expired-day-after
     evaluation: recency
@@ -37,9 +113,9 @@ examples:
       licences:
         - { id: l-ul, authority: DULV, type: UL }
       privileges:
-        - { id: p-tow, licenceId: l-ul, kind: UL_TOWING, expires: 2026-09-15 }
+        - { id: p-tow, licenceId: l-ul, kind: UL_TOWING, detail: glider ground, expires: 2026-09-15 }
       flights:
-        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 90, pic: 90 }, towedGliders: 10, flags: { towFlight: true } }
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 90, pic: 90 }, takeoffs: { day: 10 }, landings: { day: 10 }, towKind: glider, towTakeUp: ground, flags: { towFlight: true } }
     outcome: expired
     expect:
       subject: { kind: privilege, id: p-tow }
@@ -55,11 +131,11 @@ examples:
         - { id: l-ul, authority: DULV, type: UL }
         - { id: l-ppl, authority: EASA, type: PPL(A) }
       privileges:
-        - { id: p-tow, licenceId: l-ul, kind: UL_TOWING }
+        - { id: p-tow, licenceId: l-ul, kind: UL_TOWING, detail: glider ground }
         - { id: p-pax, licenceId: l-ul, kind: UL_PASSENGER_AUTH }
         - { id: p-st, licenceId: l-ppl, kind: SAILPLANE_TOWING }
       flights:
-        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 90, pic: 90 }, towedGliders: 10, flags: { towFlight: true } }
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 90, pic: 90 }, takeoffs: { day: 10 }, landings: { day: 10 }, towKind: glider, towTakeUp: ground, flags: { towFlight: true } }
     outcome: current
     expect: { message: privilege.recency_current }
 
@@ -71,9 +147,9 @@ examples:
       licences:
         - { id: l-ul, authority: DULV, type: UL }
       privileges:
-        - { id: p-tow, licenceId: l-ul, kind: UL_TOWING, expires: 2026-09-15 }
+        - { id: p-tow, licenceId: l-ul, kind: UL_TOWING, detail: glider ground, expires: 2026-09-15 }
       flights:
-        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 90, pic: 90 }, towedGliders: 10, flags: { towFlight: true } }
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 90, pic: 90 }, takeoffs: { day: 10 }, landings: { day: 10 }, towKind: glider, towTakeUp: ground, flags: { towFlight: true } }
     outcome: current
     expect:
       subject: { kind: privilege, id: p-tow }
@@ -83,47 +159,47 @@ examples:
   - name: window-day-before
     evaluation: recency
     shows: [supervised-tows-not-restoring]
-    says: The four tows of 14 September 2024 are one day outside the 24 months; the rating may not be used until the tows are made up.
+    says: The four tow flights of 14 September 2024 are one day outside the 24 months; the rating may not be used until the tows are made up.
     asOf: 2026-09-15
     record:
       licences:
         - { id: l-ul, authority: DAeC, type: UL }
       privileges:
-        - { id: p-tow, licenceId: l-ul, kind: UL_TOWING }
+        - { id: p-tow, licenceId: l-ul, kind: UL_TOWING, detail: glider ground }
       flights:
-        - { date: 2024-09-14, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 60, pic: 60 }, towedGliders: 4, flags: { towFlight: true } }
-        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 90, pic: 90 }, towedGliders: 6, flags: { towFlight: true } }
+        - { date: 2024-09-14, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 60, pic: 60 }, takeoffs: { day: 4 }, landings: { day: 4 }, towKind: glider, towTakeUp: ground, flags: { towFlight: true } }
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 90, pic: 90 }, takeoffs: { day: 6 }, landings: { day: 6 }, towKind: glider, towTakeUp: ground, flags: { towFlight: true } }
     outcome: lapsed
     expect:
       subject: { kind: privilege, id: p-tow }
       message: privilege.recency_not_met
       requirements:
-        tows: { current: 6, met: false, remedyKey: remedy.fly_more, remedyParams: { missing: 4, unit: tows } }
+        tows: { current: 6, met: false, remedyKey: remedy.fly_more, remedyParams: { missing: 4 } }
 
   - name: composite-may-tow
     composite: true
-    says: With ten tows in the last 24 months, entered in an ultralight licence (which has no time limit), the towing rating may be exercised.
+    says: With ten tow flights of the entered kind in the last 24 months, entered in an ultralight licence (which has no time limit), the towing rating may be exercised.
     asOf: 2026-09-15
     record:
       licences:
         - { id: l-ul, authority: DULV, type: UL }
       privileges:
-        - { id: p-tow, licenceId: l-ul, kind: UL_TOWING }
+        - { id: p-tow, licenceId: l-ul, kind: UL_TOWING, detail: glider ground }
       flights:
-        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 90, pic: 90 }, towedGliders: 10, flags: { towFlight: true } }
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 90, pic: 90 }, takeoffs: { day: 10 }, landings: { day: 10 }, towKind: glider, towTakeUp: ground, flags: { towFlight: true } }
     outcome: current
     expect: { subject: { kind: privilege, id: p-tow } }
 
   - name: composite-tows-missing
     composite: true
-    says: With six tows in the last 24 months the towing rating may not be exercised; the recency decides.
+    says: With six tow flights in the last 24 months the towing rating may not be exercised; the recency decides.
     asOf: 2026-09-15
     record:
       licences:
         - { id: l-ul, authority: DULV, type: UL }
       privileges:
-        - { id: p-tow, licenceId: l-ul, kind: UL_TOWING }
+        - { id: p-tow, licenceId: l-ul, kind: UL_TOWING, detail: glider ground }
       flights:
-        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 90, pic: 90 }, towedGliders: 6, flags: { towFlight: true } }
+        - { date: 2026-05-01, class: ULTRALIGHT, ulKind: THREE_AXIS, minutes: { total: 90, pic: 90 }, takeoffs: { day: 6 }, landings: { day: 6 }, towKind: glider, towTakeUp: ground, flags: { towFlight: true } }
     outcome: lapsed
     expect: { subject: { kind: privilege, id: p-tow }, decidedBy: { evaluation: recency } }

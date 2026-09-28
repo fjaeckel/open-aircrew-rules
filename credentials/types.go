@@ -170,9 +170,12 @@ type ValidFor struct {
 	// counted_from.
 	AgeOn string `yaml:"age_on"`
 	// RecordedExpiryWins uses the derived end only when no expiry is recorded.
-	RecordedExpiryWins bool         `yaml:"recorded_expiry_wins"`
-	Periods            []PeriodSpec `yaml:"periods"`
-	Ref                RefList      `yaml:"ref"`
+	RecordedExpiryWins bool `yaml:"recorded_expiry_wins"`
+	// RecordedExpiryMinimum reads the recorded expiry as another level's date that this
+	// level lasts at least until: the later of the two applies.
+	RecordedExpiryMinimum bool         `yaml:"recorded_expiry_minimum"`
+	Periods               []PeriodSpec `yaml:"periods"`
+	Ref                   RefList      `yaml:"ref"`
 }
 
 // PeriodSpec is one validity period; the first whose ages hold applies.

@@ -6,7 +6,7 @@ Generated from `credentials/` by `go generate ./...`. Both graphs are acyclic, a
 evaluation never uses a credential's evaluation; the gate fails otherwise (DESIGN.md
 section 3). Look here before changing a shared evaluation: everything that uses it changes.
 
-84 credentials, 14 shared evaluations, 225 requires edges, 126 uses edges.
+87 credentials, 14 shared evaluations, 304 requires edges, 135 uses edges.
 
 ## Legend
 
@@ -32,15 +32,36 @@ flowchart LR
   de_rating_ul_sailplane["de.rating.ul-sailplane"]
   de_rating_ul_three_axis["de.rating.ul-three-axis"]
   de_rating_ul_weight_shift["de.rating.ul-weight-shift"]
+  easa_medical_class_1["easa.medical.class-1"]
+  easa_medical_class_2["easa.medical.class-2"]
+  easa_medical_lapl["easa.medical.lapl"]
   de_instructor_ul_instructor --> de_licence_ul
   de_privilege_ul_passenger_authorisation --> de_licence_ul
   de_privilege_ul_towing --> de_licence_ul
   de_rating_ul_gyroplane --> de_licence_ul
+  de_rating_ul_gyroplane -.-> easa_medical_class_1
+  de_rating_ul_gyroplane -.-> easa_medical_class_2
+  de_rating_ul_gyroplane -.-> easa_medical_lapl
   de_rating_ul_helicopter --> de_licence_ul
+  de_rating_ul_helicopter -.-> easa_medical_class_1
+  de_rating_ul_helicopter -.-> easa_medical_class_2
+  de_rating_ul_helicopter -.-> easa_medical_lapl
   de_rating_ul_powered_paraglider --> de_licence_ul
+  de_rating_ul_powered_paraglider -.-> easa_medical_class_1
+  de_rating_ul_powered_paraglider -.-> easa_medical_class_2
+  de_rating_ul_powered_paraglider -.-> easa_medical_lapl
   de_rating_ul_sailplane --> de_licence_ul
+  de_rating_ul_sailplane -.-> easa_medical_class_1
+  de_rating_ul_sailplane -.-> easa_medical_class_2
+  de_rating_ul_sailplane -.-> easa_medical_lapl
   de_rating_ul_three_axis --> de_licence_ul
+  de_rating_ul_three_axis -.-> easa_medical_class_1
+  de_rating_ul_three_axis -.-> easa_medical_class_2
+  de_rating_ul_three_axis -.-> easa_medical_lapl
   de_rating_ul_weight_shift --> de_licence_ul
+  de_rating_ul_weight_shift -.-> easa_medical_class_1
+  de_rating_ul_weight_shift -.-> easa_medical_class_2
+  de_rating_ul_weight_shift -.-> easa_medical_lapl
 ```
 
 ### EASA
@@ -159,17 +180,22 @@ flowchart LR
   easa_instructor_tri -.-> easa_licence_ppl_h
   easa_licence_atpl_a --> easa_endorsement_language_proficiency
   easa_licence_atpl_a -.-> easa_medical_class_1
+  easa_licence_atpl_a -.-> easa_medical_class_2
   easa_licence_atpl_h --> easa_endorsement_language_proficiency
   easa_licence_atpl_h -.-> easa_medical_class_1
+  easa_licence_atpl_h -.-> easa_medical_class_2
   easa_licence_bpl -.-> easa_medical_class_1
   easa_licence_bpl -.-> easa_medical_class_2
   easa_licence_bpl -.-> easa_medical_lapl
   easa_licence_cpl_a --> easa_endorsement_language_proficiency
   easa_licence_cpl_a -.-> easa_medical_class_1
+  easa_licence_cpl_a -.-> easa_medical_class_2
   easa_licence_cpl_as --> easa_endorsement_language_proficiency
   easa_licence_cpl_as -.-> easa_medical_class_1
+  easa_licence_cpl_as -.-> easa_medical_class_2
   easa_licence_cpl_h --> easa_endorsement_language_proficiency
   easa_licence_cpl_h -.-> easa_medical_class_1
+  easa_licence_cpl_h -.-> easa_medical_class_2
   easa_licence_gpl --> easa_endorsement_language_proficiency
   easa_licence_gpl -.-> easa_medical_class_1
   easa_licence_gpl -.-> easa_medical_class_2
@@ -277,11 +303,14 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+  faa_document_drivers_license["faa.document.drivers-license"]
   faa_licence_atp_airplane["faa.licence.atp-airplane"]
   faa_licence_atp_rotorcraft["faa.licence.atp-rotorcraft"]
   faa_licence_commercial_airplane["faa.licence.commercial-airplane"]
   faa_licence_commercial_rotorcraft["faa.licence.commercial-rotorcraft"]
   faa_licence_powered_lift_airship["faa.licence.powered-lift-airship"]
+  faa_licence_powered_lift_airship_atp["faa.licence.powered-lift-airship-atp"]
+  faa_licence_powered_lift_airship_commercial["faa.licence.powered-lift-airship-commercial"]
   faa_licence_private_airplane["faa.licence.private-airplane"]
   faa_licence_private_rotorcraft["faa.licence.private-rotorcraft"]
   faa_licence_recreational["faa.licence.recreational"]
@@ -295,14 +324,34 @@ flowchart LR
   faa_privilege_glider_towing["faa.privilege.glider-towing"]
   faa_privilege_sport_night["faa.privilege.sport-night"]
   faa_rating_instrument_airplane["faa.rating.instrument-airplane"]
+  faa_licence_atp_airplane -.-> faa_medical_basicmed
   faa_licence_atp_airplane -.-> faa_medical_first_class
+  faa_licence_atp_airplane -.-> faa_medical_second_class
+  faa_licence_atp_airplane -.-> faa_medical_third_class
+  faa_licence_atp_rotorcraft -.-> faa_medical_basicmed
   faa_licence_atp_rotorcraft -.-> faa_medical_first_class
+  faa_licence_atp_rotorcraft -.-> faa_medical_second_class
+  faa_licence_atp_rotorcraft -.-> faa_medical_third_class
+  faa_licence_commercial_airplane -.-> faa_medical_basicmed
   faa_licence_commercial_airplane -.-> faa_medical_first_class
   faa_licence_commercial_airplane -.-> faa_medical_second_class
+  faa_licence_commercial_airplane -.-> faa_medical_third_class
+  faa_licence_commercial_rotorcraft -.-> faa_medical_basicmed
   faa_licence_commercial_rotorcraft -.-> faa_medical_first_class
   faa_licence_commercial_rotorcraft -.-> faa_medical_second_class
+  faa_licence_commercial_rotorcraft -.-> faa_medical_third_class
+  faa_licence_powered_lift_airship -.-> faa_medical_basicmed
   faa_licence_powered_lift_airship -.-> faa_medical_first_class
   faa_licence_powered_lift_airship -.-> faa_medical_second_class
+  faa_licence_powered_lift_airship -.-> faa_medical_third_class
+  faa_licence_powered_lift_airship_atp -.-> faa_medical_basicmed
+  faa_licence_powered_lift_airship_atp -.-> faa_medical_first_class
+  faa_licence_powered_lift_airship_atp -.-> faa_medical_second_class
+  faa_licence_powered_lift_airship_atp -.-> faa_medical_third_class
+  faa_licence_powered_lift_airship_commercial -.-> faa_medical_basicmed
+  faa_licence_powered_lift_airship_commercial -.-> faa_medical_first_class
+  faa_licence_powered_lift_airship_commercial -.-> faa_medical_second_class
+  faa_licence_powered_lift_airship_commercial -.-> faa_medical_third_class
   faa_licence_private_airplane -.-> faa_medical_basicmed
   faa_licence_private_airplane -.-> faa_medical_first_class
   faa_licence_private_airplane -.-> faa_medical_second_class
@@ -315,18 +364,31 @@ flowchart LR
   faa_licence_recreational -.-> faa_medical_first_class
   faa_licence_recreational -.-> faa_medical_second_class
   faa_licence_recreational -.-> faa_medical_third_class
+  faa_licence_sport -.-> faa_document_drivers_license
+  faa_licence_sport -.-> faa_medical_first_class
+  faa_licence_sport -.-> faa_medical_second_class
+  faa_licence_sport -.-> faa_medical_third_class
   faa_licence_student -.-> faa_medical_basicmed
   faa_licence_student -.-> faa_medical_first_class
   faa_licence_student -.-> faa_medical_second_class
   faa_licence_student -.-> faa_medical_third_class
   faa_privilege_category_ii_iii -.-> faa_licence_atp_airplane
+  faa_privilege_category_ii_iii -.-> faa_licence_atp_rotorcraft
   faa_privilege_category_ii_iii -.-> faa_licence_commercial_airplane
   faa_privilege_category_ii_iii -.-> faa_licence_commercial_rotorcraft
+  faa_privilege_category_ii_iii -.-> faa_licence_powered_lift_airship
+  faa_privilege_category_ii_iii -.-> faa_licence_powered_lift_airship_atp
+  faa_privilege_category_ii_iii -.-> faa_licence_powered_lift_airship_commercial
   faa_privilege_category_ii_iii -.-> faa_licence_private_airplane
   faa_privilege_category_ii_iii -.-> faa_licence_private_rotorcraft
+  faa_privilege_category_ii_iii -.-> faa_rating_instrument_airplane
   faa_privilege_glider_towing -.-> faa_licence_atp_airplane
+  faa_privilege_glider_towing -.-> faa_licence_atp_rotorcraft
   faa_privilege_glider_towing -.-> faa_licence_commercial_airplane
   faa_privilege_glider_towing -.-> faa_licence_commercial_rotorcraft
+  faa_privilege_glider_towing -.-> faa_licence_powered_lift_airship
+  faa_privilege_glider_towing -.-> faa_licence_powered_lift_airship_atp
+  faa_privilege_glider_towing -.-> faa_licence_powered_lift_airship_commercial
   faa_privilege_glider_towing -.-> faa_licence_private_airplane
   faa_privilege_glider_towing -.-> faa_licence_private_rotorcraft
   faa_privilege_sport_night --> faa_licence_sport
@@ -469,7 +531,6 @@ flowchart LR
   easa_rating_set_sea --> easa_shared_variants
   easa_rating_tmg --> easa_shared_passengers_day
   easa_rating_tmg --> easa_shared_passengers_night
-  easa_rating_tmg --> easa_rating_sep_land_revalidation
 ```
 
 ### FAA
@@ -482,6 +543,8 @@ flowchart LR
   faa_licence_commercial_rotorcraft["faa.licence.commercial-rotorcraft"]
   faa_licence_glider["faa.licence.glider"]
   faa_licence_powered_lift_airship["faa.licence.powered-lift-airship"]
+  faa_licence_powered_lift_airship_atp["faa.licence.powered-lift-airship-atp"]
+  faa_licence_powered_lift_airship_commercial["faa.licence.powered-lift-airship-commercial"]
   faa_licence_private_airplane["faa.licence.private-airplane"]
   faa_licence_private_rotorcraft["faa.licence.private-rotorcraft"]
   faa_licence_recreational["faa.licence.recreational"]
@@ -516,6 +579,12 @@ flowchart LR
   faa_licence_powered_lift_airship --> faa_shared_flight_review
   faa_licence_powered_lift_airship --> faa_shared_passengers_day
   faa_licence_powered_lift_airship --> faa_shared_passengers_night
+  faa_licence_powered_lift_airship_atp --> faa_shared_flight_review
+  faa_licence_powered_lift_airship_atp --> faa_shared_passengers_day
+  faa_licence_powered_lift_airship_atp --> faa_shared_passengers_night
+  faa_licence_powered_lift_airship_commercial --> faa_shared_flight_review
+  faa_licence_powered_lift_airship_commercial --> faa_shared_passengers_day
+  faa_licence_powered_lift_airship_commercial --> faa_shared_passengers_night
   faa_licence_private_airplane --> faa_shared_flight_review
   faa_licence_private_airplane --> faa_shared_passengers_day
   faa_licence_private_airplane --> faa_shared_passengers_night
@@ -547,12 +616,12 @@ flowchart LR
 | `de.licence.ul` |  |  |  |
 | `de.privilege.ul-passenger-authorisation` | `de.licence.ul` |  |  |
 | `de.privilege.ul-towing` | `de.licence.ul` |  |  |
-| `de.rating.ul-gyroplane` | `de.licence.ul` |  | `passengers`: `de.shared.ul-passengers` |
-| `de.rating.ul-helicopter` | `de.licence.ul` |  | `passengers`: `de.shared.ul-passengers` |
-| `de.rating.ul-powered-paraglider` | `de.licence.ul` |  | `passengers`: `de.shared.ul-passengers` |
-| `de.rating.ul-sailplane` | `de.licence.ul` |  | `passengers`: `de.shared.ul-passengers` |
-| `de.rating.ul-three-axis` | `de.licence.ul` |  | `passengers`: `de.shared.ul-passengers` |
-| `de.rating.ul-weight-shift` | `de.licence.ul` |  | `passengers`: `de.shared.ul-passengers` |
+| `de.rating.ul-gyroplane` | `de.licence.ul` | `easa.medical.class-1`, `easa.medical.class-2`, `easa.medical.lapl` | `passengers`: `de.shared.ul-passengers` |
+| `de.rating.ul-helicopter` | `de.licence.ul` | `easa.medical.class-1`, `easa.medical.class-2`, `easa.medical.lapl` | `passengers`: `de.shared.ul-passengers` |
+| `de.rating.ul-powered-paraglider` | `de.licence.ul` | `easa.medical.class-1`, `easa.medical.class-2`, `easa.medical.lapl` | `passengers`: `de.shared.ul-passengers` |
+| `de.rating.ul-sailplane` | `de.licence.ul` | `easa.medical.class-1`, `easa.medical.class-2`, `easa.medical.lapl` | `passengers`: `de.shared.ul-passengers` |
+| `de.rating.ul-three-axis` | `de.licence.ul` | `easa.medical.class-1`, `easa.medical.class-2`, `easa.medical.lapl` | `passengers`: `de.shared.ul-passengers` |
+| `de.rating.ul-weight-shift` | `de.licence.ul` | `easa.medical.class-1`, `easa.medical.class-2`, `easa.medical.lapl` | `passengers`: `de.shared.ul-passengers` |
 | `easa.endorsement.language-proficiency` |  |  |  |
 | `easa.examiner.fcl-examiner` |  | `easa.licence.atpl-a`, `easa.licence.atpl-h`, `easa.licence.cpl-a`, `easa.licence.cpl-as`, `easa.licence.cpl-h`, `easa.licence.gpl`, `easa.licence.lapl-a`, `easa.licence.lapl-h`, `easa.licence.mpl`, `easa.licence.ppl-a`, `easa.licence.ppl-as`, `easa.licence.ppl-h` |  |
 | `easa.examiner.fe-s` |  | `easa.licence.spl` |  |
@@ -566,12 +635,12 @@ flowchart LR
 | `easa.instructor.sfi` |  |  | `validity`: `easa.shared.instructor-certificate-validity` |
 | `easa.instructor.sti` |  |  | `validity`: `easa.shared.instructor-certificate-validity` |
 | `easa.instructor.tri` |  | `easa.licence.atpl-a`, `easa.licence.atpl-h`, `easa.licence.cpl-a`, `easa.licence.cpl-as`, `easa.licence.cpl-h`, `easa.licence.mpl`, `easa.licence.ppl-a`, `easa.licence.ppl-as`, `easa.licence.ppl-h` | `validity`: `easa.shared.instructor-certificate-validity` |
-| `easa.licence.atpl-a` | `easa.endorsement.language-proficiency` | `easa.medical.class-1` | `medical`: `easa.shared.medical-certificate` |
-| `easa.licence.atpl-h` | `easa.endorsement.language-proficiency` | `easa.medical.class-1` | `medical`: `easa.shared.medical-certificate` |
+| `easa.licence.atpl-a` | `easa.endorsement.language-proficiency` | `easa.medical.class-1`, `easa.medical.class-2` | `medical`: `easa.shared.medical-certificate` |
+| `easa.licence.atpl-h` | `easa.endorsement.language-proficiency` | `easa.medical.class-1`, `easa.medical.class-2` | `medical`: `easa.shared.medical-certificate` |
 | `easa.licence.bpl` |  | `easa.medical.class-1`, `easa.medical.class-2`, `easa.medical.lapl` | `medical`: `easa.shared.medical-certificate` |
-| `easa.licence.cpl-a` | `easa.endorsement.language-proficiency` | `easa.medical.class-1` | `medical`: `easa.shared.medical-certificate` |
-| `easa.licence.cpl-as` | `easa.endorsement.language-proficiency` | `easa.medical.class-1` | `medical`: `easa.shared.medical-certificate` |
-| `easa.licence.cpl-h` | `easa.endorsement.language-proficiency` | `easa.medical.class-1` | `medical`: `easa.shared.medical-certificate` |
+| `easa.licence.cpl-a` | `easa.endorsement.language-proficiency` | `easa.medical.class-1`, `easa.medical.class-2` | `medical`: `easa.shared.medical-certificate` |
+| `easa.licence.cpl-as` | `easa.endorsement.language-proficiency` | `easa.medical.class-1`, `easa.medical.class-2` | `medical`: `easa.shared.medical-certificate` |
+| `easa.licence.cpl-h` | `easa.endorsement.language-proficiency` | `easa.medical.class-1`, `easa.medical.class-2` | `medical`: `easa.shared.medical-certificate` |
 | `easa.licence.gpl` | `easa.endorsement.language-proficiency` | `easa.medical.class-1`, `easa.medical.class-2` | `medical`: `easa.shared.medical-certificate`<br>`passengers_day`: `easa.shared.passengers-day`<br>`passengers_night`: `easa.shared.passengers-night` |
 | `easa.licence.lapl-a` | `easa.endorsement.language-proficiency` | `easa.medical.class-1`, `easa.medical.class-2`, `easa.medical.lapl` | `medical`: `easa.shared.medical-certificate`<br>`passengers_day`: `easa.shared.passengers-day`<br>`passengers_night`: `easa.shared.passengers-night`<br>`variants`: `easa.shared.variants` |
 | `easa.licence.lapl-h` | `easa.endorsement.language-proficiency` | `easa.medical.class-1`, `easa.medical.class-2`, `easa.medical.lapl` | `medical`: `easa.shared.medical-certificate`<br>`passengers_day`: `easa.shared.passengers-day`<br>`passengers_night`: `easa.shared.passengers-night`<br>`variants`: `easa.shared.variants` |
@@ -605,26 +674,29 @@ flowchart LR
 | `easa.rating.sep-sea` |  | `easa.licence.atpl-a`, `easa.licence.cpl-a`, `easa.licence.mpl`, `easa.licence.ppl-a` | `passengers_day`: `easa.shared.passengers-day`<br>`passengers_night`: `easa.shared.passengers-night`<br>`revalidation`: `easa.rating.sep-land#revalidation`<br>`variants`: `easa.shared.variants` |
 | `easa.rating.set-land` |  | `easa.licence.atpl-a`, `easa.licence.cpl-a`, `easa.licence.mpl`, `easa.licence.ppl-a` | `passengers_day`: `easa.shared.passengers-day`<br>`passengers_night`: `easa.shared.passengers-night`<br>`variants`: `easa.shared.variants` |
 | `easa.rating.set-sea` |  | `easa.licence.atpl-a`, `easa.licence.cpl-a`, `easa.licence.mpl`, `easa.licence.ppl-a` | `passengers_day`: `easa.shared.passengers-day`<br>`passengers_night`: `easa.shared.passengers-night`<br>`revalidation`: `easa.rating.set-land#revalidation`<br>`variants`: `easa.shared.variants` |
-| `easa.rating.tmg` |  | `easa.licence.atpl-a`, `easa.licence.cpl-a`, `easa.licence.mpl`, `easa.licence.ppl-a` | `passengers_day`: `easa.shared.passengers-day`<br>`passengers_night`: `easa.shared.passengers-night`<br>`revalidation`: `easa.rating.sep-land#revalidation` |
+| `easa.rating.tmg` |  | `easa.licence.atpl-a`, `easa.licence.cpl-a`, `easa.licence.mpl`, `easa.licence.ppl-a` | `passengers_day`: `easa.shared.passengers-day`<br>`passengers_night`: `easa.shared.passengers-night` |
+| `faa.document.drivers-license` |  |  |  |
 | `faa.instructor.flight-instructor` |  |  |  |
 | `faa.instructor.ground-instructor` |  |  |  |
-| `faa.licence.atp-airplane` |  | `faa.medical.first-class` | `flight_review`: `faa.shared.flight-review`<br>`passengers_day`: `faa.shared.passengers-day`<br>`passengers_day_type`: `faa.shared.passengers-day`<br>`passengers_night`: `faa.shared.passengers-night`<br>`passengers_night_type`: `faa.shared.passengers-night`<br>`passengers_tailwheel`: `faa.shared.passengers-tailwheel` |
-| `faa.licence.atp-rotorcraft` |  | `faa.medical.first-class` | `flight_review`: `faa.shared.flight-review`<br>`passengers_day`: `faa.shared.passengers-day`<br>`passengers_day_type`: `faa.shared.passengers-day`<br>`passengers_night`: `faa.shared.passengers-night`<br>`passengers_night_type`: `faa.shared.passengers-night` |
-| `faa.licence.commercial-airplane` |  | `faa.medical.first-class`, `faa.medical.second-class` | `flight_review`: `faa.shared.flight-review`<br>`passengers_day`: `faa.shared.passengers-day`<br>`passengers_day_type`: `faa.shared.passengers-day`<br>`passengers_night`: `faa.shared.passengers-night`<br>`passengers_night_type`: `faa.shared.passengers-night`<br>`passengers_tailwheel`: `faa.shared.passengers-tailwheel` |
-| `faa.licence.commercial-rotorcraft` |  | `faa.medical.first-class`, `faa.medical.second-class` | `flight_review`: `faa.shared.flight-review`<br>`passengers_day`: `faa.shared.passengers-day`<br>`passengers_day_type`: `faa.shared.passengers-day`<br>`passengers_night`: `faa.shared.passengers-night`<br>`passengers_night_type`: `faa.shared.passengers-night` |
+| `faa.licence.atp-airplane` |  | `faa.medical.basicmed`, `faa.medical.first-class`, `faa.medical.second-class`, `faa.medical.third-class` | `flight_review`: `faa.shared.flight-review`<br>`passengers_day`: `faa.shared.passengers-day`<br>`passengers_day_type`: `faa.shared.passengers-day`<br>`passengers_night`: `faa.shared.passengers-night`<br>`passengers_night_type`: `faa.shared.passengers-night`<br>`passengers_tailwheel`: `faa.shared.passengers-tailwheel` |
+| `faa.licence.atp-rotorcraft` |  | `faa.medical.basicmed`, `faa.medical.first-class`, `faa.medical.second-class`, `faa.medical.third-class` | `flight_review`: `faa.shared.flight-review`<br>`passengers_day`: `faa.shared.passengers-day`<br>`passengers_day_type`: `faa.shared.passengers-day`<br>`passengers_night`: `faa.shared.passengers-night`<br>`passengers_night_type`: `faa.shared.passengers-night` |
+| `faa.licence.commercial-airplane` |  | `faa.medical.basicmed`, `faa.medical.first-class`, `faa.medical.second-class`, `faa.medical.third-class` | `flight_review`: `faa.shared.flight-review`<br>`passengers_day`: `faa.shared.passengers-day`<br>`passengers_day_type`: `faa.shared.passengers-day`<br>`passengers_night`: `faa.shared.passengers-night`<br>`passengers_night_type`: `faa.shared.passengers-night`<br>`passengers_tailwheel`: `faa.shared.passengers-tailwheel` |
+| `faa.licence.commercial-rotorcraft` |  | `faa.medical.basicmed`, `faa.medical.first-class`, `faa.medical.second-class`, `faa.medical.third-class` | `flight_review`: `faa.shared.flight-review`<br>`passengers_day`: `faa.shared.passengers-day`<br>`passengers_day_type`: `faa.shared.passengers-day`<br>`passengers_night`: `faa.shared.passengers-night`<br>`passengers_night_type`: `faa.shared.passengers-night` |
 | `faa.licence.glider` |  |  | `flight_review`: `faa.shared.flight-review`<br>`passengers`: `faa.shared.passengers-glider` |
-| `faa.licence.powered-lift-airship` |  | `faa.medical.first-class`, `faa.medical.second-class` | `flight_review`: `faa.shared.flight-review`<br>`passengers_day`: `faa.shared.passengers-day`<br>`passengers_day_type`: `faa.shared.passengers-day`<br>`passengers_night`: `faa.shared.passengers-night`<br>`passengers_night_type`: `faa.shared.passengers-night` |
+| `faa.licence.powered-lift-airship` |  | `faa.medical.basicmed`, `faa.medical.first-class`, `faa.medical.second-class`, `faa.medical.third-class` | `flight_review`: `faa.shared.flight-review`<br>`passengers_day`: `faa.shared.passengers-day`<br>`passengers_day_type`: `faa.shared.passengers-day`<br>`passengers_night`: `faa.shared.passengers-night`<br>`passengers_night_type`: `faa.shared.passengers-night` |
+| `faa.licence.powered-lift-airship-atp` |  | `faa.medical.basicmed`, `faa.medical.first-class`, `faa.medical.second-class`, `faa.medical.third-class` | `flight_review`: `faa.shared.flight-review`<br>`passengers_day`: `faa.shared.passengers-day`<br>`passengers_day_type`: `faa.shared.passengers-day`<br>`passengers_night`: `faa.shared.passengers-night`<br>`passengers_night_type`: `faa.shared.passengers-night` |
+| `faa.licence.powered-lift-airship-commercial` |  | `faa.medical.basicmed`, `faa.medical.first-class`, `faa.medical.second-class`, `faa.medical.third-class` | `flight_review`: `faa.shared.flight-review`<br>`passengers_day`: `faa.shared.passengers-day`<br>`passengers_day_type`: `faa.shared.passengers-day`<br>`passengers_night`: `faa.shared.passengers-night`<br>`passengers_night_type`: `faa.shared.passengers-night` |
 | `faa.licence.private-airplane` |  | `faa.medical.basicmed`, `faa.medical.first-class`, `faa.medical.second-class`, `faa.medical.third-class` | `flight_review`: `faa.shared.flight-review`<br>`passengers_day`: `faa.shared.passengers-day`<br>`passengers_day_type`: `faa.shared.passengers-day`<br>`passengers_night`: `faa.shared.passengers-night`<br>`passengers_night_type`: `faa.shared.passengers-night`<br>`passengers_tailwheel`: `faa.shared.passengers-tailwheel` |
 | `faa.licence.private-rotorcraft` |  | `faa.medical.basicmed`, `faa.medical.first-class`, `faa.medical.second-class`, `faa.medical.third-class` | `flight_review`: `faa.shared.flight-review`<br>`passengers_day`: `faa.shared.passengers-day`<br>`passengers_day_type`: `faa.shared.passengers-day`<br>`passengers_night`: `faa.shared.passengers-night`<br>`passengers_night_type`: `faa.shared.passengers-night` |
 | `faa.licence.recreational` |  | `faa.medical.basicmed`, `faa.medical.first-class`, `faa.medical.second-class`, `faa.medical.third-class` | `flight_review`: `faa.shared.flight-review`<br>`passengers_day`: `faa.shared.passengers-day`<br>`passengers_tailwheel`: `faa.shared.passengers-tailwheel` |
-| `faa.licence.sport` |  |  | `flight_review`: `faa.shared.flight-review`<br>`passengers_day`: `faa.shared.passengers-day`<br>`passengers_day_type`: `faa.shared.passengers-day`<br>`passengers_glider`: `faa.shared.passengers-glider`<br>`passengers_night`: `faa.shared.passengers-night`<br>`passengers_night_type`: `faa.shared.passengers-night`<br>`passengers_tailwheel`: `faa.shared.passengers-tailwheel` |
+| `faa.licence.sport` |  | `faa.document.drivers-license`, `faa.medical.first-class`, `faa.medical.second-class`, `faa.medical.third-class` | `flight_review`: `faa.shared.flight-review`<br>`passengers_day`: `faa.shared.passengers-day`<br>`passengers_day_type`: `faa.shared.passengers-day`<br>`passengers_glider`: `faa.shared.passengers-glider`<br>`passengers_night`: `faa.shared.passengers-night`<br>`passengers_night_type`: `faa.shared.passengers-night`<br>`passengers_tailwheel`: `faa.shared.passengers-tailwheel` |
 | `faa.licence.student` |  | `faa.medical.basicmed`, `faa.medical.first-class`, `faa.medical.second-class`, `faa.medical.third-class` | `flight_review`: `faa.shared.flight-review` |
 | `faa.medical.basicmed` |  |  |  |
 | `faa.medical.first-class` |  |  | `commercial_privileges`: `faa.shared.medical-duration-commercial`<br>`private_privileges`: `faa.shared.medical-duration-private` |
 | `faa.medical.second-class` |  |  | `commercial_privileges`: `faa.shared.medical-duration-commercial`<br>`private_privileges`: `faa.shared.medical-duration-private` |
 | `faa.medical.third-class` |  |  | `private_privileges`: `faa.shared.medical-duration-private` |
-| `faa.privilege.category-ii-iii` |  | `faa.licence.atp-airplane`, `faa.licence.commercial-airplane`, `faa.licence.commercial-rotorcraft`, `faa.licence.private-airplane`, `faa.licence.private-rotorcraft` |  |
-| `faa.privilege.glider-towing` |  | `faa.licence.atp-airplane`, `faa.licence.commercial-airplane`, `faa.licence.commercial-rotorcraft`, `faa.licence.private-airplane`, `faa.licence.private-rotorcraft` |  |
+| `faa.privilege.category-ii-iii` |  | `faa.licence.atp-airplane`, `faa.licence.atp-rotorcraft`, `faa.licence.commercial-airplane`, `faa.licence.commercial-rotorcraft`, `faa.licence.powered-lift-airship`, `faa.licence.powered-lift-airship-atp`, `faa.licence.powered-lift-airship-commercial`, `faa.licence.private-airplane`, `faa.licence.private-rotorcraft`, `faa.rating.instrument-airplane` |  |
+| `faa.privilege.glider-towing` |  | `faa.licence.atp-airplane`, `faa.licence.atp-rotorcraft`, `faa.licence.commercial-airplane`, `faa.licence.commercial-rotorcraft`, `faa.licence.powered-lift-airship`, `faa.licence.powered-lift-airship-atp`, `faa.licence.powered-lift-airship-commercial`, `faa.licence.private-airplane`, `faa.licence.private-rotorcraft` |  |
 | `faa.privilege.sport-night` | `faa.licence.sport` | `faa.medical.basicmed`, `faa.medical.first-class`, `faa.medical.second-class`, `faa.medical.third-class` |  |
 | `faa.rating.instrument-airplane` |  | `faa.licence.atp-airplane`, `faa.licence.commercial-airplane`, `faa.licence.private-airplane` |  |
 
@@ -634,13 +706,13 @@ Shared evaluations by the evaluations that use them:
 
 | Shared evaluation | Used by |
 | --- | --- |
-| `faa.shared.passengers-day` | 17 |
-| `faa.shared.passengers-night` | 16 |
+| `faa.shared.passengers-day` | 21 |
+| `faa.shared.passengers-night` | 20 |
 | `easa.shared.medical-certificate` | 14 |
 | `easa.shared.passengers-day` | 13 |
 | `easa.shared.passengers-night` | 13 |
+| `faa.shared.flight-review` | 13 |
 | `easa.shared.variants` | 12 |
-| `faa.shared.flight-review` | 11 |
 | `de.shared.ul-passengers` | 6 |
 | `easa.shared.instructor-certificate-validity` | 5 |
 | `faa.shared.passengers-tailwheel` | 5 |
@@ -649,13 +721,13 @@ Credentials by the requirements naming them and the evaluations borrowing theirs
 
 | Credential | Required by | Borrowed by | Total |
 | --- | --- | --- | --- |
+| `easa.medical.class-1` | 25 | 0 | 25 |
+| `faa.medical.first-class` | 22 | 0 | 22 |
 | `easa.licence.atpl-a` | 20 | 0 | 20 |
 | `easa.licence.cpl-a` | 20 | 0 | 20 |
 | `easa.licence.mpl` | 19 | 0 | 19 |
 | `easa.licence.ppl-a` | 19 | 0 | 19 |
-| `easa.medical.class-1` | 14 | 0 | 14 |
+| `easa.medical.class-2` | 19 | 0 | 19 |
+| `faa.medical.second-class` | 19 | 0 | 19 |
+| `faa.medical.third-class` | 13 | 0 | 13 |
 | `easa.endorsement.language-proficiency` | 12 | 0 | 12 |
-| `faa.medical.first-class` | 10 | 0 | 10 |
-| `de.licence.ul` | 9 | 0 | 9 |
-| `easa.licence.atpl-h` | 8 | 0 | 8 |
-| `easa.licence.cpl-h` | 8 | 0 | 8 |

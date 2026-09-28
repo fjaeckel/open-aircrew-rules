@@ -387,7 +387,9 @@ decision row to them.
   `different_engine_type` is evaluated as `unknown` (`selection.input_missing`, param
   `input`) instead of being skipped. A `$subject` filter (`in_class`, `in_type`,
   `in_category`, `in_ul_kind`, `by_this_tow_kind` ...) the subject cannot supply makes every
-  item unknown input, never a silent non-match.
+  item unknown input, never a silent non-match: the filter is not compared, and only the
+  other filters can still exclude an item (a UL instructor rating without a kind leaves its
+  instruction rows untracked and the result unknown).
 - **Aircraft category.** A rating may record `category`; a subject's category is the
   recorded one, else its class's, else its licence kind's (`licence_kinds.<kind>.category`).
   `in_category: true` counts in it; `only_for.categories` selects by it; `holds.sameCategory`
@@ -406,14 +408,21 @@ decision row to them.
   `longest_flight`, `passenger_training_flight`, `safety_training`, `in_ul_kind`,
   `by_this_tow_kind`, `by_this_tow_take_up`; `holds` `details` (`$subject`, `none`),
   `expiryRecorded`, `authorities`.
-- **Validity.** `valid_for.age_on` (the age on the examination date) and
-  `recorded_expiry_wins`; `authority_conventions` (DE: derived periods end the day before,
+- **Validity.** `valid_for.age_on` (the age on the examination date),
+  `recorded_expiry_wins` and `recorded_expiry_minimum` (the record's one expiry date is a
+  higher level's: a class 1 certificate's class 2 and LAPL levels run their own periods and
+  last at least until the recorded class 1 date); `authority_conventions` (DE: derived periods end the day before,
   §§ 186, 187(2), 188(2) BGB).
 - **Levels and limitations in composites.** An entry may carry `level: <name>`; a
   requirement may name `<credential id>@<level>` and counts only that level (a class 1
   medical at its class 2 validity); `limits: <scope>` reports an entry as a limitation of
   that scope (`limitation_scopes`), never deciding (a CPL with a class 2 medical: usable
-  for private privileges, `commercial_privileges` limited). Composites list `levels`.
+  for private privileges, `commercial_privileges` limited). Composites list `levels`. A
+  scope may stand for privileges the record cannot tell apart (`above_120_kg`: the medical
+  a German ultralight above 120 kg empty mass needs, reported on the powered paraglider and
+  ultralight sailplane ratings). A requirement may be narrowed with `only_for: { classes }`
+  or `not_classes` to items that are, or hold, ratings of those classes (the sport pilot's
+  driver's license or medical, for powered classes only).
 - **Kind `document`** (`credentials/<authority>/documents/`): a non-aviation document a
   rule accepts, such as a U.S. driver's license.
 - **Interpretations** may name their `principle` (section 14).

@@ -2,6 +2,7 @@ package credentials
 
 import (
 	"fmt"
+	"reflect"
 	"regexp"
 	"slices"
 	"strings"
@@ -89,6 +90,19 @@ func (e *Evaluation) isRequirement() bool { return len(e.RequiresAll)+len(e.Requ
 func (cat *Catalogue) checkRequirement(key string, e *Evaluation) {
 	if e.Uses != "" || e.Source != "" || !empty(&e.PassesIf) || !empty(&e.Outcomes) {
 		cat.Errors = append(cat.Errors, fmt.Sprintf("%s: an evaluation with requires_all or requires_any has only id, asks and those", key))
+	}
+	if s := e.OnlyFor; s != nil {
+		rest := *s
+		rest.Classes, rest.NotClasses, rest.Ref = nil, nil, nil
+		if !reflect.DeepEqual(rest, Scope{}) || len(s.Classes)+len(s.NotClasses) == 0 {
+			cat.Errors = append(cat.Errors, fmt.Sprintf("%s: only_for on a requirement names classes or not_classes, and ref", key))
+		}
+		if len(s.Ref) == 0 {
+			cat.Errors = append(cat.Errors, fmt.Sprintf("%s: only_for has no ref", key))
+		}
+		for _, r := range s.Ref {
+			cat.addRef(r, key+" only_for", e.Line)
+		}
 	}
 	for _, ref := range append(slices.Clone(e.RequiresAll), e.RequiresAny...) {
 		id, level, _ := strings.Cut(ref, "@")
@@ -309,6 +323,9 @@ func (cm *composer) composite(id string, item engine.Subject) *Composite {
 	}
 	for _, e := range c.Evaluations {
 		if e.isRequirement() {
+			if !cm.requirementApplies(e.OnlyFor, item) {
+				continue
+			}
 			if m, ok := cm.group(e.ID, "requires_all", e.RequiresAll, item); ok {
 				add(e, m)
 			}
@@ -342,6 +359,24 @@ func (cm *composer) composite(id string, item engine.Subject) *Composite {
 		out.Levels = append(out.Levels, Level{Level: l, Status: st, DecidedBy: d})
 	}
 	return out
+}
+
+// requirementApplies reports whether a requirement's only_for holds for a held item: a
+// rating's class, or for a licence the class of a rating held on it, is in classes (or
+// outside not_classes).
+func (cm *composer) requirementApplies(s *Scope, item engine.Subject) bool {
+	if s == nil {
+		return true
+	}
+	var classes []string
+	for _, r := range cm.rec.Ratings {
+		if (item.Kind == "rating" && r.ID == item.ID) || (item.Kind == "licence" && r.LicenceID == item.ID) {
+			classes = append(classes, r.Class)
+		}
+	}
+	return slices.ContainsFunc(classes, func(cl string) bool {
+		return (len(s.Classes) == 0 || slices.Contains(s.Classes, cl)) && !slices.Contains(s.NotClasses, cl)
+	})
 }
 
 // levelMembers returns the members of one level and those without a level.

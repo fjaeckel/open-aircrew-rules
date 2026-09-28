@@ -72,3 +72,45 @@ examples:
         - { id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2020-04-15, expires: 2024-04-15 }
     outcome: expired
     expect: { subject: { kind: licence, id: l-1 }, decidedBy: { evaluation: language, credential: easa.endorsement.language-proficiency } }
+  - name: composite-class-2-private-privileges
+    composite: true
+    shows: [class-1-only]
+    says: With a valid class 2 medical certificate the ATPL(H) may be exercised within its private privileges; the commercial privileges are listed as limited, not deciding.
+    asOf: 2026-09-15
+    record:
+      holder: { dateOfBirth: 1976-01-01 }
+      licences:
+        - { id: l-1, authority: EASA, type: ATPL(H) }
+      credentials:
+        - { id: c-med, type: EASA_CLASS2_MEDICAL, issued: 2026-06-01 }
+        - { id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2023-04-15 }
+    outcome: current
+    expect: { subject: { kind: licence, id: l-1 } }
+  - name: composite-class-1-at-class-2-validity
+    composite: true
+    shows: [class-1-only]
+    says: A class 1 certificate past its 12 class 1 months (no expiry date recorded) is still valid at class 2, so the ATPL(H) may be exercised within its private privileges.
+    asOf: 2026-09-15
+    record:
+      holder: { dateOfBirth: 1980-05-20 }
+      licences:
+        - { id: l-1, authority: EASA, type: ATPL(H) }
+      credentials:
+        - { id: c-med, type: EASA_CLASS1_MEDICAL, issued: 2025-03-01 }
+        - { id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2023-04-15 }
+    outcome: current
+    expect: { subject: { kind: licence, id: l-1 } }
+  - name: composite-class-2-expired
+    composite: true
+    shows: [class-1-only]
+    says: With the only medical certificate, a class 2 one, expired the ATPL(H) may not be exercised at all; the private-privilege medical decides.
+    asOf: 2026-09-15
+    record:
+      holder: { dateOfBirth: 1976-01-01 }
+      licences:
+        - { id: l-1, authority: EASA, type: ATPL(H) }
+      credentials:
+        - { id: c-med, type: EASA_CLASS2_MEDICAL, issued: 2024-06-01 }
+        - { id: c-lang, type: LANG_ICAO_LEVEL4, issued: 2023-04-15 }
+    outcome: expired
+    expect: { subject: { kind: licence, id: l-1 }, decidedBy: { evaluation: medical_private, credential: easa.medical.class-2 } }

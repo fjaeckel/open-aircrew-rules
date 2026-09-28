@@ -172,6 +172,8 @@ keys:
   - { key: rating.revalidation_not_met_expired_check_required, kind: message, params: [], notes: "Rating expired; renewal requires a proficiency check (FCL.740(b))." }
   - { key: rating.renewal_required, kind: message, params: [], notes: "Rating expired; renewal path applies." }
   - { key: rating.not_applicable, kind: message, params: [], notes: "The rule does not apply to this rating." }
+  - { key: rating.ul_safety_training_not_recorded, kind: message, params: [], notes: "DAeC weight-shift recency (LuftPersV § 45(4)): hours, take-offs and landings are met, but no safety or performance training (event safety_training) is recorded in the 24 months; record it, or a proficiency check." }
+  - { key: rating.class_not_recorded, kind: message, params: [], notes: "FAA 61.57(a)(1)(ii), 61.5(b): a sport pilot rating is recorded in the class OTHER, which does not show its category and class (powered parachute, weight-shift-control ...); record the class." }
 
   # --- passengers, further keys ---
   - { key: pax.day_current, kind: message, params: [], notes: "Day passenger recency met (night evaluated by a separate rule)." }
@@ -180,6 +182,9 @@ keys:
   - { key: pax.night_waived_ir, kind: message, params: [], notes: "Night passenger recency waived: the pilot holds an IR (FCL.060(b)(2)(ii))." }
   - { key: pax.night_no_privilege, kind: message, params: [], notes: "The licence has no night privilege." }
   - { key: pax.prerequisite_not_met, kind: message, params: [needed], notes: "Passenger prerequisite since licence issue not met." }
+  - { key: pax.ul_authorisation_kind_missing, kind: message, params: [], notes: "LuftPersV § 84a(5): the passenger authorisation is recorded without the ultralight kind it is entered for, so whether it covers the kind flown cannot be told; record the kind in the privilege's detail." }
+  - { key: pax.night_ir_no_expiry, kind: message, params: [], notes: "FCL.060(b)(2)(ii): the pilot holds an IR of the aircraft category, but it is recorded without an expiry date, so whether it waives the night recency cannot be told; record the IR's expiry date." }
+  - { key: pax.prerequisite_training_flight_not_recorded, kind: message, params: [], notes: "SFCL.115(a)(2)(ii)(A), (d): the hours or launches as PIC since licence issue are met, but no training flight on carrying passengers is recorded; record it (event kind passenger_training_flight) to know whether passengers may be carried." }
 
   # --- licence, further keys ---
   - { key: licence.valid, kind: message, params: ["date?"], notes: "Licence valid." }
@@ -188,6 +193,7 @@ keys:
   - { key: licence.recency_not_met, kind: message, params: [], notes: "Licence recency not met; privileges may not be exercised." }
   - { key: licence.recency_not_evaluable, kind: message, params: [], notes: "The licence's recency cannot be evaluated from the record at all (BFCL.160: the record holds no balloon class or hot-air balloon group), so whether its privileges may be exercised cannot be decided." }
   - { key: licence.not_applicable, kind: message, params: [], notes: "Rule does not apply to this licence." }
+  - { key: licence.certificate_grade_not_recorded, kind: message, params: [], notes: "FAA 61.23(a): a powered-lift or airship rating is recorded on a certificate that reads only as a glider pilot certificate, so the certificate's grade (private, commercial, airline transport) and the medical it needs are unknown; record the grade." }
 
   # --- privilege, further keys ---
   - { key: privilege.expiring, kind: message, params: [days, date], notes: "Privilege expiry approaching." }
@@ -195,6 +201,9 @@ keys:
   - { key: privilege.revalidation_not_met, kind: message, params: ["date?"], notes: "Revalidation requirements not yet met." }
   - { key: privilege.no_expiry_date, kind: message, params: [], notes: "No expiry date recorded or derivable." }
   - { key: privilege.not_applicable, kind: message, params: [], notes: "Rule does not apply to this privilege." }
+  - { key: privilege.ul_tow_kind_unknown, kind: message, params: [], notes: "LuftPersV § 84(4), (5): the towing rating's detail or the tow flights lack the tow kind or take-up, so the tows of the entered kind cannot be counted; record them." }
+  - { key: privilege.ul_instructor_kind_unknown, kind: message, params: [date], notes: "LuftPersV § 96(4) no. 1: the instructor rating's detail names no ultralight kind, or instruction flights lack one, so the instruction in the rating's kinds cannot be counted; record them. date: the expiry date." }
+  - { key: privilege.bir_alternate_check_not_recorded, kind: message, params: [date], notes: "FCL.835(g)(3): the BIR flight experience of (g)(2)(ii) is met, but every alternate revalidation must be a proficiency check in an aeroplane and no BIR check in an aeroplane is recorded in the 24 months before the expiry date (date); record the previous check, or pass one." }
 
   # --- credential, further keys ---
   - { key: credential.valid, kind: message, params: ["date?"], notes: "Certificate valid; date is its expiry." }
@@ -208,6 +217,7 @@ keys:
   # --- flight review, further keys ---
   - { key: flight_review.substituted, kind: message, params: [date], notes: "A proficiency check, practical test or proficiency-program phase stands in for the flight review (61.56(d)/(e))." }
   - { key: flight_review.not_applicable, kind: message, params: [], notes: "Flight review not required (e.g. student pilot, 61.56(g))." }
+  - { key: flight_review.authority_not_recorded, kind: message, params: [], notes: "FAA 61.56(c), (d): a flight review, proficiency check or practical test in the period is recorded without the authority it was given under; only FAA reviews and checks count, so record the authority." }
 
   # --- selection ---
   - { key: selection.input_missing, kind: message, params: [input], notes: "The credential is held, but the record lacks what decides whether this evaluation applies (input: typeRated, ulKinds, categories or differentEngineType); record it." }
@@ -283,7 +293,7 @@ keys:
   - { key: privilege.recency_credited, kind: message, params: ["date?"], notes: "Privilege recency fully credited by another qualification (SFCL.215(g): a BIR or an IR(A) credits the cloud flying recency); date is the privilege's expiry." }
   - { key: requirement.flight_instruction, kind: requirement_name, params: [], notes: "Flight instruction received: dual plus supervised solo time (training programmes)." }
   - { key: requirement.supervised_solo_time, kind: requirement_name, params: [], notes: "Supervised solo (SPIC) time (training programmes)." }
-  - { key: requirement.sfcl130b_credit, kind: requirement_name, params: [], notes: "SFCL.130(b) credit: 10 % of PIC time on other aircraft categories, at most 7 hours; informational." }
+  - { key: requirement.sfcl130b_credit, kind: requirement_name, params: [], notes: "SFCL.130(b) credit: 10 % of PIC time on other aircraft categories, at most 7 hours, counted toward the 15 hours of SFCL.130(a)(2)(i)." }
   - { key: requirement.sailplane_instruction, kind: requirement_name, params: [], notes: "Flight instruction (dual plus supervised solo) in sailplanes excluding TMGs (SFCL.130(a)(2)(iv): at least 7 hours)." }
   - { key: requirement.sailplane_dual, kind: requirement_name, params: [], notes: "Dual flight instruction in sailplanes excluding TMGs (SFCL.130(a)(2)(iv)(A): at least 3 hours)." }
   - { key: training.distance_unknown, kind: message, params: [], notes: "Training programme: every other item met, but the qualifying cross-country flight has no recorded distance." }
@@ -315,8 +325,12 @@ keys:
   - { key: faa_cat_ii_iii, kind: rule_description, params: [], notes: "FAA 61.21: Category II/III pilot authorization expires at the end of the 6th calendar month after issue or renewal." }
   - { key: faa_student_solo, kind: rule_description, params: [], notes: "FAA 61.87(n): student solo endorsement within the preceding 90 days." }
   - { key: faa_recreational, kind: rule_description, params: [], notes: "FAA 61.101(g): recreational pilot under 400 hours needs PIC time within 180 days or an instructor's endorsement." }
+  - { key: faa_certificate_grade, kind: rule_description, params: [], notes: "FAA 61.23(a): the certificate grade of a powered-lift or airship rating decides which medical it needs." }
+  - { key: faa_sport_class_not_recorded, kind: rule_description, params: [], notes: "FAA 61.57(a)(1)(ii), 61.5(b): a sport pilot rating's category and class must be recorded to evaluate it." }
+  - { key: faa_drivers_license, kind: rule_description, params: [], notes: "FAA 61.23(c)(1)(ii), 61.113(i): validity of a U.S. driver's license." }
   # --- de ---
   - { key: rating.ul_flights_kind_unknown, kind: message, params: [], notes: "German ultralight recency (LuftPersV § 45, association rules under § 45(4)): the only ultralight flights in the window have no ultralight kind recorded, so the recency cannot be determined; set the aircraft's kind." }
   - { key: requirement.safety_training, kind: requirement_name, params: [], notes: "Safety or performance training named by an association recency rule (DAeC weight-shift); an event of kind safety_training when recorded." }
   - { key: requirement.solo_time, kind: requirement_name, params: [], notes: "Solo time: PIC plus supervised solo (training programmes)." }
   - { key: requirement.dual_time, kind: requirement_name, params: [], notes: "Dual instruction received (training programmes)." }
+  - { key: ul_gyroplane_daec, kind: rule_description, params: [], notes: "DAeC recency for ultralight gyroplanes under LuftPersV § 45(4): 12 hours in 24 months with 12 take-offs, 12 landings and a 1-hour training flight, or a proficiency check." }

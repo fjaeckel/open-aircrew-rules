@@ -189,6 +189,18 @@ func (e *evalCtx) effectiveExpiry() *Date {
 	if e.rule.Validity == nil || (exp != nil && e.rule.Validity.RecordedWins) {
 		return exp
 	}
+	if e.rule.Validity.RecordedMin {
+		d := e.derivedExpiry(e.rule.Validity)
+		switch {
+		case d == nil && exp != nil && !e.asOf.After(*exp):
+			return exp
+		case d == nil:
+			return nil
+		case exp != nil && d.Before(*exp):
+			return exp
+		}
+		return d
+	}
 	if d := e.derivedExpiry(e.rule.Validity); d != nil && (exp == nil || d.Before(*exp)) {
 		exp = d
 	}

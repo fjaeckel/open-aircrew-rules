@@ -16,6 +16,52 @@ examples:
         - { date: 2026-03-03, class: GYROPLANE, minutes: { total: 120 }, takeoffs: { day: 1 }, landings: { day: 1 } }
     outcome: current
     expect: {subject: {kind: rating, id: r-gyro, class: GYROPLANE}, message: rating.recency_current, requirements: {total_time: {current: 720, met: true}, takeoffs_landings: {current: 14, met: true}, refresher: {current: 60, met: true}}}
+  - name: recency-type-privilege-current
+    evaluation: recency_type
+    shows: [class-or-type]
+    says: For a gyroplane type privilege only flights recording that type count; 12 hours with 12 take-offs and landings and a refresher in the Cavalon keep the type privilege current.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-gpl, authority: EASA, type: GPL }
+      ratings:
+        - { id: r-gyro, licenceId: l-gpl, class: GYROPLANE }
+        - { id: r-type, licenceId: l-gpl, class: GYROPLANE, typeDesignator: CAVALON }
+      flights:
+        - { date: 2026-03-01, class: GYROPLANE, typeDesignator: CAVALON, minutes: { total: 720, pic: 660, dual: 60 }, takeoffs: { day: 12 }, landings: { day: 12 } }
+        - { date: 2026-03-02, class: GYROPLANE, typeDesignator: MTOSPORT, minutes: { total: 120, pic: 120 }, takeoffs: { day: 2 }, landings: { day: 2 } }
+    outcome: current
+    expect: { subject: { kind: rating, id: r-type }, message: rating.recency_current }
+  - name: recency-type-privilege-other-type
+    evaluation: recency_type
+    shows: [class-or-type]
+    says: Hours in another gyroplane type do not count for the Cavalon type privilege.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-gpl, authority: EASA, type: GPL }
+      ratings:
+        - { id: r-gyro, licenceId: l-gpl, class: GYROPLANE }
+        - { id: r-type, licenceId: l-gpl, class: GYROPLANE, typeDesignator: CAVALON }
+      flights:
+        - { date: 2026-03-02, class: GYROPLANE, typeDesignator: MTOSPORT, minutes: { total: 720, pic: 660, dual: 60 }, takeoffs: { day: 12 }, landings: { day: 12 } }
+    outcome: lapsed
+    expect: { subject: { kind: rating, id: r-type }, message: rating.recency_not_met }
+  - name: recency-type-privilege-type-not-recorded
+    evaluation: recency_type
+    shows: [class-or-type]
+    says: Gyroplane flights that record no type cannot be assigned to the type privilege; the result is unknown, while the same flights count for the SPG class privilege.
+    asOf: 2026-09-15
+    record:
+      licences:
+        - { id: l-gpl, authority: EASA, type: GPL }
+      ratings:
+        - { id: r-gyro, licenceId: l-gpl, class: GYROPLANE }
+        - { id: r-type, licenceId: l-gpl, class: GYROPLANE, typeDesignator: CAVALON }
+      flights:
+        - { date: 2026-03-02, class: GYROPLANE, minutes: { total: 720, pic: 660, dual: 60 }, takeoffs: { day: 12 }, landings: { day: 12 } }
+    outcome: unknown
+    expect: { subject: { kind: rating, id: r-type }, message: rating.type_not_identifiable }
   - name: recency-proficiency-check
     evaluation: recency
     says: A GPL proficiency check in the last 2 years keeps the GPL current; a check in an ultralight gyroplane does not count.

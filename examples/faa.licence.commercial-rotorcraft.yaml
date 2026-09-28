@@ -68,7 +68,7 @@ examples:
       ratings:
         - {id: r-1, licenceId: l-faa, class: HELICOPTER}
       flights:
-        - {date: 2026-07-10, class: HELICOPTER, minutes: {total: 90, pic: 90, night: 60}, takeoffs: {night: 3}, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
+        - {date: 2026-07-10, class: HELICOPTER, minutes: {total: 90, pic: 90, night: 60}, takeoffs: {night: 3}, nightPeriodTakeoffs: 3, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
     outcome: current
     expect: { message: pax.night_current }
   - name: passengers-night-day-only
@@ -94,7 +94,7 @@ examples:
       ratings:
         - {id: r-1, licenceId: l-faa, class: HELICOPTER, typeDesignator: S76}
       flights:
-        - {date: 2026-07-10, class: HELICOPTER, typeDesignator: S76, minutes: {total: 90, pic: 90, night: 60}, takeoffs: {night: 3}, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
+        - {date: 2026-07-10, class: HELICOPTER, typeDesignator: S76, minutes: {total: 90, pic: 90, night: 60}, takeoffs: {night: 3}, nightPeriodTakeoffs: 3, landings: {night: 3}, fullStopNightLandings: 3, soleManipulator: true}
     outcome: current
     expect: { message: pax.night_current }
   - name: passengers-night-type-day-only
@@ -118,7 +118,7 @@ examples:
       licences:
         - {id: l-faa, authority: FAA, type: COMMERCIAL}
       events:
-        - {date: 2025-09-01, kind: flight_review}
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
     outcome: current
     expect: { message: flight_review.current }
   - name: flight-review-none
@@ -143,13 +143,13 @@ examples:
       credentials:
         - {id: c-med, type: FAA_CLASS2_MEDICAL, issued: 2026-03-01}
       events:
-        - {date: 2025-09-01, kind: flight_review}
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
     outcome: current
     expect: { subject: { kind: rating, id: r-heli } }
   - name: composite-helicopter-second-class-lapsed
     composite: true
     shows: [commercial-privileges-medical]
-    says: A second-class medical certificate examined in June 2025 supported commercial privileges only through June 2026; the helicopter rating on the commercial certificate may not be exercised commercially.
+    says: A second-class medical certificate examined in June 2025 supported commercial privileges only through June 2026, but private privileges for 60 months; the helicopter rating may still be exercised, and the lapsed commercial privileges are reported as a limitation.
     asOf: 2026-08-16
     record:
       holder: {dateOfBirth: 1990-01-01}
@@ -160,6 +160,23 @@ examples:
       credentials:
         - {id: c-med, type: FAA_CLASS2_MEDICAL, issued: 2025-06-10}
       events:
-        - {date: 2025-09-01, kind: flight_review}
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
+    outcome: current
+    expect: { subject: { kind: rating, id: r-heli } }
+  - name: composite-helicopter-medical-past-private-duration
+    composite: true
+    shows: [commercial-privileges-medical]
+    says: A pilot aged 54 whose second-class certificate was examined in June 2024 had it for private privileges through June 2026; on 16 August the helicopter rating on the commercial certificate may not be exercised.
+    asOf: 2026-08-16
+    record:
+      holder: {dateOfBirth: 1970-01-01}
+      licences:
+        - {id: l-faa, authority: FAA, type: COMMERCIAL}
+      ratings:
+        - {id: r-heli, licenceId: l-faa, class: HELICOPTER}
+      credentials:
+        - {id: c-med, type: FAA_CLASS2_MEDICAL, issued: 2024-06-10}
+      events:
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
     outcome: expired
-    expect: { subject: { kind: rating, id: r-heli }, decidedBy: { evaluation: medical, credential: faa.medical.second-class } }
+    expect: { subject: { kind: rating, id: r-heli }, decidedBy: { evaluation: medical, credential: faa.medical.second-class@private } }

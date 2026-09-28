@@ -54,9 +54,16 @@ flights:
 	if m := tow.Members[1]; tow.Status != "lapsed" || tow.DecidedBy.Evaluation != "recency" || m.Kind != "requires_all" || m.Status != "lapsed" || m.Credential != "easa.licence.spl" {
 		t.Errorf("towing: %+v", tow)
 	}
-	// The rating on the CPL(A) is decided by the CPL(A), not by the PPL(A) on another licence.
+	// With only a class 2 medical the CPL(A) is usable within its private privileges, the
+	// commercial ones limited; the rating on it follows the CPL(A), not the PPL(A).
+	cpl := got["easa.licence.cpl-a|l-cpl"]
+	if cpl.Status != "current" || !slices.ContainsFunc(cpl.Limitations, func(m Member) bool {
+		return m.Scope == "commercial_privileges" && m.Status == "expired"
+	}) {
+		t.Errorf("cpl: %+v", cpl)
+	}
 	sep := got["easa.rating.sep-land|r-sep"]
-	if d := sep.DecidedBy; sep.Status != "expired" || d.Evaluation != "licence" || d.Credential != "easa.licence.cpl-a" {
+	if d, m := sep.DecidedBy, sep.Members[1]; sep.Status != "expiring" || d.Evaluation != "revalidation" || m.Credential != "easa.licence.cpl-a" || m.Status != "current" {
 		t.Errorf("sep on cpl: %+v", sep)
 	}
 	if sep2 := got["easa.rating.sep-land|r-sep2"]; sep2.Status != "expiring" || sep2.Members[1].Status != "current" {
@@ -248,5 +255,43 @@ flights:
 		if !row.Met || (row.ID == "solo_time" && row.Current != 60) {
 			t.Errorf("row %+v", row)
 		}
+	}
+}
+
+// TestScopedRequirements covers a requirement reported as a limitation of a mass scope and a
+// requirement narrowed to rating classes.
+func TestScopedRequirements(t *testing.T) {
+	cat := load(t)
+	got := composites(t, cat, `
+holder: { dateOfBirth: 1990-01-01 }
+licences:
+  - { id: l-ul, authority: DULV, type: UL }
+  - { id: l-sp, authority: FAA, type: SPORT }
+  - { id: l-gl, authority: FAA, type: SPORT }
+ratings:
+  - { id: r-ppg, licenceId: l-ul, class: ULTRALIGHT, ulKind: POWERED_PARAGLIDER }
+  - { id: r-sep, licenceId: l-sp, class: SEP_LAND }
+  - { id: r-gl, licenceId: l-gl, class: GLIDER }
+credentials:
+  - { id: c-med, type: FAA_CLASS3_MEDICAL, issued: 2025-03-01 }
+events:
+  - { date: 2025-09-01, kind: flight_review, authority: FAA }
+flights:
+  - { date: 2026-05-01, class: ULTRALIGHT, ulKind: POWERED_PARAGLIDER, minutes: { total: 600, pic: 600 }, takeoffs: { day: 30 }, landings: { day: 30 } }
+`, "2026-08-16")
+	ppg := got["de.rating.ul-powered-paraglider|r-ppg"]
+	if ppg.Status != "current" || !slices.ContainsFunc(ppg.Limitations, func(m Member) bool {
+		return m.Evaluation == "medical_above_120_kg" && m.Scope == "above_120_kg" && m.Status == "unknown"
+	}) {
+		t.Errorf("powered paraglider: %+v", ppg)
+	}
+	has := func(c Composite, eval string) bool {
+		return slices.ContainsFunc(c.Members, func(m Member) bool { return m.Evaluation == eval })
+	}
+	if sp := got["faa.licence.sport|l-sp"]; sp.Status != "current" || !has(sp, "medical_or_drivers_license") {
+		t.Errorf("sport airplane: %+v", sp)
+	}
+	if gl := got["faa.licence.sport|l-gl"]; has(gl, "medical_or_drivers_license") {
+		t.Errorf("sport glider needs no medical: %+v", gl)
 	}
 }

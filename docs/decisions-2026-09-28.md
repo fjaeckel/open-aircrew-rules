@@ -149,3 +149,15 @@ new capability, all of which is now available (row 51 already applied).
 - New keys: `selection.input_missing`, `requirement.passenger_training_flight` and
   `requirement.safety_training` exist. Limitation scopes: `commercial_privileges`,
   `airline_transport_privileges`, `night_privileges`.
+
+## Added during integration
+
+The content work asked for four further capabilities; each is in the format, the engine or
+compiler, the schema, docs/credential-format.md and a test, and is applied.
+
+| Request | Capability | Applied in |
+| --- | --- | --- |
+| E1 follow-up: a class 1 certificate recorded with its expiry date was valid at the class 2 and LAPL levels only until that date | `valid_for.recorded_expiry_minimum`: the recorded date is the class 1 date; a lower level runs its own period from the examination date and lasts at least until the recorded date, and without a date of birth is unknown after it | `easa.medical.class-1#validity_class_2`, `#validity_lapl` |
+| Row 49: the driver's license or medical as a requirement | a requirement narrowed with `only_for: { classes }` / `not_classes` (and `ref`) to items that are, or hold, ratings of those classes | `faa.licence.sport#medical_or_drivers_license` (was an evaluation over `holds`; a medical recorded by its examination date alone now counts at its derived validity) |
+| Row 50: a medical for kinds mostly up to 120 kg | limitation scope `above_120_kg` | `medical_above_120_kg` in `de.rating.ul-powered-paraglider` and `de.rating.ul-sailplane` |
+| Row 53: `in_ul_kind` on a privilege without a detail excluded every flight | engine: an unresolved `$subject` filter is not compared, so the items stay unknown (P1) | `de.instructor.ul-instructor#extension` (the `kind_not_recorded` outcome stage is removed) |

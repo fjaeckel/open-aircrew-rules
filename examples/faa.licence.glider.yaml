@@ -125,7 +125,7 @@ examples:
       licences:
         - {id: l-faa, authority: FAA, type: GLIDER}
       events:
-        - {date: 2025-09-01, kind: flight_review}
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
     outcome: current
     expect: { message: flight_review.current }
   - name: flight-review-none
@@ -148,7 +148,7 @@ examples:
       ratings:
         - {id: r-glider, licenceId: l-glider, class: GLIDER}
       events:
-        - {date: 2025-09-01, kind: flight_review}
+        - {date: 2025-09-01, kind: flight_review, authority: FAA}
     outcome: current
     expect: { subject: { kind: licence, id: l-glider } }
   - name: composite-review-expired
@@ -161,6 +161,6 @@ examples:
       ratings:
         - {id: r-glider, licenceId: l-glider, class: GLIDER}
       events:
-        - {date: 2024-07-01, kind: flight_review}
+        - {date: 2024-07-01, kind: flight_review, authority: FAA}
     outcome: expired
     expect: { subject: { kind: licence, id: l-glider }, decidedBy: { evaluation: flight_review } }
